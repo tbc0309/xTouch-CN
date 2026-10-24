@@ -1,0 +1,12 @@
+{
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32s3",
+  "version": "1.0.0",
+  "application": "esp32-s3-touch-lcd-2.8-v2.bin",
+  "fullImage": "esp32-s3-touch-lcd-2.8-v2-full.bin",
+  "applicationBytes": 2649808,
+  "applicationOffset": 131072,
+  "sha256": "a0ccd7947445721411205a50ec064cbd20c28cc58fda94d48939f2c26dec841b",
+  "fullSha256": "147df428dac0eb6aae2b154c64f4657477bef58d6905b4e9fbaf1d8c39011a00"
+}

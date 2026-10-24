@@ -1,0 +1,1 @@
+/* The SDK embeds the LP program into this component. */

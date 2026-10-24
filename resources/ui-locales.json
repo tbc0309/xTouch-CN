@@ -1,0 +1,592 @@
+{
+  "Stop drying": [
+    "停止烘干",
+    "停止烘乾",
+    "Stop drying",
+    "Arrêter",
+    "Trocknen stoppen",
+    "Остановить",
+    "乾燥停止",
+    "건조 중지"
+  ],
+  "Start drying": [
+    "开始烘干",
+    "開始烘乾",
+    "Start drying",
+    "Démarrer",
+    "Trocknen starten",
+    "Начать сушку",
+    "乾燥開始",
+    "건조 시작"
+  ],
+  "Target": [
+    "目标",
+    "目標",
+    "Target",
+    "Cible",
+    "Ziel",
+    "Цель",
+    "目標",
+    "목표"
+  ],
+  "Temperature": [
+    "温度",
+    "溫度",
+    "Temperature",
+    "Temp.",
+    "Temperatur",
+    "Температура",
+    "温度",
+    "온도"
+  ],
+  "Hours": [
+    "小时",
+    "小時",
+    "Hours",
+    "Heures",
+    "Stunden",
+    "Часы",
+    "時間",
+    "시간"
+  ],
+  "Temperature / hours": [
+    "温度 / 小时",
+    "溫度 / 小時",
+    "Temperature / hours",
+    "Température / heures",
+    "Temperatur / Stunden",
+    "Температура / часы",
+    "温度 / 時間",
+    "온도 / 시간"
+  ],
+  "Dry": [
+    "烘干",
+    "烘乾",
+    "Dry",
+    "Sécher",
+    "Trocknen",
+    "Сушка",
+    "乾燥",
+    "건조"
+  ],
+  "RFID": [
+    "重读",
+    "重讀",
+    "RFID",
+    "RFID",
+    "RFID",
+    "RFID",
+    "再読込",
+    "재읽기"
+  ],
+  "Status": [
+    "状态",
+    "狀態",
+    "Status",
+    "État",
+    "Status",
+    "Статус",
+    "状態",
+    "상태"
+  ],
+  "Position": [
+    "位置",
+    "位置",
+    "Position",
+    "Position",
+    "Position",
+    "Позиция",
+    "位置",
+    "위치"
+  ],
+  "Reading": [
+    "读取中",
+    "讀取中",
+    "Reading",
+    "Lecture",
+    "Lesen",
+    "Чтение",
+    "読込中",
+    "읽는 중"
+  ],
+  "Toolhead / rack may move.": [
+    "打印头和热端仓可能移动",
+    "打印頭和熱端倉可能移動",
+    "Toolhead / rack may move.",
+    "La tête / le magasin peut bouger.",
+    "Druckkopf / Magazin kann sich bewegen.",
+    "Головка / магазин могут двигаться.",
+    "ヘッドやホットエンドラックが動く場合があります。",
+    "헤드나 핫엔드 랙이 움직일 수 있습니다."
+  ],
+  "H2C hotend rack": [
+    "H2C 热端仓",
+    "H2C 熱端倉",
+    "H2C hotend rack",
+    "Magasin H2C",
+    "H2C-Hotendmagazin",
+    "Магазин H2C",
+    "H2C ホットエンドラック",
+    "H2C 핫엔드 랙"
+  ],
+  "Read selected\nRead all\nConfirm selected\nConfirm all\nHome rack\nRaise A\nRaise B": [
+    "重读当前热端\n重读全部热端\n确认当前热端\n确认全部热端\n热端仓归位\n升起 A\n升起 B",
+    "重讀當前熱端\n重讀全部熱端\n確認當前熱端\n確認全部熱端\n熱端倉歸位\n升起 A\n升起 B",
+    "Read selected\nRead all\nConfirm selected\nConfirm all\nHome rack\nRaise A\nRaise B",
+    "Lire la sélection\nTout lire\nConfirmer la sélection\nTout confirmer\nOrigine du magasin\nLever A\nLever B",
+    "Auswahl lesen\nAlle lesen\nAuswahl bestätigen\nAlle bestätigen\nMagazin referenzieren\nA anheben\nB anheben",
+    "Прочитать выбранный\nПрочитать все\nПодтвердить выбранный\nПодтвердить все\nИсходное положение магазина\nПоднять A\nПоднять B",
+    "選択を読込\nすべて読込\n選択を確認\nすべて確認\nラック原点復帰\nA を上昇\nB を上昇",
+    "선택 항목 읽기\n모두 읽기\n선택 항목 확인\n모두 확인\n랙 원점 복귀\nA 올리기\nB 올리기"
+  ],
+  "Confirm": [
+    "确认",
+    "確認",
+    "Confirm",
+    "OK",
+    "OK",
+    "OK",
+    "確認",
+    "확인"
+  ],
+  "Device busy or state changed.": [
+    "设备忙或状态已变更",
+    "設備忙或狀態已變更",
+    "Device busy or state changed.",
+    "Appareil occupé ou état modifié.",
+    "Gerät beschäftigt oder Zustand geändert.",
+    "Устройство занято или состояние изменилось.",
+    "処理中、または状態が変わりました。",
+    "장치 사용 중이거나 상태가 변경되었습니다."
+  ],
+  "Chamber": [
+    "仓温",
+    "倉溫",
+    "Chamber",
+    "Enceinte",
+    "Kammer",
+    "Камера",
+    "庫内",
+    "챔버"
+  ],
+  "* active nozzle": [
+    "* 当前喷头",
+    "* 當前噴頭",
+    "* active nozzle",
+    "* buse active",
+    "* aktive Düse",
+    "* активное сопло",
+    "* 使用中のノズル",
+    "* 사용 중인 노즐"
+  ],
+  "Switch nozzle": [
+    "切换喷头",
+    "切換噴頭",
+    "Switch nozzle",
+    "Changer la buse",
+    "Düse wechseln",
+    "Сменить сопло",
+    "ノズル切替",
+    "노즐 전환"
+  ],
+  "Extrude +10mm": [
+    "挤出 +10mm",
+    "擠出 +10mm",
+    "Extrude +10mm",
+    "Extruder +10mm",
+    "Fördern +10mm",
+    "Подать +10mm",
+    "押出 +10mm",
+    "압출 +10mm"
+  ],
+  "Retract -10mm": [
+    "回抽 -10mm",
+    "回抽 -10mm",
+    "Retract -10mm",
+    "Rétracter -10mm",
+    "Einziehen -10mm",
+    "Втянуть -10mm",
+    "引戻 -10mm",
+    "후퇴 -10mm"
+  ],
+  "Nozzle control": [
+    "喷头控制",
+    "噴頭控制",
+    "Nozzle control",
+    "Commande des buses",
+    "Düsensteuerung",
+    "Управление соплом",
+    "ノズル操作",
+    "노즐 제어"
+  ],
+  "More": [
+    "更多",
+    "更多",
+    "More",
+    "Plus",
+    "Mehr",
+    "Ещё",
+    "詳細",
+    "더 보기"
+  ],
+  "Home axes? Toolhead will move.": [
+    "归位？打印头将移动",
+    "歸位？打印頭將移動",
+    "Home axes? Toolhead will move.",
+    "Origine des axes ? La tête va bouger.",
+    "Achsen referenzieren? Druckkopf bewegt sich.",
+    "Вернуть оси в исходное положение? Головка будет двигаться.",
+    "原点復帰しますか？ヘッドが動きます。",
+    "원점 복귀할까요? 헤드가 움직입니다."
+  ],
+  "Tap to return": [
+    "点击返回设置",
+    "點擊返回設置",
+    "Tap to return",
+    "Toucher pour revenir",
+    "Tippen für zurück",
+    "Нажмите для возврата",
+    "タップして戻る",
+    "눌러서 돌아가기"
+  ],
+  "Back to settings": [
+    "返回设置",
+    "返回設置",
+    "Back to settings",
+    "Réglages",
+    "Einstellungen",
+    "Настройки",
+    "設定へ戻る",
+    "설정으로"
+  ],
+  "Reset device? SD backup remains.": [
+    "重置设备？保留SD备份",
+    "重置設備？保留SD備份",
+    "Reset device? SD backup remains.",
+    "Réinitialiser ? Sauvegarde SD conservée.",
+    "Zurücksetzen? SD-Sicherung bleibt.",
+    "Сбросить? Копия SD останется.",
+    "初期化しますか？SD バックアップは残ります。",
+    "초기화할까요? SD 백업은 유지됩니다."
+  ],
+  "Web management / QR": [
+    "网页管理 / 扫码",
+    "網頁管理 / 掃碼",
+    "Web management / QR",
+    "Gestion web / QR",
+    "Web-Verwaltung / QR",
+    "Веб-управление / QR",
+    "Web 管理 / QR",
+    "웹 관리 / QR"
+  ],
+  "Wi-Fi setup / QR": [
+    "Wi-Fi 配网 / 扫码",
+    "Wi-Fi 配網 / 掃碼",
+    "Wi-Fi setup / QR",
+    "Wi-Fi / QR",
+    "Wi-Fi / QR",
+    "Wi-Fi / QR",
+    "Wi-Fi 設定 / QR",
+    "Wi-Fi 설정 / QR"
+  ],
+  "Nozzle": [
+    "喷头",
+    "噴頭",
+    "Nozzle",
+    "Buse",
+    "Düse",
+    "Сопло",
+    "ノズル",
+    "노즐"
+  ],
+  "Bed": [
+    "热床",
+    "熱牀",
+    "Bed",
+    "Plateau",
+    "Druckbett",
+    "Стол",
+    "ベッド",
+    "베드"
+  ],
+  "Off": [
+    "已停止",
+    "已停止",
+    "Off",
+    "Arrêt",
+    "Aus",
+    "Выкл.",
+    "停止",
+    "끔"
+  ],
+  "Checking": [
+    "检查中",
+    "檢查中",
+    "Checking",
+    "Vérification",
+    "Prüfen",
+    "Проверка",
+    "確認中",
+    "확인 중"
+  ],
+  "Drying": [
+    "烘干中",
+    "烘乾中",
+    "Drying",
+    "Séchage",
+    "Trocknen",
+    "Сушка",
+    "乾燥中",
+    "건조 중"
+  ],
+  "Cooling": [
+    "冷却中",
+    "冷卻中",
+    "Cooling",
+    "Refroidissement",
+    "Abkühlen",
+    "Охлаждение",
+    "冷却中",
+    "냉각 중"
+  ],
+  "Stopping": [
+    "停止中",
+    "停止中",
+    "Stopping",
+    "Arrêt en cours",
+    "Stoppen",
+    "Остановка",
+    "停止中",
+    "중지 중"
+  ],
+  "Error": [
+    "故障",
+    "故障",
+    "Error",
+    "Erreur",
+    "Fehler",
+    "Ошибка",
+    "エラー",
+    "오류"
+  ],
+  "Test": [
+    "测试",
+    "測試",
+    "Test",
+    "Test",
+    "Test",
+    "Тест",
+    "テスト",
+    "테스트"
+  ],
+  "Request sent. Waiting for device.": [
+    "请求已发送，等待设备响应",
+    "請求已發送，等待設備響應",
+    "Request sent. Waiting for device.",
+    "Requête envoyée. Attente de l’appareil.",
+    "Anfrage gesendet. Warte auf Gerät.",
+    "Запрос отправлен. Ожидание устройства.",
+    "送信済み。応答を待っています。",
+    "요청 전송됨. 장치 응답을 기다립니다."
+  ],
+  "Device accepted the request.": [
+    "设备已接受请求",
+    "設備已接受請求",
+    "Device accepted the request.",
+    "Requête acceptée.",
+    "Gerät hat Anfrage angenommen.",
+    "Устройство приняло запрос.",
+    "デバイスが要求を受け付けました。",
+    "장치가 요청을 수락했습니다."
+  ],
+  "Timed out. Check the device state.": [
+    "等待超时，请检查设备状态",
+    "等待超時，請檢查設備狀態",
+    "Timed out. Check the device state.",
+    "Délai dépassé. Vérifiez l’appareil.",
+    "Zeitüberschreitung. Gerätestatus prüfen.",
+    "Время истекло. Проверьте устройство.",
+    "タイムアウトしました。状態を確認してください。",
+    "시간 초과. 장치 상태를 확인하세요."
+  ],
+  "Set 0-300C": [
+    "设温 0-300C",
+    "設溫 0-300C",
+    "Set 0-300C",
+    "Régler 0-300C",
+    "Sollwert 0-300C",
+    "Нагрев 0-300C",
+    "設定 0-300C",
+    "설정 0-300C"
+  ],
+  "Hotend rack": [
+    "热端仓",
+    "熱端倉",
+    "Hotend rack",
+    "Magasin de buses",
+    "Hotendmagazin",
+    "Магазин хотэндов",
+    "ホットエンドラック",
+    "핫엔드 랙"
+  ],
+  "Chamber 0-65C": [
+    "仓温 0-65C",
+    "倉溫 0-65C",
+    "Chamber 0-65C",
+    "Enceinte 0-65C",
+    "Kammer 0-65C",
+    "Камера 0-65C",
+    "庫内 0-65C",
+    "챔버 0-65C"
+  ],
+  "Chamber 0-60C": [
+    "仓温 0-60C",
+    "倉溫 0-60C",
+    "Chamber 0-60C",
+    "Enceinte 0-60C",
+    "Kammer 0-60C",
+    "Камера 0-60C",
+    "庫内 0-60C",
+    "챔버 0-60C"
+  ],
+  "Scan to join Wi-Fi": [
+    "扫码连接 Wi-Fi",
+    "掃碼連接 Wi-Fi",
+    "Scan to join Wi-Fi",
+    "Scanner pour le Wi-Fi",
+    "Für Wi-Fi scannen",
+    "Сканируйте для Wi-Fi",
+    "スキャンして Wi-Fi 設定",
+    "스캔하여 Wi-Fi 설정"
+  ],
+  "Scan to manage": [
+    "扫码管理",
+    "掃碼管理",
+    "Scan to manage",
+    "Scanner pour gérer",
+    "Zur Verwaltung scannen",
+    "Сканируйте для управления",
+    "スキャンして管理",
+    "스캔하여 관리"
+  ],
+  "Close": [
+    "关闭",
+    "關閉",
+    "Close",
+    "Fermer",
+    "Schließen",
+    "Закрыть",
+    "閉じる",
+    "닫기"
+  ],
+  "Control request rejected.": [
+    "控制请求被拒绝",
+    "控制請求被拒絕",
+    "Control request rejected.",
+    "Requête de commande refusée.",
+    "Steueranfrage abgelehnt.",
+    "Запрос управления отклонён.",
+    "操作要求が拒否されました。",
+    "제어 요청이 거부되었습니다."
+  ],
+  "Request could not be sent. Check the connection.": [
+    "控制请求发送失败，请检查连接",
+    "控制請求傳送失敗，請檢查連線",
+    "Request could not be sent. Check the connection.",
+    "Envoi impossible. Vérifiez la connexion.",
+    "Senden fehlgeschlagen. Verbindung prüfen.",
+    "Не удалось отправить запрос. Проверьте соединение.",
+    "操作要求を送信できません。接続を確認してください。",
+    "제어 요청을 보내지 못했습니다. 연결을 확인하세요."
+  ],
+  "Touch sound": [
+    "触摸提示音",
+    "觸控提示音",
+    "Touch sound",
+    "Son tactile",
+    "Berührungston",
+    "Звук касания",
+    "タッチ音",
+    "터치음"
+  ],
+  "Warning sound": [
+    "警告提示音",
+    "警告提示音",
+    "Warning sound",
+    "Son d’alerte",
+    "Warnton",
+    "Звук предупреждений",
+    "警告音",
+    "경고음"
+  ],
+  "Volume": [
+    "音量",
+    "音量",
+    "Volume",
+    "Volume",
+    "Lautstärke",
+    "Громкость",
+    "音量",
+    "음량"
+  ],
+  "Sound": [
+    "声音",
+    "聲音",
+    "Sound",
+    "Son",
+    "Ton",
+    "Звук",
+    "サウンド",
+    "소리"
+  ],
+  "Standby": [
+    "待机",
+    "待機",
+    "Standby",
+    "Veille",
+    "Bereitschaft",
+    "Ожидание",
+    "待機",
+    "대기"
+  ],
+  "Printer": [
+    "打印机",
+    "印表機",
+    "Printer",
+    "Imprimante",
+    "Drucker",
+    "Принтер",
+    "プリンター",
+    "프린터"
+  ],
+  "System": [
+    "系统",
+    "系統",
+    "System",
+    "Système",
+    "System",
+    "Система",
+    "システム",
+    "시스템"
+  ],
+  "Scan to join Bluetooth": [
+    "扫码蓝牙配网",
+    "掃碼藍牙配網",
+    "Scan to join Bluetooth",
+    "Configurer Bluetooth",
+    "Bluetooth einrichten",
+    "Настройка Bluetooth",
+    "Bluetooth 設定",
+    "Bluetooth 설정"
+  ],
+  "Bluetooth setup / QR": [
+    "蓝牙配网 / 扫码",
+    "藍牙配網 / 掃碼",
+    "Bluetooth setup / QR",
+    "Bluetooth / QR",
+    "Bluetooth / QR",
+    "Bluetooth / QR",
+    "Bluetooth 設定 / QR",
+    "Bluetooth 설정 / QR"
+  ]
+}

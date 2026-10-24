@@ -1,0 +1,2342 @@
+{
+  "Request timed out. Retry.": [
+    "请求超时，请重试。",
+    "請求超時，請重試。",
+    "Request timed out. Retry.",
+    "Délai dépassé. Réessayez.",
+    "Zeitüberschreitung. Erneut versuchen.",
+    "Время ожидания истекло. Повторите.",
+    "タイムアウトしました。再試行してください。",
+    "시간 초과입니다. 다시 시도하세요."
+  ],
+  "Network connection interrupted. Retry.": [
+    "网络连接中断，请重试。",
+    "網絡連接中斷，請重試。",
+    "Network connection interrupted. Retry.",
+    "Connexion interrompue. Réessayez.",
+    "Verbindung unterbrochen. Erneut versuchen.",
+    "Соединение прервано. Повторите.",
+    "接続が切れました。再試行してください。",
+    "연결이 끊겼습니다. 다시 시도하세요."
+  ],
+  "Online": [
+    "在线",
+    "在線",
+    "Online",
+    "En ligne",
+    "Online",
+    "В сети",
+    "オンライン",
+    "온라인"
+  ],
+  "Waiting": [
+    "等待连接",
+    "等待連接",
+    "Waiting",
+    "En attente",
+    "Warten",
+    "Ожидание",
+    "待機中",
+    "대기 중"
+  ],
+  "Invalid device response. Reload to retry.": [
+    "设备返回异常，请刷新重试。",
+    "設備返回異常，請刷新重試。",
+    "Invalid device response. Reload to retry.",
+    "Réponse invalide. Rechargez la page.",
+    "Ungültige Antwort. Seite neu laden.",
+    "Неверный ответ. Обновите страницу.",
+    "応答が無効です。再読み込みしてください。",
+    "잘못된 응답입니다. 새로고침하세요."
+  ],
+  "Passwords do not match.": [
+    "两次密码不一致。",
+    "兩次密碼不一致。",
+    "Passwords do not match.",
+    "Les mots de passe diffèrent.",
+    "Passwörter stimmen nicht überein.",
+    "Пароли не совпадают.",
+    "パスワードが一致しません。",
+    "비밀번호가 일치하지 않습니다."
+  ],
+  "Password changed. Sign in again.": [
+    "密码已修改，请重新登录。",
+    "密碼已修改，請重新登錄。",
+    "Password changed. Sign in again.",
+    "Mot de passe modifié. Reconnectez-vous.",
+    "Passwort geändert. Neu anmelden.",
+    "Пароль изменён. Войдите снова.",
+    "パスワードを変更しました。再ログインしてください。",
+    "비밀번호가 변경되었습니다. 다시 로그인하세요."
+  ],
+  "Bambu account": [
+    "拓竹账号",
+    "拓竹賬號",
+    "Bambu account",
+    "Compte Bambu",
+    "Bambu-Konto",
+    "Учётная запись Bambu",
+    "Bambu アカウント",
+    "Bambu 계정"
+  ],
+  "New device": [
+    "新设备",
+    "新設備",
+    "New device",
+    "Nouvel appareil",
+    "Neues Gerät",
+    "Новое устройство",
+    "新しいデバイス",
+    "새 장치"
+  ],
+  "Account expired. Sign in again.": [
+    "账号已失效，请重新登录。",
+    "賬號已失效，請重新登錄。",
+    "Account expired. Sign in again.",
+    "Session expirée. Reconnectez-vous.",
+    "Konto abgelaufen. Neu anmelden.",
+    "Сеанс истёк. Войдите снова.",
+    "認証の期限切れです。再ログインしてください。",
+    "인증이 만료되었습니다. 다시 로그인하세요."
+  ],
+  "English letters, numbers and ASCII symbols only": [
+    "仅限英文字母、数字和英文符号",
+    "僅限英文字母、數字和英文符號",
+    "English letters, numbers and ASCII symbols only",
+    "Lettres latines, chiffres et symboles ASCII uniquement",
+    "Nur ASCII-Buchstaben, Ziffern und Symbole",
+    "Только латинские буквы, цифры и символы ASCII",
+    "英数字と半角記号のみ使用できます",
+    "영문, 숫자, 반각 기호만 사용할 수 있습니다"
+  ],
+  "Double-click to edit; F2 or Enter with keyboard": [
+    "双击修改；键盘按 F2 或 Enter",
+    "雙擊修改；鍵盤按 F2 或 Enter",
+    "Double-click to edit; F2 or Enter with keyboard",
+    "Double-clic pour modifier ; F2 ou Entrée au clavier",
+    "Doppelklick zum Bearbeiten; F2 oder Eingabe",
+    "Двойной щелчок для правки; F2 или Enter",
+    "ダブルクリックで編集。キーボードは F2 または Enter",
+    "두 번 클릭하여 편집. 키보드는 F2 또는 Enter"
+  ],
+  "Device information": [
+    "设备信息",
+    "設備信息",
+    "Device information",
+    "Informations de l’appareil",
+    "Geräteinformationen",
+    "Сведения об устройстве",
+    "デバイス情報",
+    "장치 정보"
+  ],
+  "Device name": [
+    "设备名称",
+    "設備名稱",
+    "Device name",
+    "Nom de l’appareil",
+    "Gerätename",
+    "Имя устройства",
+    "デバイス名",
+    "장치 이름"
+  ],
+  "Double-click existing fields or press F2. Names: ASCII letters, numbers and symbols.": [
+    "已有设备双击编辑，或聚焦后按 F2；名称仅限英文、数字和符号。",
+    "已有設備雙擊編輯，或聚焦後按 F2；名稱僅限英文、數字和符號。",
+    "Double-click existing fields or press F2. Names: ASCII letters, numbers and symbols.",
+    "Double-cliquez ou appuyez sur F2. Noms : caractères ASCII uniquement.",
+    "Doppelklick oder F2. Namen: nur ASCII-Zeichen.",
+    "Для правки: двойной щелчок или F2. Имена: только ASCII.",
+    "既存の項目はダブルクリックまたは F2 で編集。名前は半角英数字・記号のみ。",
+    "두 번 클릭 또는 F2로 편집. 이름은 영문·숫자·반각 기호만 사용하세요."
+  ],
+  "Device model": [
+    "设备型号",
+    "設備型號",
+    "Device model",
+    "Modèle",
+    "Gerätemodell",
+    "Модель",
+    "機種",
+    "모델"
+  ],
+  "Connection": [
+    "连接状态",
+    "連接狀態",
+    "Connection",
+    "Connexion",
+    "Verbindung",
+    "Подключение",
+    "接続状態",
+    "연결 상태"
+  ],
+  "Serial number": [
+    "序列号",
+    "序列號",
+    "Serial number",
+    "Numéro de série",
+    "Seriennummer",
+    "Серийный номер",
+    "シリアル番号",
+    "일련번호"
+  ],
+  "Select model": [
+    "请选择型号",
+    "請選擇型號",
+    "Select model",
+    "Choisir le modèle",
+    "Modell wählen",
+    "Выберите модель",
+    "機種を選択",
+    "모델 선택"
+  ],
+  "IP / hostname": [
+    "IP / 主机名",
+    "IP / 主機名",
+    "IP / hostname",
+    "IP / nom d’hôte",
+    "IP / Hostname",
+    "IP / имя хоста",
+    "IP / ホスト名",
+    "IP / 호스트명"
+  ],
+  "Access code (blank to keep)": [
+    "访问码（留空保留）",
+    "訪問碼（留空保留）",
+    "Access code (blank to keep)",
+    "Code d’accès (vide : conserver)",
+    "Zugriffscode (leer: behalten)",
+    "Код доступа (пусто: сохранить)",
+    "アクセスコード（空欄で維持）",
+    "접근 코드 (빈칸: 유지)"
+  ],
+  "LAN mode": [
+    "局域网模式",
+    "局域網模式",
+    "LAN mode",
+    "Mode LAN",
+    "LAN-Modus",
+    "Режим LAN",
+    "LAN モード",
+    "LAN 모드"
+  ],
+  "Maximum 100 devices.": [
+    "最多 100 台。",
+    "最多 100 臺。",
+    "Maximum 100 devices.",
+    "100 appareils au maximum.",
+    "Maximal 100 Geräte.",
+    "Не более 100 устройств.",
+    "最大 100 台です。",
+    "최대 100대입니다."
+  ],
+  "Re-enter password": [
+    "重输密码",
+    "重輸密碼",
+    "Re-enter",
+    "À ressaisir",
+    "Neu eingeben",
+    "Ввести снова",
+    "再入力",
+    "재입력"
+  ],
+  "Password saved": [
+    "密码已存",
+    "密碼已存",
+    "Saved",
+    "Mémorisé",
+    "Gemerkt",
+    "Сохранён",
+    "保存済み",
+    "저장됨"
+  ],
+  "Password not saved": [
+    "密码未存",
+    "密碼未存",
+    "Not saved",
+    "Non mémorisé",
+    "Nicht gemerkt",
+    "Не сохранён",
+    "未保存",
+    "미저장"
+  ],
+  "Sign in": [
+    "登录",
+    "登錄",
+    "Sign in",
+    "Connexion",
+    "Anmelden",
+    "Войти",
+    "ログイン",
+    "로그인"
+  ],
+  "Valid": [
+    "有效",
+    "有效",
+    "Valid",
+    "Valide",
+    "Gültig",
+    "Действует",
+    "有効",
+    "유효"
+  ],
+  "Unchecked": [
+    "待检查",
+    "待檢查",
+    "Unchecked",
+    "Non vérifié",
+    "Ungeprüft",
+    "Не проверено",
+    "未確認",
+    "미확인"
+  ],
+  "Signed out": [
+    "未登录",
+    "未登錄",
+    "Signed out",
+    "Déconnecté",
+    "Abgemeldet",
+    "Выход выполнен",
+    "ログアウト済み",
+    "미로그인"
+  ],
+  "Clear login": [
+    "清除登录",
+    "清除登入",
+    "Clear login",
+    "Effacer",
+    "Abmelden",
+    "Сброс входа",
+    "認証解除",
+    "인증 해제"
+  ],
+  "Delete account": [
+    "删除账号",
+    "刪除帳號",
+    "Delete",
+    "Supprimer",
+    "Löschen",
+    "Удалить",
+    "削除",
+    "삭제"
+  ],
+  "Remove linked devices first.": [
+    "请先移除关联设备。",
+    "請先移除關聯設備。",
+    "Remove linked devices first.",
+    "Retirez d’abord les appareils liés.",
+    "Zuerst verknüpfte Geräte entfernen.",
+    "Сначала удалите связанные устройства.",
+    "先に関連デバイスを削除してください。",
+    "연결된 장치를 먼저 삭제하세요."
+  ],
+  "Label": [
+    "备注",
+    "備註",
+    "Label",
+    "Libellé",
+    "Bezeichnung",
+    "Название",
+    "表示名",
+    "표시 이름"
+  ],
+  "Region": [
+    "区域",
+    "區域",
+    "Region",
+    "Région",
+    "Region",
+    "Регион",
+    "地域",
+    "지역"
+  ],
+  "China": [
+    "中国区",
+    "中國區",
+    "China",
+    "Chine",
+    "China",
+    "Китай",
+    "中国",
+    "중국"
+  ],
+  "Global": [
+    "国际区",
+    "國際區",
+    "Global",
+    "International",
+    "International",
+    "Международный",
+    "グローバル",
+    "글로벌"
+  ],
+  "Account sign-in": [
+    "账号登录",
+    "帳號登入",
+    "Account",
+    "Compte",
+    "Konto",
+    "Аккаунт",
+    "アカウント",
+    "계정"
+  ],
+  "Phone / email": [
+    "手机号／邮箱",
+    "手機號／郵箱",
+    "Phone / email",
+    "Téléphone / e-mail",
+    "Telefon / E-Mail",
+    "Телефон / эл. почта",
+    "電話番号 / メール",
+    "전화번호 / 이메일"
+  ],
+  "Password (password sign-in only)": [
+    "密码",
+    "密碼",
+    "Password",
+    "Mot de passe",
+    "Passwort",
+    "Пароль",
+    "パスワード",
+    "비밀번호"
+  ],
+  "Saved; leave blank to use": [
+    "已存；留空使用",
+    "已存；留空使用",
+    "Saved; blank to use",
+    "Mémorisé ; vide",
+    "Gespeichert; leer lassen",
+    "Сохранён; пусто",
+    "保存済み。空欄で使用",
+    "저장됨. 빈칸이면 사용"
+  ],
+  "Password": [
+    "密码",
+    "密碼",
+    "Password",
+    "Mot de passe",
+    "Passwort",
+    "Пароль",
+    "パスワード",
+    "비밀번호"
+  ],
+  "Password sign-in": [
+    "密码登录",
+    "密碼登入",
+    "Password",
+    "Mot de passe",
+    "Passwort",
+    "По паролю",
+    "パスワード",
+    "비밀번호"
+  ],
+  "Enter account and password.": [
+    "请填写账号和密码。",
+    "請填寫賬號和密碼。",
+    "Enter account and password.",
+    "Saisissez le compte et le mot de passe.",
+    "Konto und Passwort eingeben.",
+    "Введите учётную запись и пароль.",
+    "アカウントとパスワードを入力してください。",
+    "계정과 비밀번호를 입력하세요."
+  ],
+  "Sign in with code": [
+    "验证码登录",
+    "驗證碼登入",
+    "Code",
+    "Code",
+    "Code",
+    "По коду",
+    "確認コード",
+    "인증 코드"
+  ],
+  "Enter phone or email.": [
+    "请填写手机号或邮箱。",
+    "請填寫手機號或郵箱。",
+    "Enter phone or email.",
+    "Saisissez le téléphone ou l’e-mail.",
+    "Telefon oder E-Mail eingeben.",
+    "Введите телефон или эл. почту.",
+    "電話番号またはメールを入力してください。",
+    "전화번호 또는 이메일을 입력하세요."
+  ],
+  "Authenticator code": [
+    "身份验证器验证码",
+    "身份驗證器驗證碼",
+    "Authenticator code",
+    "Code d’authentification",
+    "Authenticator-Code",
+    "Код аутентификатора",
+    "認証アプリのコード",
+    "인증 앱 코드"
+  ],
+  "Verification code": [
+    "验证码",
+    "驗證碼",
+    "Verification code",
+    "Code de vérification",
+    "Bestätigungscode",
+    "Код подтверждения",
+    "確認コード",
+    "인증 코드"
+  ],
+  "Confirm sign-in": [
+    "确认登录",
+    "確認登錄",
+    "Confirm sign-in",
+    "Confirmer la connexion",
+    "Anmeldung bestätigen",
+    "Подтвердить вход",
+    "ログインを確認",
+    "로그인 확인"
+  ],
+  "Saved; blank to keep": [
+    "已保存；留空保留",
+    "已保存；留空保留",
+    "Saved; blank to keep",
+    "Mémorisé ; vide pour conserver",
+    "Gespeichert; leer zum Behalten",
+    "Сохранено; пусто для сохранения",
+    "保存済み。空欄で維持",
+    "저장됨. 빈칸이면 유지"
+  ],
+  "Validate & get devices": [
+    "验证并获取设备",
+    "驗證並獲取設備",
+    "Validate & get devices",
+    "Valider et obtenir les appareils",
+    "Prüfen und Geräte laden",
+    "Проверить и получить устройства",
+    "検証してデバイスを取得",
+    "검증 및 장치 가져오기"
+  ],
+  "Linked devices": [
+    "关联设备",
+    "關聯設備",
+    "Linked devices",
+    "Appareils liés",
+    "Verknüpfte Geräte",
+    "Связанные устройства",
+    "関連デバイス",
+    "연결된 장치"
+  ],
+  "Refresh devices": [
+    "刷新设备",
+    "刷新設備",
+    "Refresh devices",
+    "Actualiser les appareils",
+    "Geräte aktualisieren",
+    "Обновить устройства",
+    "デバイスを更新",
+    "장치 새로고침"
+  ],
+  " · Offline": [
+    " · 离线",
+    " · 離線",
+    " · Offline",
+    " · Hors ligne",
+    " · Offline",
+    " · Не в сети",
+    " · オフライン",
+    " · 오프라인"
+  ],
+  "Contacting Bambu. Please wait…": [
+    "正在联系拓竹服务，请等待结果…",
+    "正在聯繫拓竹服務，請等待結果…",
+    "Contacting Bambu. Please wait…",
+    "Connexion à Bambu. Patientez…",
+    "Verbindung zu Bambu. Bitte warten…",
+    "Подключение к Bambu. Подождите…",
+    "Bambu に接続中です…",
+    "Bambu에 연결 중입니다…"
+  ],
+  "Code sent. Enter the verification code.": [
+    "验证码已发送，请填写收到的验证码。",
+    "驗證碼已發送，請填寫收到的驗證碼。",
+    "Code sent. Enter the verification code.",
+    "Code envoyé. Saisissez-le.",
+    "Code gesendet. Bitte eingeben.",
+    "Код отправлен. Введите его.",
+    "確認コードを送信しました。入力してください。",
+    "코드를 보냈습니다. 인증 코드를 입력하세요."
+  ],
+  "Signed in. Fetching devices…": [
+    "登录成功，正在获取设备…",
+    "登錄成功，正在獲取設備…",
+    "Signed in. Fetching devices…",
+    "Connecté. Chargement des appareils…",
+    "Angemeldet. Geräte werden geladen…",
+    "Вход выполнен. Загрузка устройств…",
+    "ログイン済み。デバイスを取得中…",
+    "로그인 완료. 장치를 가져오는 중…"
+  ],
+  "Request timed out. Retry later.": [
+    "请求超时，请稍后重试。",
+    "請求超時，請稍後重試。",
+    "Request timed out. Retry later.",
+    "Délai dépassé. Réessayez plus tard.",
+    "Zeitüberschreitung. Später versuchen.",
+    "Время ожидания истекло. Повторите позже.",
+    "タイムアウトしました。しばらくして再試行してください。",
+    "시간 초과입니다. 잠시 후 다시 시도하세요."
+  ],
+  "Custom names allow ASCII letters, numbers and symbols only.": [
+    "自定义名称仅限英文、数字和英文符号。",
+    "自定義名稱僅限英文、數字和英文符號。",
+    "Custom names allow ASCII letters, numbers and symbols only.",
+    "Noms : lettres latines, chiffres et symboles ASCII uniquement.",
+    "Namen: nur ASCII-Buchstaben, Ziffern und Symbole.",
+    "Имена: только латинские буквы, цифры и символы ASCII.",
+    "名前は半角英数字・記号のみ使用できます。",
+    "이름은 영문, 숫자, 반각 기호만 사용할 수 있습니다."
+  ],
+  "Saved. Restarting; reload shortly.": [
+    "已保存，设备正在重启；请稍后刷新。",
+    "已保存，設備正在重啓；請稍後刷新。",
+    "Saved. Restarting; reload shortly.",
+    "Enregistré. Redémarrage ; rechargez ensuite.",
+    "Gespeichert. Neustart; danach neu laden.",
+    "Сохранено. Перезапуск; затем обновите страницу.",
+    "保存しました。再起動後に再読み込みしてください。",
+    "저장되었습니다. 재시작 후 새로고침하세요."
+  ],
+  "Wi-Fi saved. Restarting.": [
+    "配网已保存，设备正在重启。",
+    "配網已保存，設備正在重啓。",
+    "Wi-Fi saved. Restarting.",
+    "Wi-Fi enregistré. Redémarrage.",
+    "Wi-Fi gespeichert. Neustart.",
+    "Wi-Fi сохранён. Перезапуск.",
+    "Wi-Fi を保存しました。再起動します。",
+    "Wi-Fi가 저장되었습니다. 재시작합니다."
+  ],
+  "Reset internal settings and admin password? SD backups remain; Bambu account passwords must be re-entered.": [
+    "重置内部配置和管理密码？SD 备份将保留；拓竹账号密码需重新输入。",
+    "重置內部配置和管理密碼？SD 備份將保留；拓竹賬號密碼需重新輸入。",
+    "Reset internal settings and admin password? SD backups remain; Bambu account passwords must be re-entered.",
+    "Réinitialiser les réglages et le mot de passe admin ? Sauvegardes SD conservées ; mots de passe des comptes Bambu à ressaisir.",
+    "Einstellungen und Admin-Passwort zurücksetzen? SD-Sicherungen bleiben; Passwörter der Bambu-Konten neu eingeben.",
+    "Сбросить настройки и пароль администратора? Копии SD останутся; пароли учётных записей Bambu нужно ввести снова.",
+    "設定と管理パスワードを初期化しますか？SD バックアップは残ります。Bambu アカウントのパスワードは再入力が必要です。",
+    "설정과 관리 비밀번호를 초기화할까요? SD 백업은 유지됩니다. Bambu 계정 비밀번호는 다시 입력해야 합니다."
+  ],
+  "Resetting and restarting.": [
+    "正在重置并重启。",
+    "正在重置並重啓。",
+    "Resetting and restarting.",
+    "Réinitialisation et redémarrage.",
+    "Zurücksetzen und Neustart.",
+    "Сброс и перезапуск.",
+    "初期化して再起動します。",
+    "초기화 후 재시작합니다."
+  ],
+  "Choose application firmware.": [
+    "请选择应用固件。",
+    "請選擇應用固件。",
+    "Choose application firmware.",
+    "Choisissez le micrologiciel applicatif.",
+    "Anwendungsfirmware wählen.",
+    "Выберите прошивку приложения.",
+    "アプリ用ファームウェアを選択してください。",
+    "앱 펌웨어를 선택하세요."
+  ],
+  "Install this firmware and restart?": [
+    "上传此固件并重启？",
+    "上傳此固件並重啓？",
+    "Install this firmware and restart?",
+    "Installer ce micrologiciel et redémarrer ?",
+    "Diese Firmware installieren und neu starten?",
+    "Установить прошивку и перезапустить?",
+    "このファームウェアを適用して再起動しますか？",
+    "이 펌웨어를 설치하고 재시작할까요?"
+  ],
+  "Updated. Restarting.": [
+    "升级成功，正在重启。",
+    "升級成功，正在重啓。",
+    "Updated. Restarting.",
+    "Mise à jour terminée. Redémarrage.",
+    "Aktualisiert. Neustart.",
+    "Обновлено. Перезапуск.",
+    "更新しました。再起動します。",
+    "업데이트 완료. 재시작합니다."
+  ],
+  "Upload interrupted. Retry.": [
+    "上传中断，请重试。",
+    "上傳中斷，請重試。",
+    "Upload interrupted. Retry.",
+    "Transfert interrompu. Réessayez.",
+    "Upload unterbrochen. Erneut versuchen.",
+    "Загрузка прервана. Повторите.",
+    "アップロードが中断されました。再試行してください。",
+    "업로드가 중단되었습니다. 다시 시도하세요."
+  ],
+  "Backup file too large.": [
+    "备份文件过大。",
+    "備份文件過大。",
+    "Backup file too large.",
+    "Sauvegarde trop volumineuse.",
+    "Sicherungsdatei zu groß.",
+    "Файл резервной копии слишком велик.",
+    "バックアップファイルが大きすぎます。",
+    "백업 파일이 너무 큽니다."
+  ],
+  "Invalid configuration backup.": [
+    "配置备份格式错误。",
+    "配置備份格式錯誤。",
+    "Invalid configuration backup.",
+    "Sauvegarde de configuration invalide.",
+    "Ungültige Konfigurationssicherung.",
+    "Неверная резервная копия настроек.",
+    "設定バックアップが無効です。",
+    "잘못된 설정 백업입니다."
+  ],
+  "Session expired. Sign in again.": [
+    "登录已失效，请重新登录。",
+    "登錄已失效，請重新登錄。",
+    "Session expired. Sign in again.",
+    "Session expirée. Reconnectez-vous.",
+    "Sitzung abgelaufen. Neu anmelden.",
+    "Сеанс истёк. Войдите снова.",
+    "セッションの期限切れです。再ログインしてください。",
+    "세션이 만료되었습니다. 다시 로그인하세요."
+  ],
+  "Too many attempts. Retry shortly.": [
+    "尝试过多，请稍后重试。",
+    "嘗試過多，請稍後重試。",
+    "Too many attempts. Retry shortly.",
+    "Trop de tentatives. Patientez.",
+    "Zu viele Versuche. Kurz warten.",
+    "Слишком много попыток. Подождите.",
+    "試行回数が多すぎます。しばらくお待ちください。",
+    "시도 횟수가 많습니다. 잠시 기다리세요."
+  ],
+  "Origin mismatch. Reopen the device address.": [
+    "访问来源不匹配，请通过设备地址重新打开。",
+    "訪問來源不匹配，請通過設備地址重新打開。",
+    "Origin mismatch. Reopen the device address.",
+    "Origine incorrecte. Rouvrez l’adresse de l’appareil.",
+    "Herkunft stimmt nicht. Geräteadresse neu öffnen.",
+    "Источник не совпадает. Откройте адрес устройства заново.",
+    "アクセス元が一致しません。デバイスのアドレスを開き直してください。",
+    "접속 출처가 다릅니다. 장치 주소를 다시 여세요."
+  ],
+  "Session changed. Reload to retry.": [
+    "页面会话已更新，请刷新后重试。",
+    "頁面會話已更新，請刷新後重試。",
+    "Session changed. Reload to retry.",
+    "Session modifiée. Rechargez la page.",
+    "Sitzung geändert. Seite neu laden.",
+    "Сеанс изменён. Обновите страницу.",
+    "セッションが変わりました。再読み込みしてください。",
+    "세션이 변경되었습니다. 새로고침하세요."
+  ],
+  "Change the initial password first.": [
+    "请先修改初始管理密码。",
+    "請先修改初始管理密碼。",
+    "Change the initial password first.",
+    "Modifiez d’abord le mot de passe initial.",
+    "Zuerst das Standardpasswort ändern.",
+    "Сначала измените начальный пароль.",
+    "最初に初期パスワードを変更してください。",
+    "초기 비밀번호를 먼저 변경하세요."
+  ],
+  "Use 8–64 bytes and change the default password.": [
+    "密码须为8–64字节，且不能使用初始密码。",
+    "密碼須爲8–64字節，且不能使用初始密碼。",
+    "Use 8–64 bytes and change the default password.",
+    "Utilisez 8–64 octets et changez le mot de passe initial.",
+    "8–64 Bytes verwenden; Standardpasswort ändern.",
+    "Используйте 8–64 байта; измените пароль по умолчанию.",
+    "8～64 バイトで、初期値と異なるパスワードを設定してください。",
+    "8~64바이트로 기본값과 다른 비밀번호를 설정하세요."
+  ],
+  "Invalid request format.": [
+    "请求格式错误。",
+    "請求格式錯誤。",
+    "Invalid request format.",
+    "Format de requête invalide.",
+    "Ungültiges Anfrageformat.",
+    "Неверный формат запроса.",
+    "リクエスト形式が無効です。",
+    "잘못된 요청 형식입니다."
+  ],
+  "Invalid or oversized configuration.": [
+    "配置不完整或超出设备限制。",
+    "配置不完整或超出設備限制。",
+    "Configuration incomplete or over device limits.",
+    "Configuration incomplète ou limites de l’appareil dépassées.",
+    "Konfiguration unvollständig oder Gerätelimit überschritten.",
+    "Настройки неполны или превышают лимиты устройства.",
+    "設定が不完全、またはデバイスの上限を超えています。",
+    "설정이 불완전하거나 장치 한도를 초과했습니다."
+  ],
+  "Check setting ranges.": [
+    "请检查设置的范围。",
+    "請檢查設置的範圍。",
+    "Check setting ranges.",
+    "Vérifiez les plages des réglages.",
+    "Einstellbereiche prüfen.",
+    "Проверьте диапазоны настроек.",
+    "設定値の範囲を確認してください。",
+    "설정값 범위를 확인하세요."
+  ],
+  "Check the Wi-Fi name and password.": [
+    "请检查Wi-Fi名称和密码。",
+    "請檢查Wi-Fi名稱和密碼。",
+    "Check the Wi-Fi name and password.",
+    "Vérifiez le nom et le mot de passe Wi-Fi.",
+    "Wi-Fi-Name und Passwort prüfen.",
+    "Проверьте имя и пароль Wi-Fi.",
+    "Wi-Fi 名とパスワードを確認してください。",
+    "Wi-Fi 이름과 비밀번호를 확인하세요."
+  ],
+  "Save failed. Check storage space.": [
+    "保存失败，请检查存储空间。",
+    "保存失敗，請檢查存儲空間。",
+    "Save failed. Check storage space.",
+    "Échec d’enregistrement. Vérifiez l’espace libre.",
+    "Speichern fehlgeschlagen. Speicher prüfen.",
+    "Не удалось сохранить. Проверьте память.",
+    "保存できません。空き容量を確認してください。",
+    "저장 실패. 저장 공간을 확인하세요."
+  ],
+  "Settings could not be saved. Retry.": [
+    "设置保存失败，请重试。",
+    "設置保存失敗，請重試。",
+    "Settings could not be saved. Retry.",
+    "Réglages non enregistrés. Réessayez.",
+    "Einstellungen nicht gespeichert. Erneut versuchen.",
+    "Настройки не сохранены. Повторите.",
+    "設定を保存できませんでした。再試行してください。",
+    "설정을 저장하지 못했습니다. 다시 시도하세요."
+  ],
+  "Low memory. Retry shortly.": [
+    "可用内存不足，请稍后重试。",
+    "可用內存不足，請稍後重試。",
+    "Low memory. Retry shortly.",
+    "Mémoire faible. Patientez.",
+    "Wenig Speicher. Kurz warten.",
+    "Мало памяти. Подождите.",
+    "メモリ不足です。しばらくして再試行してください。",
+    "메모리가 부족합니다. 잠시 후 다시 시도하세요."
+  ],
+  "Cloud request in progress. Please wait.": [
+    "云请求处理中，请稍候。",
+    "雲請求處理中，請稍候。",
+    "Cloud request in progress. Please wait.",
+    "Requête cloud en cours. Patientez.",
+    "Cloud-Anfrage läuft. Bitte warten.",
+    "Облачный запрос выполняется. Подождите.",
+    "クラウド処理中です。お待ちください。",
+    "클라우드 처리 중입니다. 기다려 주세요."
+  ],
+  "Device busy. Retry shortly.": [
+    "设备忙，请稍后重试。",
+    "設備忙，請稍後重試。",
+    "Device busy. Retry shortly.",
+    "Appareil occupé. Patientez.",
+    "Gerät beschäftigt. Kurz warten.",
+    "Устройство занято. Подождите.",
+    "デバイスが処理中です。しばらくお待ちください。",
+    "장치가 사용 중입니다. 잠시 후 다시 시도하세요."
+  ],
+  "Firmware failed.": [
+    "固件升级失败。",
+    "韌體升級失敗。",
+    "Firmware update failed.",
+    "Échec de la mise à jour du micrologiciel.",
+    "Firmware-Update fehlgeschlagen.",
+    "Ошибка обновления прошивки.",
+    "ファームウェアの更新に失敗しました。",
+    "펌웨어 업데이트에 실패했습니다."
+  ],
+  "Choose ESP32 application firmware.": [
+    "请选择ESP32应用固件。",
+    "請選擇ESP32應用固件。",
+    "Choose ESP32 application firmware.",
+    "Choisissez un micrologiciel applicatif ESP32.",
+    "ESP32-Anwendungsfirmware wählen.",
+    "Выберите прошивку приложения ESP32.",
+    "ESP32 のアプリ用ファームウェアを選択してください。",
+    "ESP32 앱 펌웨어를 선택하세요."
+  ],
+  "Upload one firmware image at a time.": [
+    "每次仅上传一个固件。",
+    "每次僅上傳一個固件。",
+    "Upload one firmware image at a time.",
+    "Transférez un seul micrologiciel à la fois.",
+    "Nur ein Firmware-Abbild gleichzeitig hochladen.",
+    "Загружайте один образ прошивки за раз.",
+    "ファームウェアは一度に 1 個だけ選択してください。",
+    "펌웨어 파일은 한 번에 하나만 올리세요."
+  ],
+  "Firmware write failed or image too large.": [
+    "固件写入失败或过大。",
+    "固件寫入失敗或過大。",
+    "Firmware write failed or image too large.",
+    "Écriture échouée ou image trop volumineuse.",
+    "Schreiben fehlgeschlagen oder Abbild zu groß.",
+    "Ошибка записи или слишком большой образ.",
+    "書き込み失敗、またはファイルが大きすぎます。",
+    "펌웨어 쓰기 실패 또는 파일이 너무 큽니다."
+  ],
+  "Unable to start update. Retry shortly.": [
+    "无法开始升级，请稍后重试。",
+    "無法開始升級，請稍後重試。",
+    "Unable to start update. Retry shortly.",
+    "Mise à jour impossible. Patientez.",
+    "Update kann nicht starten. Kurz warten.",
+    "Не удалось начать обновление. Подождите.",
+    "更新を開始できません。しばらくして再試行してください。",
+    "업데이트를 시작할 수 없습니다. 잠시 후 다시 시도하세요."
+  ],
+  "Firmware verification failed.": [
+    "固件校验失败。",
+    "固件校驗失敗。",
+    "Firmware verification failed.",
+    "Vérification du micrologiciel échouée.",
+    "Firmware-Prüfung fehlgeschlagen.",
+    "Проверка прошивки не пройдена.",
+    "ファームウェアの検証に失敗しました。",
+    "펌웨어 검증에 실패했습니다."
+  ],
+  "Upload interrupted.": [
+    "上传已中断。",
+    "上傳已中斷。",
+    "Upload interrupted.",
+    "Transfert interrompu.",
+    "Upload unterbrochen.",
+    "Загрузка прервана.",
+    "アップロードが中断されました。",
+    "업로드가 중단되었습니다."
+  ],
+  "Out of memory. Retry shortly.": [
+    "内存不足，请稍后重试。",
+    "內存不足，請稍後重試。",
+    "Out of memory. Retry shortly.",
+    "Mémoire insuffisante. Patientez.",
+    "Nicht genug Speicher. Kurz warten.",
+    "Недостаточно памяти. Подождите.",
+    "メモリ不足です。しばらくお待ちください。",
+    "메모리가 부족합니다. 잠시 기다리세요."
+  ],
+  "Confirm the reset operation.": [
+    "请确认重置操作。",
+    "請確認重置操作。",
+    "Confirm the reset operation.",
+    "Confirmez la réinitialisation.",
+    "Zurücksetzen bestätigen.",
+    "Подтвердите сброс.",
+    "初期化を確認してください。",
+    "초기화를 확인하세요."
+  ],
+  "Device key changed. Re-enter the password or import a token.": [
+    "设备密钥已更换，请重新输入账号密码或导入 Token。",
+    "設備密鑰已更換，請重新輸入賬號密碼或導入 Token。",
+    "Device key changed. Re-enter the password or import a token.",
+    "Clé de l’appareil modifiée. Ressaisissez le mot de passe ou importez un token.",
+    "Geräteschlüssel geändert. Passwort neu eingeben oder Token importieren.",
+    "Ключ устройства изменён. Введите пароль или импортируйте токен.",
+    "デバイスキーが変わりました。パスワードを再入力するかトークンを取り込んでください。",
+    "장치 키가 변경되었습니다. 비밀번호를 다시 입력하거나 토큰을 가져오세요."
+  ],
+  "Checking Bambu accounts. Retry shortly.": [
+    "正在检查拓竹账号，请稍候重试。",
+    "正在檢查拓竹賬號，請稍候重試。",
+    "Checking Bambu accounts. Retry shortly.",
+    "Vérification des comptes Bambu. Patientez.",
+    "Bambu-Konten werden geprüft. Kurz warten.",
+    "Проверка учётных записей Bambu. Подождите.",
+    "Bambu アカウントを確認中です。しばらくお待ちください。",
+    "Bambu 계정 확인 중입니다. 잠시 기다리세요."
+  ],
+  "Please wait before retrying.": [
+    "请稍候再试，当前请求尚在冷却。",
+    "請稍候再試，當前請求尚在冷卻。",
+    "Please wait before retrying.",
+    "Patientez avant de réessayer.",
+    "Vor erneutem Versuch kurz warten.",
+    "Подождите перед повтором.",
+    "しばらくしてから再試行してください。",
+    "잠시 후 다시 시도하세요."
+  ],
+  "Bambu security service blocked this request (Cloudflare). We recommend importing a token from official sign-in.": [
+    "拓竹安全服务拦截了请求（Cloudflare）。建议使用官方登录取得 Token 后导入。",
+    "拓竹安全服務攔截了請求（Cloudflare）。建議使用官方登錄取得 Token 後導入。",
+    "Bambu security service blocked this request (Cloudflare). We recommend importing a token from official sign-in.",
+    "Requête bloquée par la sécurité Bambu (Cloudflare). Importez de préférence un token obtenu par la connexion officielle.",
+    "Bambu-Sicherheitsdienst blockiert die Anfrage (Cloudflare). Token aus der offiziellen Anmeldung empfohlen.",
+    "Служба безопасности Bambu заблокировала запрос (Cloudflare). Рекомендуется импорт токена после официального входа.",
+    "Bambu のセキュリティサービス（Cloudflare）が拒否しました。公式ログインで取得したトークンの取り込みを推奨します。",
+    "Bambu 보안 서비스(Cloudflare)가 요청을 차단했습니다. 공식 로그인에서 얻은 토큰을 가져오는 것을 권장합니다."
+  ],
+  "Browser session verification is required. Sign in officially and import a token.": [
+    "官方登录要求浏览器会话验证，请在官方网页登录后导入 Token。",
+    "官方登錄要求瀏覽器會話驗證，請在官方網頁登錄後導入 Token。",
+    "Browser session verification is required. Sign in officially and import a token.",
+    "Vérification du navigateur requise. Connectez-vous officiellement et importez un token.",
+    "Browserprüfung erforderlich. Offiziell anmelden und Token importieren.",
+    "Нужна проверка браузера. Войдите официально и импортируйте токен.",
+    "ブラウザ認証が必要です。公式サイトでログインしてトークンを取り込んでください。",
+    "브라우저 인증이 필요합니다. 공식 로그인 후 토큰을 가져오세요."
+  ],
+  "Bambu rejected this request; this does not establish an incorrect password. Try a verification code or import a token.": [
+    "拓竹服务拒绝请求，不能据此判断密码错误。可尝试验证码或导入 Token。",
+    "拓竹服務拒絕請求，不能據此判斷密碼錯誤。可嘗試驗證碼或導入 Token。",
+    "Bambu rejected this request; this does not establish an incorrect password. Try a verification code or import a token.",
+    "Bambu a refusé la requête ; cela ne prouve pas un mot de passe erroné. Essayez un code ou un token.",
+    "Bambu hat die Anfrage abgelehnt; das beweist kein falsches Passwort. Code oder Token versuchen.",
+    "Bambu отклонил запрос; это не доказывает ошибку пароля. Попробуйте код или токен.",
+    "Bambu が拒否しました。パスワードの誤りとは限りません。確認コードまたはトークンをお試しください。",
+    "Bambu가 요청을 거부했습니다. 비밀번호 오류라고 단정할 수 없습니다. 인증 코드 또는 토큰을 사용해 보세요."
+  ],
+  "Credentials or token rejected. Check the account region and credentials.": [
+    "账号凭据或 Token 未被接受，请检查账号区域与凭据。",
+    "賬號憑據或 Token 未被接受，請檢查賬號區域與憑據。",
+    "Credentials or token rejected. Check the account region and credentials.",
+    "Identifiants ou token refusés. Vérifiez la région et les identifiants.",
+    "Zugangsdaten oder Token abgelehnt. Region und Daten prüfen.",
+    "Данные или токен отклонены. Проверьте регион и данные.",
+    "認証情報またはトークンが拒否されました。地域と入力内容を確認してください。",
+    "인증 정보 또는 토큰이 거부되었습니다. 계정 지역과 입력값을 확인하세요."
+  ],
+  "Enter the verification code you received.": [
+    "请输入收到的验证码。",
+    "請輸入收到的驗證碼。",
+    "Enter the verification code you received.",
+    "Saisissez le code reçu.",
+    "Erhaltenen Bestätigungscode eingeben.",
+    "Введите полученный код.",
+    "受信した確認コードを入力してください。",
+    "받은 인증 코드를 입력하세요."
+  ],
+  "Enter the code from your authenticator.": [
+    "请输入身份验证器的验证码。",
+    "請輸入身份驗證器的驗證碼。",
+    "Enter the code from your authenticator.",
+    "Saisissez le code de l’application d’authentification.",
+    "Code aus der Authenticator-App eingeben.",
+    "Введите код из приложения-аутентификатора.",
+    "認証アプリのコードを入力してください。",
+    "인증 앱의 코드를 입력하세요."
+  ],
+  "Device clock is not synchronized. Retry shortly.": [
+    "设备时间尚未同步，请稍后重试。",
+    "設備時間尚未同步，請稍後重試。",
+    "Device clock is not synchronized. Retry shortly.",
+    "Horloge non synchronisée. Patientez.",
+    "Gerätezeit nicht synchronisiert. Kurz warten.",
+    "Часы устройства не синхронизированы. Подождите.",
+    "デバイスの時刻が未同期です。しばらくお待ちください。",
+    "장치 시각이 동기화되지 않았습니다. 잠시 기다리세요."
+  ],
+  "Unable to connect. Check the network and device clock.": [
+    "连接拓竹服务失败，请检查网络与设备时间。",
+    "連接拓竹服務失敗，請檢查網絡與設備時間。",
+    "Unable to connect. Check the network and device clock.",
+    "Connexion impossible. Vérifiez le réseau et l’horloge.",
+    "Verbindung nicht möglich. Netzwerk und Gerätezeit prüfen.",
+    "Нет соединения. Проверьте сеть и часы устройства.",
+    "接続できません。ネットワークと時刻を確認してください。",
+    "연결할 수 없습니다. 네트워크와 장치 시각을 확인하세요."
+  ],
+  "Bambu rate limit reached. Retry later.": [
+    "拓竹服务限制了请求频率，请稍后重试。",
+    "拓竹服務限制了請求頻率，請稍後重試。",
+    "Bambu rate limit reached. Retry later.",
+    "Limite Bambu atteinte. Réessayez plus tard.",
+    "Bambu-Anfragelimit erreicht. Später versuchen.",
+    "Достигнут лимит Bambu. Повторите позже.",
+    "Bambu の制限に達しました。しばらくして再試行してください。",
+    "Bambu 요청 제한에 도달했습니다. 나중에 시도하세요."
+  ],
+  "Cloud request failed. Check the HTTP status.": [
+    "云端请求失败，请查看 HTTP 状态。",
+    "雲端請求失敗，請查看 HTTP 狀態。",
+    "Cloud request failed. Check the HTTP status.",
+    "Requête cloud échouée. Vérifiez le statut HTTP.",
+    "Cloud-Anfrage fehlgeschlagen. HTTP-Status prüfen.",
+    "Облачный запрос не выполнен. Проверьте статус HTTP.",
+    "クラウドリクエストに失敗しました。HTTP ステータスを確認してください。",
+    "클라우드 요청 실패. HTTP 상태를 확인하세요."
+  ],
+  "Check the account, password, verification code or token.": [
+    "请检查账号、密码、验证码或 Token 是否填写完整。",
+    "請檢查賬號、密碼、驗證碼或 Token 是否填寫完整。",
+    "Check the account, password, verification code or token.",
+    "Vérifiez le compte, le mot de passe, le code ou le token.",
+    "Konto, Passwort, Code oder Token prüfen.",
+    "Проверьте учётную запись, пароль, код или токен.",
+    "アカウント、パスワード、コード、トークンを確認してください。",
+    "계정, 비밀번호, 인증 코드 또는 토큰을 확인하세요."
+  ],
+  "Incorrect management password.": [
+    "管理密码错误。",
+    "管理密碼錯誤。",
+    "Incorrect management password.",
+    "Mot de passe admin incorrect.",
+    "Falsches Admin-Passwort.",
+    "Неверный пароль администратора.",
+    "管理パスワードが違います。",
+    "관리 비밀번호가 다릅니다."
+  ],
+  "Response exceeds the device limit.": [
+    "服务端响应超出设备处理上限。",
+    "服務端響應超出設備處理上限。",
+    "Response exceeds the device limit.",
+    "Réponse trop volumineuse pour l’appareil.",
+    "Antwort überschreitet das Gerätelimit.",
+    "Ответ превышает лимит устройства.",
+    "応答がデバイスの上限を超えています。",
+    "응답이 장치 한도를 초과했습니다."
+  ],
+  "Import backup": [
+    "导入配置备份",
+    "導入配置備份",
+    "Import backup",
+    "Importer",
+    "Importieren",
+    "Импорт",
+    "バックアップ読込",
+    "백업 가져오기"
+  ],
+  "Management sign-in": [
+    "管理登录",
+    "管理登錄",
+    "Management sign-in",
+    "Administration",
+    "Verwaltungsanmeldung",
+    "Вход в управление",
+    "管理ログイン",
+    "관리 로그인"
+  ],
+  "Firmware": [
+    "固件升级",
+    "固件升級",
+    "Firmware",
+    "Micrologiciel",
+    "Firmware",
+    "Прошивка",
+    "ファームウェア",
+    "펌웨어"
+  ],
+  "Upload & upgrade": [
+    "上传并升级",
+    "上傳並升級",
+    "Upload & upgrade",
+    "Envoyer et mettre à jour",
+    "Hochladen und aktualisieren",
+    "Загрузить и обновить",
+    "アップロードして更新",
+    "업로드 및 업데이트"
+  ],
+  "Application firmware only: {file}.": [
+    "仅选择应用固件 {file}。",
+    "僅選擇應用固件 {file}。",
+    "Application firmware only: {file}.",
+    "Micrologiciel applicatif uniquement : {file}.",
+    "Nur Anwendungsfirmware: {file}.",
+    "Только прошивка приложения: {file}.",
+    "アプリ用 {file} のみ使用してください。",
+    "앱 펌웨어 {file}만 사용하세요."
+  ],
+  "Reset": [
+    "重置设备",
+    "重置設備",
+    "Reset",
+    "Réinitialiser",
+    "Zurücksetzen",
+    "Сброс",
+    "初期化",
+    "초기화"
+  ],
+  "xTouch-CN project": [
+    "xTouch-CN 项目",
+    "xTouch-CN 項目",
+    "xTouch-CN project",
+    "Projet xTouch-CN",
+    "xTouch-CN Projekt",
+    "Проект xTouch-CN",
+    "xTouch-CN プロジェクト",
+    "xTouch-CN 프로젝트"
+  ],
+  "Management account: administrator · password configured": [
+    "管理账号：管理员 · 密码已设置",
+    "管理賬號：管理員 · 密碼已設置",
+    "Management account: administrator · password configured",
+    "Compte admin · mot de passe défini",
+    "Administratorkonto · Passwort eingerichtet",
+    "Администратор · пароль задан",
+    "管理者アカウント · パスワード設定済み",
+    "관리자 계정 · 비밀번호 설정됨"
+  ],
+  "Current device": [
+    "当前设备",
+    "當前設備",
+    "Current device",
+    "Appareil actuel",
+    "Aktuelles Gerät",
+    "Текущее устройство",
+    "現在のデバイス",
+    "현재 장치"
+  ],
+  "Free memory": [
+    "xTouch 可用内存",
+    "xTouch 可用內存",
+    "xTouch Free memory",
+    "xTouch Mémoire libre",
+    "xTouch Freier Speicher",
+    "xTouch Свободная память",
+    "xTouch 空きメモリ",
+    "xTouch 여유 메모리"
+  ],
+  "Uptime": [
+    "xTouch 运行时间",
+    "xTouch 運行時間",
+    "xTouch Uptime",
+    "xTouch Durée de marche",
+    "xTouch Laufzeit",
+    "xTouch Время работы",
+    "xTouch 稼働時間",
+    "xTouch 가동 시간"
+  ],
+  "Wi-Fi setup": [
+    "连接 Wi-Fi",
+    "連接 Wi-Fi",
+    "Wi-Fi setup",
+    "Configurer le Wi-Fi",
+    "Wi-Fi einrichten",
+    "Настройка Wi-Fi",
+    "Wi-Fi 設定",
+    "Wi-Fi 설정"
+  ],
+  "Wi-Fi name": [
+    "Wi-Fi 名称",
+    "Wi-Fi 名稱",
+    "Wi-Fi name",
+    "Nom du Wi-Fi",
+    "Wi-Fi-Name",
+    "Имя Wi-Fi",
+    "Wi-Fi 名",
+    "Wi-Fi 이름"
+  ],
+  "Scan Wi-Fi": [
+    "搜索 Wi-Fi",
+    "搜索 Wi-Fi",
+    "Scan Wi-Fi",
+    "Rechercher",
+    "Suchen",
+    "Поиск Wi-Fi",
+    "Wi-Fi 検索",
+    "Wi-Fi 검색"
+  ],
+  "Wi-Fi password": [
+    "Wi-Fi 密码",
+    "Wi-Fi 密碼",
+    "Wi-Fi password",
+    "Mot de passe Wi-Fi",
+    "Wi-Fi-Passwort",
+    "Пароль Wi-Fi",
+    "Wi-Fi パスワード",
+    "Wi-Fi 비밀번호"
+  ],
+  "Save and connect": [
+    "保存并连接",
+    "保存並連接",
+    "Save and connect",
+    "Enregistrer et connecter",
+    "Speichern und verbinden",
+    "Сохранить и подключить",
+    "保存して接続",
+    "저장 및 연결"
+  ],
+  "Restarts after saving.": [
+    "保存后自动重启。",
+    "保存後自動重啓。",
+    "Restarts after saving.",
+    "Redémarre après enregistrement.",
+    "Neustart nach dem Speichern.",
+    "Перезапуск после сохранения.",
+    "保存後に再起動します。",
+    "저장 후 재시작합니다."
+  ],
+  "Change password": [
+    "修改管理密码",
+    "修改管理密碼",
+    "Change password",
+    "Changer le mot de passe",
+    "Passwort ändern",
+    "Сменить пароль",
+    "パスワード変更",
+    "비밀번호 변경"
+  ],
+  "New password (8–64 bytes)": [
+    "新密码（8–64 字节）",
+    "新密碼（8–64 字節）",
+    "New password (8–64 bytes)",
+    "Nouveau mot de passe (8–64 octets)",
+    "Neues Passwort (8–64 Bytes)",
+    "Новый пароль (8–64 байта)",
+    "新しいパスワード（8～64 バイト）",
+    "새 비밀번호 (8~64바이트)"
+  ],
+  "Confirm password": [
+    "再次输入",
+    "再次輸入",
+    "Confirm password",
+    "Confirmer le mot de passe",
+    "Passwort bestätigen",
+    "Подтверждение пароля",
+    "パスワードを再入力",
+    "비밀번호 확인"
+  ],
+  "Save password": [
+    "保存密码并重新登录",
+    "保存密碼並重新登錄",
+    "Save & sign in",
+    "Sauver et reconnecter",
+    "Speichern & anmelden",
+    "Сохранить и войти",
+    "保存して再ログイン",
+    "저장 후 재로그인"
+  ],
+  "Devices": [
+    "设备管理",
+    "設備管理",
+    "Devices",
+    "Appareils",
+    "Geräte",
+    "Устройства",
+    "デバイス",
+    "장치"
+  ],
+  "Display & Wi-Fi": [
+    "屏幕与 Wi-Fi",
+    "屏幕與 Wi-Fi",
+    "Display & Wi-Fi",
+    "Écran et Wi-Fi",
+    "Anzeige und Wi-Fi",
+    "Экран и Wi-Fi",
+    "画面と Wi-Fi",
+    "화면 및 Wi-Fi"
+  ],
+  "Maintenance": [
+    "维护",
+    "維護",
+    "Maintenance",
+    "Maintenance",
+    "Wartung",
+    "Обслуживание",
+    "メンテナンス",
+    "유지 관리"
+  ],
+  "Sign out": [
+    "退出登录",
+    "退出登錄",
+    "Sign out",
+    "Déconnexion",
+    "Abmelden",
+    "Выйти",
+    "ログアウト",
+    "로그아웃"
+  ],
+  "Add LAN device": [
+    "添加局域网设备",
+    "添加局域網設備",
+    "Add LAN device",
+    "Ajouter un appareil LAN",
+    "LAN-Gerät hinzufügen",
+    "Добавить LAN-устройство",
+    "LAN デバイス追加",
+    "LAN 장치 추가"
+  ],
+  "Bambu accounts": [
+    "拓竹账号",
+    "拓竹賬號",
+    "Bambu accounts",
+    "Comptes Bambu",
+    "Bambu-Konten",
+    "Учётные записи Bambu",
+    "Bambu アカウント",
+    "Bambu 계정"
+  ],
+  "Add Bambu account": [
+    "添加拓竹账号",
+    "添加拓竹賬號",
+    "Add Bambu account",
+    "Ajouter un compte Bambu",
+    "Bambu-Konto hinzufügen",
+    "Добавить учётную запись Bambu",
+    "Bambu アカウントを追加",
+    "Bambu 계정 추가"
+  ],
+  "Display language": [
+    "屏幕语言",
+    "屏幕語言",
+    "Display language",
+    "Langue de l’écran",
+    "Anzeigesprache",
+    "Язык экрана",
+    "画面の言語",
+    "화면 언어"
+  ],
+  "Brightness / 255": [
+    "亮度 / 255",
+    "亮度 / 255",
+    "Brightness / 255",
+    "Luminosité / 255",
+    "Helligkeit / 255",
+    "Яркость / 255",
+    "明るさ / 255",
+    "밝기 / 255"
+  ],
+  "Screen sleep / minutes (0 disables)": [
+    "熄屏 / 分钟（0 为关闭）",
+    "熄屏 / 分鐘（0 爲關閉）",
+    "Screen sleep / minutes (0 disables)",
+    "Veille / minutes (0 : désactivée)",
+    "Ruhezustand / Minuten (0: aus)",
+    "Сон / минуты (0: выкл.)",
+    "消灯 / 分（0 で無効）",
+    "절전 / 분 (0: 끔)"
+  ],
+  "Wi-Fi password (blank to keep)": [
+    "Wi-Fi 密码（留空保留）",
+    "Wi-Fi 密碼（留空保留）",
+    "Wi-Fi password (blank to keep)",
+    "Clé Wi-Fi (vide : garder)",
+    "Wi-Fi-Passwort (leer: behalten)",
+    "Пароль Wi-Fi (пусто: сохранить)",
+    "Wi-Fi パスワード（空欄で維持）",
+    "Wi-Fi 비밀번호 (빈칸: 유지)"
+  ],
+  "Startup device": [
+    "开机设备",
+    "開機設備",
+    "Startup device",
+    "Appareil au démarrage",
+    "Startgerät",
+    "Устройство при запуске",
+    "起動時のデバイス",
+    "시작 장치"
+  ],
+  "Wake when printing starts": [
+    "开始打印时唤醒",
+    "開始打印時喚醒",
+    "Wake when printing starts",
+    "Réveil au début de l’impression",
+    "Bei Druckbeginn aufwecken",
+    "Будить при начале печати",
+    "印刷開始時に画面を点灯",
+    "인쇄 시작 시 화면 켜기"
+  ],
+  "Check OTA on boot": [
+    "开机检查 OTA",
+    "開機檢查 OTA",
+    "Check OTA on boot",
+    "Vérifier l’OTA au démarrage",
+    "OTA beim Start prüfen",
+    "Проверять OTA при запуске",
+    "起動時に OTA を確認",
+    "시작 시 OTA 확인"
+  ],
+  "Backups contain Wi-Fi credentials, access codes and cloud tokens. Keep them private.": [
+    "备份包含 Wi-Fi、访问码和云端 Token，请妥善保管。",
+    "備份包含 Wi-Fi、訪問碼和雲端 Token，請妥善保管。",
+    "Backups contain Wi-Fi credentials, access codes and cloud tokens. Keep them private.",
+    "Les sauvegardes contiennent les accès Wi-Fi, les codes et les tokens cloud. Gardez-les privés.",
+    "Sicherungen enthalten Wi-Fi-Daten, Zugriffscodes und Cloud-Token. Vertraulich aufbewahren.",
+    "Копии содержат данные Wi-Fi, коды доступа и облачные токены. Храните их в тайне.",
+    "バックアップには Wi-Fi、アクセスコード、クラウドトークンを含みます。厳重に管理してください。",
+    "백업에는 Wi-Fi 정보, 접근 코드와 클라우드 토큰이 포함됩니다. 안전하게 보관하세요."
+  ],
+  "Export backup": [
+    "下载配置备份",
+    "下載配置備份",
+    "Export backup",
+    "Exporter",
+    "Exportieren",
+    "Экспорт",
+    "バックアップ保存",
+    "백업 내보내기"
+  ],
+  "Save & restart": [
+    "保存并重启",
+    "保存並重啓",
+    "Save & restart",
+    "Enregistrer et redémarrer",
+    "Speichern und neu starten",
+    "Сохранить и перезапустить",
+    "保存して再起動",
+    "저장 후 재시작"
+  ],
+  "Only for password sign-in": [
+    "仅密码登录时需要",
+    "僅密碼登入時需要",
+    "Only for password sign-in",
+    "Uniquement pour la connexion par mot de passe",
+    "Nur für die Passwort-Anmeldung",
+    "Только для входа по паролю",
+    "パスワード認証時のみ必要",
+    "비밀번호 로그인 시에만 필요"
+  ],
+  "Password is encrypted on this device": [
+    "密码加密保存在本设备",
+    "密碼加密儲存在本裝置",
+    "Password is encrypted on this device",
+    "Mot de passe chiffré sur cet appareil",
+    "Passwort wird auf diesem Gerät verschlüsselt gespeichert",
+    "Пароль хранится на устройстве зашифрованным",
+    "パスワードはこの端末に暗号化して保存されます",
+    "비밀번호는 이 장치에 암호화되어 저장됩니다"
+  ],
+  "Connection type": [
+    "连接方式",
+    "連接方式",
+    "Connection type",
+    "Type de connexion",
+    "Verbindungsart",
+    "Тип подключения",
+    "接続方式",
+    "연결 방식"
+  ],
+  "Sign-in required": [
+    "需登录",
+    "需登入",
+    "Sign-in required",
+    "Connexion requise",
+    "Anmeldung nötig",
+    "Нужен вход",
+    "ログインが必要",
+    "로그인 필요"
+  ],
+  "Simulator tools enabled": [
+    "模拟器测试入口已开启",
+    "模擬器測試入口已開啟",
+    "Simulator tools enabled",
+    "Outils de simulation activés",
+    "Simulatorfunktionen aktiviert",
+    "Инструменты симулятора включены",
+    "シミュレータ機能が有効です",
+    "시뮬레이터 도구가 활성화되었습니다"
+  ],
+  "Simulator": [
+    "模拟器",
+    "模擬器",
+    "Simulator",
+    "Simulateur",
+    "Simulator",
+    "Симулятор",
+    "シミュレータ",
+    "시뮬레이터"
+  ],
+  "Local simulator only. Fixed test credentials; no Bambu tokens or passwords are sent.": [
+    "仅连接局域网模拟器，使用固定测试凭据，不发送拓竹 Token 或密码。",
+    "僅連接區域網模擬器，使用固定測試憑證，不傳送拓竹 Token 或密碼。",
+    "Local simulator only. Fixed test credentials; no Bambu tokens or passwords are sent.",
+    "Simulateur LAN uniquement. Identifiants de test fixes ; aucun token ni mot de passe Bambu envoyé.",
+    "Nur LAN-Simulator. Feste Testzugangsdaten; keine Bambu-Token oder Passwörter werden gesendet.",
+    "Только LAN-симулятор. Фиксированные тестовые данные; токены и пароли Bambu не передаются.",
+    "LAN内のシミュレータ専用です。固定のテスト認証を使用し、Bambuのトークンやパスワードは送信しません。",
+    "LAN 시뮬레이터 전용입니다. 고정 테스트 인증을 사용하며 Bambu 토큰이나 비밀번호는 전송하지 않습니다."
+  ],
+  "Simulator IP": [
+    "模拟器 IP",
+    "模擬器 IP",
+    "Simulator IP",
+    "IP du simulateur",
+    "Simulator-IP",
+    "IP симулятора",
+    "シミュレータ IP",
+    "시뮬레이터 IP"
+  ],
+  "Discover virtual devices": [
+    "获取虚拟设备",
+    "取得虛擬裝置",
+    "Discover virtual devices",
+    "Détecter les appareils virtuels",
+    "Virtuelle Geräte suchen",
+    "Найти виртуальные устройства",
+    "仮想デバイスを検索",
+    "가상 장치 검색"
+  ],
+  "Add MQTT simulator": [
+    "添加 MQTT 模拟器",
+    "新增 MQTT 模擬器",
+    "Add MQTT simulator",
+    "Ajouter un simulateur MQTT",
+    "MQTT-Simulator hinzufügen",
+    "Добавить MQTT-симулятор",
+    "MQTTシミュレータを追加",
+    "MQTT 시뮬레이터 추가"
+  ],
+  "Touch sound": [
+    "触摸提示音",
+    "觸控提示音",
+    "Touch sound",
+    "Son tactile",
+    "Touchton",
+    "Звук касания",
+    "タッチ音",
+    "터치음"
+  ],
+  "Warning sound": [
+    "警告提示音",
+    "警告提示音",
+    "Warning sound",
+    "Son d’alerte",
+    "Warnton",
+    "Звук предупреждений",
+    "警告音",
+    "경고음"
+  ],
+  "Off by default; brief tones, muted in standby.": [
+    "默认关闭；短促提示，休眠时静音。",
+    "預設關閉；短促提示，休眠時靜音。",
+    "Off by default; brief tones, muted in standby.",
+    "Désactivé par défaut ; sons brefs, muets en veille.",
+    "Standardmäßig aus; kurze Töne, in Ruhe stumm.",
+    "По умолчанию выключен; короткие сигналы, без звука в ожидании.",
+    "初期設定はオフ。短い音で通知し、待機中は消音。",
+    "기본 꺼짐. 짧은 알림음, 대기 중 음소거."
+  ],
+  "Test sound": [
+    "试听提示音",
+    "試聽提示音",
+    "Test sound",
+    "Tester le son",
+    "Ton testen",
+    "Проверить звук",
+    "音を試す",
+    "알림음 테스트"
+  ],
+  "Status LED": [
+    "状态指示灯",
+    "狀態指示燈",
+    "Status LED",
+    "Voyant d’état",
+    "Status-LED",
+    "Индикатор состояния",
+    "状態 LED",
+    "상태 LED"
+  ],
+  "Power and charge LEDs are hardware controlled.": [
+    "电源及充电灯由硬件控制。",
+    "電源及充電燈由硬體控制。",
+    "Power and charge LEDs are hardware controlled.",
+    "Voyants d’alimentation et de charge gérés par le matériel.",
+    "Betriebs- und Lade-LEDs werden von der Hardware gesteuert.",
+    "Индикаторы питания и заряда управляются аппаратно.",
+    "電源・充電 LED はハードウェア制御です。",
+    "전원 및 충전 LED는 하드웨어로 제어됩니다."
+  ],
+  "Deep sleep after standby (min; 0 = off)": [
+    "联网待机后深睡（分钟，0 关闭）",
+    "連網待機後深睡（分鐘，0 關閉）",
+    "Deep sleep after standby (min; 0 = off)",
+    "Sommeil profond après veille (min ; 0 = arrêt)",
+    "Tiefschlaf nach Bereitschaft (Min.; 0 = aus)",
+    "Глубокий сон после ожидания (мин; 0 = выкл.)",
+    "待機後のディープスリープ（分、0 で無効）",
+    "대기 후 깊은 절전 (분, 0 = 꺼짐)"
+  ],
+  "Test sound queued.": [
+    "已播放试听音。",
+    "已播放試聽音。",
+    "Test sound queued.",
+    "Son envoyé.",
+    "Testton angefordert.",
+    "Звук запрошен.",
+    "テスト音を送信しました。",
+    "시험음을 보냈습니다."
+  ],
+  "Standby now": [
+    "立即待机",
+    "立即待機",
+    "Standby now",
+    "Veille",
+    "Standby",
+    "Режим ожидания",
+    "待機",
+    "대기"
+  ],
+  "Wake screen": [
+    "唤醒屏幕",
+    "喚醒螢幕",
+    "Wake screen",
+    "Réveiller",
+    "Aufwecken",
+    "Включить экран",
+    "画面を点灯",
+    "화면 켜기"
+  ],
+  "Deep sleep now": [
+    "立即深睡",
+    "立即深睡",
+    "Deep sleep now",
+    "Sommeil profond",
+    "Tiefschlaf",
+    "Глубокий сон",
+    "ディープスリープ",
+    "최대 절전"
+  ],
+  "Display command queued.": [
+    "屏幕指令已发送。",
+    "螢幕指令已傳送。",
+    "Display command queued.",
+    "Commande envoyée.",
+    "Befehl gesendet.",
+    "Команда отправлена.",
+    "操作を送信しました。",
+    "명령을 보냈습니다."
+  ],
+  "Deep sleep unavailable or device busy.": [
+    "当前状态不支持深睡或设备忙。",
+    "目前狀態不支援深睡或裝置忙碌。",
+    "Deep sleep unavailable or device busy.",
+    "Veille indisponible ou appareil occupé.",
+    "Tiefschlaf nicht verfügbar oder Gerät belegt.",
+    "Сон недоступен или устройство занято.",
+    "現在はスリープ不可、または処理中です。",
+    "절전 불가 또는 장치가 사용 중입니다."
+  ],
+  "Sound unavailable. Wake the screen first.": [
+    "当前无法播放，请先唤醒屏幕。",
+    "目前無法播放，請先喚醒螢幕。",
+    "Sound unavailable. Wake the screen first.",
+    "Son indisponible. Réveillez l’écran.",
+    "Ton nicht verfügbar. Bildschirm aufwecken.",
+    "Звук недоступен. Включите экран.",
+    "画面を起こしてから再試行してください。",
+    "먼저 화면을 켜 주세요."
+  ],
+  "Screen tools": [
+    "屏幕工具",
+    "螢幕工具",
+    "Screen tools",
+    "Écran",
+    "Bildschirm",
+    "Экран",
+    "画面操作",
+    "화면 도구"
+  ],
+  "Auto deep sleep when idle": [
+    "空闲自动深睡",
+    "閒置自動深睡",
+    "Auto deep sleep when idle",
+    "Veille profonde si inactif",
+    "Tiefschlaf bei Leerlauf",
+    "Глубокий сон при простое",
+    "待機中の自動ディープスリープ",
+    "유휴 시 자동 딥 슬립"
+  ],
+  "Deep sleep after standby (min)": [
+    "联网待机（分钟）后深睡",
+    "連網待機（分鐘）後深睡",
+    "Deep sleep after standby (min)",
+    "Veille après attente (min)",
+    "Tiefschlaf nach Standby (min)",
+    "Сон после ожидания (мин)",
+    "待機後のスリープ（分）",
+    "대기 후 딥 슬립(분)"
+  ],
+  "Display": [
+    "显示",
+    "顯示",
+    "Display",
+    "Affichage",
+    "Anzeige",
+    "Экран",
+    "表示",
+    "화면"
+  ],
+  "Network": [
+    "网络",
+    "網路",
+    "Network",
+    "Réseau",
+    "Netzwerk",
+    "Сеть",
+    "ネットワーク",
+    "네트워크"
+  ],
+  "Standby": [
+    "待机",
+    "待機",
+    "Standby",
+    "Veille",
+    "Bereitschaft",
+    "Ожидание",
+    "待機",
+    "대기"
+  ],
+  "Sound": [
+    "声音",
+    "聲音",
+    "Sound",
+    "Son",
+    "Ton",
+    "Звук",
+    "サウンド",
+    "소리"
+  ],
+  "System": [
+    "系统",
+    "系統",
+    "System",
+    "Système",
+    "System",
+    "Система",
+    "システム",
+    "시스템"
+  ],
+  "xTouch settings": [
+    "xTouch 设置",
+    "xTouch 設定",
+    "xTouch settings",
+    "Réglages xTouch",
+    "xTouch-Einstellungen",
+    "Настройки xTouch",
+    "xTouch 設定",
+    "xTouch 설정"
+  ],
+  "Volume": [
+    "音量",
+    "音量",
+    "Volume",
+    "Volume",
+    "Lautstärke",
+    "Громкость",
+    "音量",
+    "음량"
+  ],
+  "Deep sleep": [
+    "深度睡眠",
+    "深度睡眠",
+    "Deep sleep",
+    "Veille profonde",
+    "Tiefschlaf",
+    "Глубокий сон",
+    "ディープスリープ",
+    "깊은 절전"
+  ],
+  "Startup": [
+    "启动",
+    "啟動",
+    "Startup",
+    "Démarrage",
+    "Start",
+    "Запуск",
+    "起動",
+    "시작"
+  ],
+  "Sleep": [
+    "休眠",
+    "休眠",
+    "Sleep",
+    "Veille",
+    "Ruhezustand",
+    "Сон",
+    "スリープ",
+    "절전"
+  ],
+  "Off": [
+    "关闭",
+    "關閉",
+    "Off",
+    "Arrêt",
+    "Aus",
+    "Выкл.",
+    "オフ",
+    "끔"
+  ],
+  "Brightness": [
+    "亮度",
+    "亮度",
+    "Brightness",
+    "Luminosité",
+    "Helligkeit",
+    "Яркость",
+    "明るさ",
+    "밝기"
+  ],
+  "Deep sleep disconnects the network. Touch the screen or press RESET to restart.": [
+    "深睡会断网。触摸屏幕或按复位键启动。",
+    "深睡會斷網。觸摸螢幕或按重設鍵啟動。",
+    "Deep sleep disconnects the network. Touch the screen or press RESET to restart.",
+    "Le sommeil profond coupe le réseau. Touchez l’écran ou appuyez sur RESET pour redémarrer.",
+    "Tiefschlaf trennt das Netzwerk. Zum Starten Bildschirm berühren oder RESET drücken.",
+    "Глубокий сон отключает сеть. Для запуска коснитесь экрана или нажмите RESET.",
+    "ディープスリープ中は通信が切れます。画面に触れるかRESETで起動します。",
+    "최대 절전 중에는 네트워크가 끊깁니다. 화면을 터치하거나 RESET을 눌러 시작하세요."
+  ],
+  "Save": [
+    "保存",
+    "儲存",
+    "Save",
+    "Enregistrer",
+    "Speichern",
+    "Сохранить",
+    "保存",
+    "저장"
+  ],
+  "Save to apply.": [
+    "保存后生效。",
+    "儲存後生效。",
+    "Save to apply.",
+    "Enregistrez pour appliquer.",
+    "Zum Anwenden speichern.",
+    "Сохраните для применения.",
+    "保存すると反映されます。",
+    "저장하면 적용됩니다."
+  ],
+  "Reconnects after saving.": [
+    "保存后重新连接 Wi-Fi。",
+    "儲存後重新連接 Wi-Fi。",
+    "Reconnects after saving.",
+    "Reconnexion après enregistrement.",
+    "Verbindet nach dem Speichern neu.",
+    "Переподключение после сохранения.",
+    "保存後に再接続します。",
+    "저장 후 다시 연결합니다."
+  ],
+  "Saved and applied. No restart needed.": [
+    "已保存并生效，无需重启。",
+    "已儲存並生效，無需重新啟動。",
+    "Saved and applied. No restart needed.",
+    "Enregistré et appliqué, sans redémarrage.",
+    "Gespeichert und angewendet. Kein Neustart nötig.",
+    "Сохранено и применено без перезагрузки.",
+    "保存して反映しました。再起動は不要です。",
+    "저장 및 적용되었습니다. 재시작이 필요 없습니다."
+  ],
+  "Saved. Reconnecting Wi-Fi; use the new network address.": [
+    "已保存，正在重新连接 Wi-Fi；请使用新的网络地址访问。",
+    "已儲存，正在重新連接 Wi-Fi；請使用新的網路位址。",
+    "Saved. Reconnecting Wi-Fi; use the new network address.",
+    "Enregistré. Reconnexion Wi-Fi ; utilisez la nouvelle adresse réseau.",
+    "Gespeichert. WLAN wird neu verbunden; neue Netzwerkadresse verwenden.",
+    "Сохранено. Wi-Fi переподключается; используйте новый сетевой адрес.",
+    "保存しました。Wi-Fiに再接続中です。新しいアドレスで開いてください。",
+    "저장되었습니다. Wi-Fi 재연결 후 새 주소로 접속하세요."
+  ],
+  "Wi-Fi saved. Reconnecting.": [
+    "配网已保存，正在重新连接。",
+    "Wi-Fi 已儲存，正在重新連接。",
+    "Wi-Fi saved. Reconnecting.",
+    "Wi-Fi enregistré. Reconnexion.",
+    "WLAN gespeichert. Verbindung wird hergestellt.",
+    "Wi-Fi сохранён. Переподключение.",
+    "Wi-Fiを保存しました。再接続中です。",
+    "Wi-Fi 저장 완료. 다시 연결 중입니다."
+  ],
+  "Saved automatically.": [
+    "已自动保存。",
+    "已自動儲存。",
+    "Saved automatically.",
+    "Enregistré automatiquement.",
+    "Automatisch gespeichert.",
+    "Сохранено автоматически.",
+    "自動保存しました。",
+    "자동 저장되었습니다."
+  ],
+  "Saving automatically…": [
+    "正在自动保存…",
+    "正在自動儲存…",
+    "Saving automatically…",
+    "Enregistrement automatique…",
+    "Automatisches Speichern…",
+    "Автоматическое сохранение…",
+    "自動保存中…",
+    "자동 저장 중…"
+  ],
+  "Maximum 50 accounts.": [
+    "最多 50 个账号。",
+    "最多 50 個賬號。",
+    "Maximum 50 accounts.",
+    "50 comptes au maximum.",
+    "Maximal 50 Konten.",
+    "Не более 50 учётных записей.",
+    "最大 50 アカウントです。",
+    "최대 50개 계정입니다."
+  ],
+  "Phone sign-in": [
+    "手机号登录",
+    "手機號登入",
+    "Phone sign-in",
+    "Connexion par téléphone",
+    "Telefonanmeldung",
+    "Вход по телефону",
+    "電話番号でログイン",
+    "전화번호 로그인"
+  ],
+  "Email sign-in": [
+    "邮箱登录",
+    "電郵登入",
+    "Email sign-in",
+    "Connexion par e-mail",
+    "E-Mail-Anmeldung",
+    "Вход по почте",
+    "メールでログイン",
+    "이메일 로그인"
+  ],
+  "Virtual devices found. Selected devices save automatically.": [
+    "已获取虚拟设备，勾选后自动保存。",
+    "已取得虛擬裝置，勾選後自動儲存。",
+    "Virtual devices found. Selected devices save automatically.",
+    "Appareils virtuels trouvés. La sélection est enregistrée automatiquement.",
+    "Virtuelle Geräte gefunden. Die Auswahl wird automatisch gespeichert.",
+    "Виртуальные устройства найдены. Выбор сохраняется автоматически.",
+    "仮想デバイスを取得しました。選択すると自動保存されます。",
+    "가상 장치를 찾았습니다. 선택하면 자동 저장됩니다."
+  ],
+  "Reset settings and admin password. Keep SD backups.": [
+    "重置配置与管理密码，保留 SD 备份。",
+    "重置設定與管理密碼，保留 SD 備份。",
+    "Reset settings and admin password. Keep SD backups.",
+    "Réinitialise les réglages et le mot de passe admin. Conserve les copies SD.",
+    "Einstellungen und Admin-Passwort zurücksetzen. SD-Sicherungen bleiben.",
+    "Сброс настроек и пароля администратора. Копии SD сохранятся.",
+    "設定と管理パスワードを初期化。SD バックアップは保持。",
+    "설정과 관리자 비밀번호 초기화. SD 백업 유지."
+  ],
+  "Get code": [
+    "获取验证码",
+    "取得驗證碼",
+    "Get code",
+    "Obtenir le code",
+    "Code anfordern",
+    "Получить код",
+    "コードを取得",
+    "코드 받기"
+  ],
+  "Move device up": [
+    "上移设备",
+    "上移設備",
+    "Move device up",
+    "Monter l’appareil",
+    "Gerät nach oben",
+    "Переместить устройство вверх",
+    "デバイスを上へ",
+    "장치 위로 이동"
+  ],
+  "Move device down": [
+    "下移设备",
+    "下移設備",
+    "Move device down",
+    "Descendre l’appareil",
+    "Gerät nach unten",
+    "Переместить устройство вниз",
+    "デバイスを下へ",
+    "장치 아래로 이동"
+  ],
+  "Remove device": [
+    "删除设备",
+    "刪除設備",
+    "Remove device",
+    "Supprimer l’appareil",
+    "Gerät entfernen",
+    "Удалить устройство",
+    "デバイスを削除",
+    "장치 삭제"
+  ],
+  "Phone number": [
+    "手机号",
+    "手機號碼",
+    "Phone number",
+    "Numéro de téléphone",
+    "Telefonnummer",
+    "Номер телефона",
+    "電話番号",
+    "전화번호"
+  ],
+  "Email": [
+    "邮箱",
+    "電子郵件",
+    "Email",
+    "Adresse e-mail",
+    "E-Mail",
+    "Электронная почта",
+    "メールアドレス",
+    "이메일"
+  ],
+  "Code sign-in": [
+    "验证码登录",
+    "驗證碼登入",
+    "Code sign-in",
+    "Connexion par code",
+    "Anmeldung mit Code",
+    "Вход по коду",
+    "コードでログイン",
+    "인증 코드 로그인"
+  ],
+  "Password submitted; complete verification below": [
+    "密码已提交，请完成下方验证",
+    "密碼已提交，請完成下方驗證",
+    "Password submitted; complete verification below",
+    "Mot de passe envoyé ; terminez la vérification ci-dessous",
+    "Passwort gesendet; Bestätigung unten abschließen",
+    "Пароль отправлен; завершите проверку ниже",
+    "パスワード送信済み。以下の認証を完了してください",
+    "비밀번호가 제출되었습니다. 아래 인증을 완료하세요"
+  ],
+  "Enter your authenticator code.": [
+    "请输入身份验证器验证码。",
+    "請輸入驗證器驗證碼。",
+    "Enter your authenticator code.",
+    "Saisissez le code de votre application d’authentification.",
+    "Code der Authenticator-App eingeben.",
+    "Введите код приложения-аутентификатора.",
+    "認証アプリのコードを入力してください。",
+    "인증 앱의 코드를 입력하세요."
+  ],
+  "Enter your account.": [
+    "请填写账号。",
+    "請填寫帳號。",
+    "Enter your account.",
+    "Saisissez votre compte.",
+    "Konto eingeben.",
+    "Введите учётную запись.",
+    "アカウントを入力してください。",
+    "계정을 입력하세요."
+  ],
+  "Enter the 6-digit code.": [
+    "请输入6位验证码。",
+    "請輸入6位驗證碼。",
+    "Enter the 6-digit code.",
+    "Saisissez le code à 6 chiffres.",
+    "Den 6-stelligen Code eingeben.",
+    "Введите 6-значный код.",
+    "6桁のコードを入力してください。",
+    "6자리 코드를 입력하세요."
+  ],
+  "No devices on this account.": [
+    "该账号暂无设备。",
+    "此帳號尚無設備。",
+    "No devices on this account.",
+    "Aucun appareil sur ce compte.",
+    "Keine Geräte in diesem Konto.",
+    "В этой учётной записи нет устройств.",
+    "このアカウントにデバイスはありません。",
+    "이 계정에 장치가 없습니다."
+  ],
+  "Enter the verification code to continue.": [
+    "请填写验证码以继续登录。",
+    "請填寫驗證碼以繼續登入。",
+    "Enter the verification code to continue.",
+    "Saisissez le code de vérification pour continuer.",
+    "Bestätigungscode eingeben, um fortzufahren.",
+    "Введите код подтверждения для продолжения.",
+    "続行するには認証コードを入力してください。",
+    "계속하려면 인증 코드를 입력하세요."
+  ],
+  "Import and apply this backup? Valid configuration will save automatically.": [
+    "导入并应用此备份？有效配置将自动保存。",
+    "匯入並套用此備份？有效設定將自動儲存。",
+    "Import and apply this backup? Valid configuration will save automatically.",
+    "Importer et appliquer cette sauvegarde ? Les paramètres valides seront enregistrés automatiquement.",
+    "Diese Sicherung importieren und anwenden? Gültige Einstellungen werden automatisch gespeichert.",
+    "Импортировать и применить резервную копию? Допустимые настройки сохранятся автоматически.",
+    "このバックアップを読み込んで適用しますか？有効な設定は自動保存されます。",
+    "이 백업을 가져와 적용할까요? 유효한 설정은 자동 저장됩니다."
+  ],
+  "Backup loaded. Saving automatically.": [
+    "备份已载入，正在自动保存。",
+    "備份已匯入，正在自動儲存。",
+    "Backup loaded. Saving automatically.",
+    "Sauvegarde chargée. Enregistrement automatique.",
+    "Sicherung geladen. Wird automatisch gespeichert.",
+    "Резервная копия загружена. Автоматическое сохранение.",
+    "バックアップを読み込みました。自動保存中です。",
+    "백업을 불러왔습니다. 자동 저장 중입니다."
+  ],
+  "Nearby Wi-Fi networks": [
+    "附近的 Wi-Fi",
+    "附近的 Wi-Fi",
+    "Nearby Wi-Fi networks",
+    "Réseaux Wi-Fi à proximité",
+    "WLANs in der Nähe",
+    "Сети Wi-Fi поблизости",
+    "近くの Wi-Fi ネットワーク",
+    "주변 Wi-Fi 네트워크"
+  ],
+  "Choose a network": [
+    "选择网络",
+    "選擇網路",
+    "Choose a network",
+    "Choisir un réseau",
+    "Netzwerk auswählen",
+    "Выберите сеть",
+    "ネットワークを選択",
+    "네트워크 선택"
+  ],
+  "No Wi-Fi networks found. Enter the name manually or retry.": [
+    "未找到 Wi-Fi，可手动填写名称或重试。",
+    "未找到 Wi-Fi，可手動填寫名稱或重試。",
+    "No Wi-Fi networks found. Enter the name manually or retry.",
+    "Aucun réseau Wi-Fi trouvé. Saisissez le nom ou réessayez.",
+    "Keine WLANs gefunden. Namen eingeben oder erneut versuchen.",
+    "Сети Wi-Fi не найдены. Введите имя вручную или повторите поиск.",
+    "Wi-Fi が見つかりません。名前を入力するか再検索してください。",
+    "Wi-Fi를 찾지 못했습니다. 이름을 직접 입력하거나 다시 검색하세요."
+  ],
+  "Device key changed. Re-enter the Token or sign in again.": [
+    "设备密钥已更换，请重新填写 Token 或登录。",
+    "裝置金鑰已更換，請重新填寫 Token 或登入。",
+    "Device key changed. Re-enter the Token or sign in again.",
+    "Clé modifiée. Saisissez le Token ou reconnectez-vous.",
+    "Geräteschlüssel geändert. Token eingeben oder erneut anmelden.",
+    "Ключ устройства изменён. Введите Token или войдите снова.",
+    "端末キーが変更されました。Token を再入力するか再ログインしてください。",
+    "기기 키가 변경되었습니다. Token을 다시 입력하거나 다시 로그인하세요."
+  ],
+  "Encrypt & bind": [
+    "加密并绑定",
+    "加密並綁定",
+    "Encrypt & bind",
+    "Chiffrer et lier",
+    "Verschlüsseln & binden",
+    "Шифровать и привязать",
+    "暗号化して紐付け",
+    "암호화 및 기기 연결"
+  ],
+  "Encrypts this credential and binds it to this device key. Re-enter it after a reset or on another device. Unchecked: stored as plaintext.": [
+    "勾选后加密保存，并绑定当前设备密钥；重置或更换设备后需重新填写。未勾选则明文保存。",
+    "勾選後加密儲存，並綁定目前裝置金鑰；重置或更換裝置後需重新填寫。未勾選則明文儲存。",
+    "Device-bound encryption. Re-enter after reset or on another device. Off: plain text.",
+    "Chiffré pour cet appareil. À ressaisir après réinitialisation ou changement. Sinon : texte clair.",
+    "Gerätegebunden verschlüsselt. Nach Reset oder Gerätewechsel neu eingeben. Aus: Klartext.",
+    "Шифрование для этого устройства. После сброса или замены введите заново. Выкл.: открытый текст.",
+    "認証情報を暗号化し、この端末のキーに紐付けます。リセット後や別の端末では再入力が必要です。未選択時は平文で保存します。",
+    "인증 정보를 암호화하여 현재 기기 키에 연결합니다. 초기화하거나 기기를 바꾸면 다시 입력해야 합니다. 선택하지 않으면 평문으로 저장됩니다."
+  ],
+  "Verify & save device": [
+    "验证并保存设备",
+    "驗證並儲存裝置",
+    "Verify & save device",
+    "Vérifier et enregistrer",
+    "Prüfen und speichern",
+    "Проверить и сохранить",
+    "検証して保存",
+    "확인 및 저장"
+  ],
+  "Verifying device connection…": [
+    "正在验证设备连接…",
+    "正在驗證裝置連線…",
+    "Verifying device connection…",
+    "Vérification de la connexion…",
+    "Geräteverbindung wird geprüft…",
+    "Проверка подключения…",
+    "接続を検証中…",
+    "장치 연결 확인 중…"
+  ],
+  "Device verified and saved.": [
+    "设备已验证并保存。",
+    "裝置已驗證並儲存。",
+    "Device verified and saved.",
+    "Appareil vérifié et enregistré.",
+    "Gerät geprüft und gespeichert.",
+    "Устройство проверено и сохранено.",
+    "検証して保存しました。",
+    "장치를 확인하고 저장했습니다."
+  ],
+  "Cannot connect. Check the address, network and LAN mode.": [
+    "无法连接设备，请检查地址、网络和局域网模式。",
+    "無法連線裝置，請檢查位址、網路及區域網路模式。",
+    "Cannot connect. Check the address, network and LAN mode.",
+    "Connexion impossible. Vérifiez l’adresse, le réseau et le mode LAN.",
+    "Keine Verbindung. Adresse, Netzwerk und LAN-Modus prüfen.",
+    "Нет подключения. Проверьте адрес, сеть и режим LAN.",
+    "接続できません。アドレス、ネットワーク、LANモードを確認してください。",
+    "연결할 수 없습니다. 주소, 네트워크, LAN 모드를 확인하세요."
+  ],
+  "Access code rejected. Check the access code.": [
+    "访问码验证失败，请检查访问码。",
+    "存取碼驗證失敗，請檢查存取碼。",
+    "Access code rejected. Check the access code.",
+    "Code d’accès refusé. Vérifiez-le.",
+    "Zugriffscode abgelehnt. Bitte prüfen.",
+    "Код доступа отклонён. Проверьте код.",
+    "アクセスコードを確認してください。",
+    "액세스 코드가 거부되었습니다. 코드를 확인하세요."
+  ],
+  "No device status received. Check the serial number and retry.": [
+    "未收到设备状态，请检查序列号后重试。",
+    "未收到裝置狀態，請檢查序號後重試。",
+    "No device status received. Check the serial number and retry.",
+    "Aucun état reçu. Vérifiez le numéro de série et réessayez.",
+    "Kein Gerätestatus. Seriennummer prüfen und erneut versuchen.",
+    "Статус не получен. Проверьте серийный номер и повторите.",
+    "状態を受信できません。シリアル番号を確認して再試行してください。",
+    "장치 상태를 받지 못했습니다. 일련번호를 확인하고 다시 시도하세요."
+  ],
+  "Guide": [
+    "获取教程",
+    "取得教學",
+    "Guide",
+    "Tutoriel",
+    "Anleitung",
+    "Инструкция",
+    "取得ガイド",
+    "받기 안내"
+  ],
+  "LAN device for camera": [
+    "摄像头局域网设备",
+    "攝影機區域網路裝置",
+    "LAN device for camera",
+    "Appareil LAN pour la caméra",
+    "LAN-Gerät für Kamera",
+    "LAN-устройство для камеры",
+    "カメラ用LANデバイス",
+    "카메라용 LAN 장치"
+  ],
+  "Automatically link the same device": [
+    "自动关联同一设备",
+    "自動關聯同一裝置",
+    "Automatically link the same device",
+    "Associer automatiquement le même appareil",
+    "Dasselbe Gerät automatisch verknüpfen",
+    "Автоматически связать то же устройство",
+    "同じデバイスに自動連携",
+    "동일 장치 자동 연결"
+  ],
+  "Linked automatically by default. Select a device if local connections conflict. This link is only for the camera.": [
+    "默认自动关联；多个本地连接冲突时请选择。此关联仅用于摄像头。",
+    "預設自動關聯；多個本地連線衝突時請選擇。此關聯僅用於攝影機。",
+    "Linked automatically by default. Select a device if local connections conflict. This link is only for the camera.",
+    "Association automatique par défaut. En cas de conflit, choisissez un appareil. Ce lien est réservé à la caméra.",
+    "Standardmäßig automatisch verknüpft. Bei widersprüchlichen lokalen Verbindungen ein Gerät wählen. Nur für die Kamera.",
+    "Связь по умолчанию автоматическая. При конфликте локальных подключений выберите устройство. Только для камеры.",
+    "通常は自動連携します。ローカル接続が競合する場合は選択してください。カメラ専用です。",
+    "기본적으로 자동 연결됩니다. 로컬 연결이 충돌하면 장치를 선택하세요. 카메라에만 사용됩니다."
+  ],
+  "Unavailable": [
+    "不可用",
+    "不可用",
+    "Unavailable",
+    "Indisponible",
+    "Nicht verfügbar",
+    "Недоступно",
+    "利用不可",
+    "사용 불가"
+  ],
+  "Notification sounds": [
+    "提示音",
+    "提示音",
+    "Notification sounds",
+    "Sons de notification",
+    "Hinweistöne",
+    "Звуковые сигналы",
+    "通知音",
+    "알림음"
+  ],
+  "Wi-Fi scan failed. Please retry.": [
+    "Wi-Fi 扫描失败，请稍后重试。",
+    "Wi-Fi 掃描失敗，請稍後重試。",
+    "Wi-Fi scan failed. Please retry.",
+    "Échec de la recherche Wi-Fi. Réessayez.",
+    "WLAN-Suche fehlgeschlagen. Erneut versuchen.",
+    "Сбой поиска Wi-Fi. Повторите попытку.",
+    "Wi-Fi の検索に失敗しました。再試行してください。",
+    "Wi-Fi 검색에 실패했습니다. 다시 시도하세요."
+  ]
+}

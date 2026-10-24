@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="xTouch-CN 在线刷写 · Online firmware installer"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <title>xTouch-CN · 在线刷写</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23087f79'/%3E%3Cpath d='m9 9 14 14m0-14L9 23' stroke='white' stroke-width='4'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <header class="top">
+      <a class="brand" href="#">xTouch<span>-CN</span></a>
+      <nav>
+        <a href="errors.html" data-i18n="errorLookup">故障码查询</a>
+        <a
+          href="https://github.com/tbc0309/xTouch-CN"
+          target="_blank"
+          rel="noopener"
+          class="github-link"
+          aria-label="GitHub 项目地址"
+          title="GitHub"
+          ><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M12 0C5.37 0 0 5.373 0 12c0 5.302 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577v-2.234c-3.338.726-4.043-1.416-4.043-1.416-.546-1.386-1.333-1.755-1.333-1.755-1.09-.745.083-.73.083-.73 1.205.085 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.775.418-1.305.762-1.605-2.665-.303-5.467-1.334-5.467-5.932 0-1.31.469-2.381 1.236-3.221-.124-.303-.536-1.524.117-3.176 0 0 1.008-.323 3.301 1.23A11.5 11.5 0 0 1 12 5.804c1.02.005 2.045.138 3.003.404 2.291-1.553 3.297-1.23 3.297-1.23.655 1.652.243 2.873.12 3.176.77.84 1.235 1.911 1.235 3.221 0 4.61-2.807 5.625-5.479 5.922.43.372.823 1.102.823 2.222v3.291c0 .322.216.694.825.576C20.565 21.795 24 17.3 24 12 24 5.373 18.627 0 12 0Z"
+            /></svg
+          ><span data-i18n="projectLink">项目地址</span></a
+        ><select id="language" aria-label="语言 / Language">
+          <option value="zh">简体中文</option>
+          <option value="en">English</option>
+        </select>
+      </nav>
+    </header>
+    <main>
+      <section class="hero">
+        <div>
+          <p class="eyebrow" data-i18n="eyebrow"></p>
+          <h1 data-i18n="title"></h1>
+          <div class="pills">
+            <span id="board-name">ESP32-2432S028R</span><span id="board-screen">ILI9341 + XPT2046</span
+            ><span id="version">—</span>
+          </div>
+        </div>
+        <div class="screen-demo" aria-hidden="true">
+          <div class="demo-bar"><b>xTouch-CN</b><span>●</span></div>
+          <div class="demo-model">P1S</div>
+          <div class="demo-stats"><span>28°C</span><span>24°C</span></div>
+          <div class="demo-colors"><i></i><i></i><i></i><i></i></div>
+        </div>
+        <p class="hero-intro" data-i18n="intro"></p>
+      </section>
+      <section
+        id="flash-panel"
+      >
+        <div class="flash-grid">
+          <section class="card">
+            <span class="tag" data-i18n="usbTag"></span>
+            <h3 data-i18n="usbTitle"></h3>
+            <label for="board" data-i18n="boardSelect">选择主板</label>
+            <select id="board" disabled><option value="cyd">CYD · ESP32-2432S028R</option></select>
+            <ol class="instructions">
+              <li data-i18n="usb1"></li>
+              <li data-i18n="usb2"></li>
+              <li data-i18n="usb3"></li>
+            </ol>
+            <p class="notice" data-i18n="erase"></p>
+            <div id="installer">
+              <button
+                id="load-installer"
+                disabled
+                class="button primary"
+                data-i18n="loadInstaller"
+              ></button>
+              <div id="installer-widget"></div>
+            </div>
+            <p id="installer-status" role="status"></p>
+            <p class="subtle" data-i18n="installerEnglish"></p>
+            <p class="subtle" data-i18n="recoveryHint"></p>
+          </section>
+          <section class="card">
+            <span class="tag">Wi-Fi</span><h3 data-i18n="setupTitle"></h3>
+            <ol class="instructions"><li data-i18n="setup1"></li><li data-i18n="setup2"></li><li data-i18n="setup3"></li><li data-i18n="setup4"></li></ol>
+          </section>
+        </div>
+        <p class="footnote" data-i18n="otaHint"></p>
+      </section>
+      <footer>
+        <p data-i18n="boardHint"></p>
+      </footer>
+    </main>
+  </body>
+</html>

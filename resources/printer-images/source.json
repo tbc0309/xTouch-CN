@@ -1,0 +1,141 @@
+{
+  "repository": "bambulab/BambuStudio",
+  "commit": "79df7ae309be398ed30c9f397c13c9911c2edc57",
+  "images": [
+    {
+      "model": "BL-P001",
+      "path": "resources/images/printer_thumbnail_x1c_png.png",
+      "sha256": "f01a0c0d0bf6390559e94ad12f5d363c6fe08ae43392e6f8148458c1a72c245f",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "model": "BL-P002",
+      "path": "resources/images/printer_thumbnail_png.png",
+      "sha256": "e77b2bb1c4a320a9e0c460a9ebc94aa52e384fd8cbc0d682f844a362f934a9f7",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "model": "C11",
+      "path": "resources/images/printer_thumbnail_p1p_png.png",
+      "sha256": "338e6b98a64445c825592ccd00c50c56c26ec1e8e895f4dbc908cd0ca15db636",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "model": "C12",
+      "path": "resources/images/printer_thumbnail_p1s_png.png",
+      "sha256": "7b5b18f89926409773a4c6d6d5804423505535addaaffdcd2b7e4c64135d5d04",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "model": "C13",
+      "path": "resources/images/printer_thumbnail_x1e_png.png",
+      "sha256": "2ff64c67348f7b6a3efdeff90756a3656fb2808620969fe07b2e9e354457ba1e",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "model": "N1",
+      "path": "resources/images/printer_thumbnail_n1_png.png",
+      "sha256": "e38381ff0017c4d4cffd564fe0caa84f0ff371186fa336c439550924cedb4ca7",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "model": "N2S",
+      "path": "resources/images/printer_thumbnail_n2s_png.png",
+      "sha256": "c17801aa0d4f7cb6337057f232b460f66d224a1c98eae52c109f60389ba1fb36",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "model": "N6",
+      "path": "resources/images/printer_thumbnail_N6_png.png",
+      "sha256": "79d494e38016f64bb6c38bc03ef648df8355859dbfecc92aa67805c6f284becf",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "model": "N7",
+      "path": "resources/images/printer_thumbnail_N7_png.png",
+      "sha256": "fd6406bc8d4b87a033c829b5acc529b8b88bdedb74d7cbbcc14a1852b54d70c5",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "model": "N9",
+      "path": "resources/images/printer_preview_N9.png",
+      "sha256": "97723c77afab542df43bc3452561c66006dd8f88dc56678a2d4f1e4a363be28d",
+      "size": [
+        344,
+        344
+      ]
+    },
+    {
+      "model": "O1C",
+      "path": "resources/images/printer_thumbnail_o1c_png.png",
+      "sha256": "39a24159d732e1d95f49e4a096e3e357870af4cd0c11300216336c8b2ab3bd3f",
+      "size": [
+        310,
+        304
+      ]
+    },
+    {
+      "model": "O1C2",
+      "path": "resources/images/printer_thumbnail_o1c_png.png",
+      "sha256": "39a24159d732e1d95f49e4a096e3e357870af4cd0c11300216336c8b2ab3bd3f",
+      "size": [
+        310,
+        304
+      ]
+    },
+    {
+      "model": "O1D",
+      "path": "resources/images/printer_thumbnail_h2d_png.png",
+      "sha256": "f475be2ed10c720c64f2bbd68aaa77532931c73a7d9857efe4cf969a47990082",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "model": "O1E",
+      "path": "resources/images/printer_thumbnail_o1e_png.png",
+      "sha256": "a120eded53fc466479fa659d80983daf484cb4c743dc6b4e6d375ac51fcd1e7c",
+      "size": [
+        320,
+        320
+      ]
+    },
+    {
+      "model": "O1S",
+      "path": "resources/images/printer_thumbnail_o1s_png.png",
+      "sha256": "2536572174dbf60c61f414960dd8b8388f899a7c9a5cfc4fa46257e606f78bd4",
+      "size": [
+        320,
+        320
+      ]
+    }
+  ]
+}
