@@ -1,0 +1,12 @@
+{
+  "name": "XTouchWebServer",
+  "version": "2.0.17-security.1",
+  "description": "Arduino ESP32 2.0.17 WebServer with bounded HTTP parsing and multipart security backport",
+  "frameworks": [
+    "arduino"
+  ],
+  "platforms": [
+    "espressif32"
+  ],
+  "license": "LGPL-2.1-or-later"
+}

@@ -1,0 +1,734 @@
+/* Screen palette roles, adapted for readable text on the management light surface. */
+:root {
+  font:
+    14px/1.6 system-ui,
+    "Segoe UI",
+    "Microsoft YaHei",
+    sans-serif;
+  color: #25313b;
+  background: #f4f6f8;
+  --accent: #106296;
+  --blue: #39a1fd;
+  --positive: #2aaa00;
+  --positive-text: #2a5500;
+  --danger: #aa2a00;
+  --error: #d00000;
+  --warning: #faa61e;
+  --warning-text: #905807;
+  --border: #dfe5ea;
+  --readonly-bg: #f4f7fa;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+header,
+main {
+  max-width: 1000px;
+  margin: auto;
+  padding: 24px 20px;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0;
+}
+h1 {
+  font-size: 24px;
+  margin: 0;
+}
+h1 small {
+  display: block;
+  font-weight: 400;
+}
+h2 {
+  font-size: 16px;
+  margin: 0 0 20px;
+}
+h3 {
+  font-size: 14px;
+  margin: 0;
+}
+small,
+.muted,
+footer {
+  font-size: 12px;
+  color: #596b7a;
+}
+section {
+  padding: 22px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 16px 0;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 8px 0;
+  color: #526979;
+}
+input,
+select,
+button {
+  font: inherit;
+  min-width: 0;
+  border: 1px solid #7b8996;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+input,
+select {
+  background: #fff;
+  color: #263d4d;
+}
+input:focus,
+select:focus,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+button,
+.button {
+  cursor: pointer;
+  background: #f5f8fa;
+  color: #284b60;
+  display: inline-block;
+  min-height: 32px;
+  text-decoration: none;
+  text-align: center;
+  padding: 8px 14px;
+  border: 1px solid #d6e0e7;
+  border-radius: 6px;
+}
+button:hover {
+  border-color: var(--blue);
+  background: #f0f7fe;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin: 0;
+}
+a {
+  color: var(--accent);
+}
+[hidden] {
+  display: none !important;
+}
+.workspaceToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 18px 0;
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.tabs button {
+  border: 0;
+  background: transparent;
+  color: #596977;
+}
+.tabs .active {
+  color: var(--accent);
+  background: #eaf4fe;
+}
+.savebar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 0;
+}
+.savebar button {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.feedback {
+  font-size: 12px;
+  color: var(--positive-text);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.feedback:empty {
+  display: none;
+}
+.feedback.error {
+  color: var(--danger);
+}
+#saveFeedback {
+  max-width: 360px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 18px;
+}
+.grid > h3 {
+  grid-column: 1/-1;
+  margin: 16px 0 4px;
+  padding-top: 14px;
+  border-top: 1px solid #e7ecef;
+}
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+section > .sectionHead {
+  margin-bottom: 20px;
+}
+.sectionHead > h2 {
+  margin: 0;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.stats > div {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+}
+.stats b {
+  display: block;
+  font-size: 19px;
+  margin-top: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 9px 0;
+}
+.profile .pick {
+  flex: 1;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+}
+.profile.selected {
+  border-color: var(--blue);
+  background: #f0f7fe;
+}
+.profile > button:not(.pick) {
+  padding: 5px 10px;
+}
+.editor {
+  margin-top: 20px;
+}
+.danger {
+  color: var(--danger) !important;
+}
+.primary,
+.primary:hover,
+#save,
+#saveWifi,
+#loginForm button,
+#passwordForm button {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+.sourceIcon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.lan {
+  color: #39a1fd !important;
+}
+.tokenSource {
+  color: #ff682a !important;
+}
+.phoneSource {
+  color: #2aaa00 !important;
+}
+.emailSource {
+  color: #555555 !important;
+}
+.accountCard {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  margin: 16px 0;
+  background: #fff;
+  overflow: hidden;
+}
+.accountHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #f8fafb;
+  flex-wrap: wrap;
+}
+.accountToggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  font-weight: 600;
+  padding: 0;
+  overflow-wrap: anywhere;
+}
+.accountTools {
+  display: flex;
+  gap: 8px;
+}
+.accountTools button {
+  font-size: 12px;
+  padding: 5px 9px;
+}
+.accountBody {
+  --form-column-width: calc((100% - 18px) / 2);
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+.badge {
+  font-size: 12px;
+  border-radius: 4px;
+  padding: 3px 8px;
+  background: #edf2f5;
+  color: #5e7483;
+  white-space: nowrap;
+}
+.badge.ok {
+  background: #e8f4ee;
+  color: var(--positive-text);
+}
+.methodTabs,
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  max-width: var(--form-column-width, 100%);
+  gap: 8px;
+}
+.methodTabs {
+  margin: 14px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.methodTabs button,
+.actions > button,
+.actions > .button {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.actions { max-width: none; }
+.actions > input[type="file"] { width: 100%; min-width: 0; }
+.sectionHead > button { width: calc((100% - 18px) / 4); flex: 0 0 calc((100% - 18px) / 4); margin: 0 0 0 auto; }
+.sectionHead > button + button { margin-left: 0; }
+.methodTabs .active {
+  color: var(--accent);
+  background: #eaf4fe;
+  border-color: var(--accent);
+}
+.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+.linkedDevices {
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+}
+.linkedDevices .sectionHead button {
+  font-size: 12px;
+  padding: 5px 10px;
+}
+.deviceRow {
+  background: #f5f8fa;
+  border-radius: 6px;
+  padding: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.grid > button,
+.maintenanceGrid section > button {
+  width: calc((100% - 8px) / 2);
+  align-self: end;
+  margin: 8px 0;
+}
+#login,
+#change,
+#setup {
+  max-width: 400px;
+  margin: 6vh auto;
+  padding: 24px;
+}
+#loginForm button,
+#passwordForm button,
+#saveWifi {
+  width: 100%;
+  margin-top: 12px;
+}
+#guestFeedback {
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+}
+#guestFeedback .feedback {
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  padding: 24px 0;
+}
+footer button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--danger);
+  font-size: 12px;
+}
+progress {
+  width: 100%;
+  margin-top: 12px;
+}
+@media (max-width: 700px) {
+  header,
+  main {
+    padding: 18px 14px;
+  }
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+  .stats b {
+    font-size: 17px;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .workspaceToolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .savebar {
+    width: 100%;
+  }
+  .tabs button {
+    padding: 8px;
+  }
+  section {
+    padding: 16px;
+  }
+  .profile {
+    gap: 3px;
+  }
+  .profile > button:not(.pick) {
+    padding: 5px 8px;
+  }
+  .profile .pick {
+    padding: 6px;
+    gap: 8px;
+  }
+  .accountHeader {
+    gap: 8px;
+  }
+  .accountToggle {
+    flex-basis: 70%;
+  }
+  .accountTools {
+    margin-left: auto;
+  }
+  .accountBody,
+  .linkedDevices {
+    padding: 12px;
+  }
+  .sourceIcon {
+    width: 24px;
+    height: 24px;
+  }
+  #saveFeedback {
+    max-width: 65%;
+  }
+}
+
+.wifiRow {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+}
+.wifiRow label {
+  flex: 1;
+  min-width: 0;
+}
+.wifiRow button {
+  margin-bottom: 8px;
+  white-space: nowrap;
+}
+
+.maintenanceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.maintenanceGrid section {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.maintenanceGrid p {
+  line-height: 1.7;
+  margin: 0 0 18px;
+}
+.maintenanceGrid input[type="file"] {
+  width: 100%;
+}
+.deviceDetail {
+  padding: 10px 0;
+  overflow-wrap: anywhere;
+}
+.deviceDetail div {
+  margin-top: 6px;
+}
+.passwordField > .checkbox input {
+  width: 15px;
+  height: 15px;
+}
+@media (max-width: 700px) {
+  .maintenanceGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.authMode footer {
+  display: none;
+}
+.authMode header {
+  padding: 0;
+  margin: 0 0 26px;
+  gap: 14px;
+}
+.authMode header h1 {
+  font-size: 22px;
+}
+.authMode header small {
+  display: none;
+}
+.authMode header select {
+  max-width: 110px;
+}
+.authMode #login,
+.authMode #change,
+.authMode #setup {
+  margin: 16px auto;
+}
+.accountLink {
+  display: block;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.readOnlyValue {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--readonly-bg);
+}
+input.readOnlyValue { cursor: default; }
+
+
+#save.pending {
+  animation: pending 1.8s ease-in-out infinite;
+  outline: 2px solid var(--error);
+  outline-offset: 3px;
+}
+@keyframes pending {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.projectLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.editHint {
+  grid-column: 1/-1;
+  color: #61738a;
+  margin-top: -6px;
+}
+button, label, .deviceDetail { min-width: 0; overflow-wrap: anywhere; }
+.editLocked input,
+.editLocked select {
+  background: var(--readonly-bg);
+  border-style: dashed;
+  cursor: pointer;
+}
+.editLocked > span:not(.inlineNote)::after {
+  content: " ✎";
+  color: #7890a8;
+}
+.editLocked input:focus,
+.editLocked select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.accountName { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.accountChevron { margin-left:auto; flex:0 0 32px; width:32px; height:32px; display:grid; place-items:center; border:1px solid #a7bdca; border-radius:8px; background:#eaf1f6; }
+.accountChevron svg { transition:transform .16s ease; }
+.accountToggle[aria-expanded="true"] .accountChevron svg { transform:rotate(180deg); }
+.accountCard.isOpen { border-color:var(--blue); }
+.accountCard.isOpen .accountHeader { background:#f0f7fe; }
+.passwordField { display:grid; grid-template-columns:minmax(var(--field-title-width,0px),1fr) auto; gap:6px 8px; align-items:start; margin:8px 0; color:#526979; }
+.passwordField > span:not(.inlineNote) { min-width:0; grid-column:1; grid-row:1; white-space:normal; overflow-wrap:anywhere; }
+.passwordField > .inlineNote { grid-column:1/-1; grid-row:2; }
+.passwordField > input { width:100%; grid-column:1/-1; }
+.passwordField > .checkbox { grid-column:2; grid-row:1; justify-self:end; max-width:100%; margin:0; font-size:12px; gap:6px; line-height:1.3; white-space:normal; }
+.accountTools button,.badge { white-space:nowrap; }
+
+.tokenHelp { font-size: 12px; white-space: nowrap; }
+
+/* Group related settings without a long unstructured tail. */
+.settingsGroups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:18px}
+.settingsGroup{min-width:0;margin:0;height:100%;padding:18px;border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;gap:18px}
+.settingsGroup legend{padding:0 6px;font-weight:600}
+.settingsGroup label{margin:0;gap:8px;min-width:0}
+.settingsGroup>label,.settingsGroup>div{width:100%}
+.settingsGroup input:not([type=checkbox]):not([type=range]),.settingsGroup select{width:100%;min-height:42px;margin:0}
+.settingsGroup .muted{margin:0;line-height:1.6}
+#deepTimers{display:grid;gap:12px}
+@media(max-width:700px){.settingsGroups{grid-template-columns:1fr}}
+
+.soundChoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding-top:calc(1.6em + 8px)}
+#audioOptions .soundChoices{padding-top:8px}
+.soundChoices > :nth-child(1 of :not([hidden])):nth-last-child(1 of :not([hidden])){grid-column:1/-1}
+.settingsGroup .check,.settingsGroup .soundChoice{display:flex;flex-direction:row;align-items:center;gap:9px;padding:8px 10px;min-height:42px;border:1px solid var(--border);border-radius:7px;background:#f7fafb}
+.settingsGroup input[type=checkbox]{width:17px;height:17px;flex-shrink:0;margin:0}.soundChoice span{line-height:1.35}
+.settingValue{display:flex;align-items:center;justify-content:space-between}.settingValue output{color:var(--accent);font-variant-numeric:tabular-nums}
+.settingsGroup input[type=range],.settingRange{width:100%;min-height:42px;margin:0;accent-color:var(--accent);padding:0}
+.settingsGroup:not([hidden]):last-child:nth-child(odd of :not([hidden])){grid-column:1/-1}
+@media(max-width:700px){.settingsGroup{padding:16px}}
+
+/* Shared form layout: align to the standard grid column; stack on small screens. */
+.formStack {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: start;
+  align-items: end;
+  gap: 18px;
+  margin-top: 16px;
+}
+.formStack > * {
+  width: 100%;
+  min-width: 0;
+  max-width: var(--form-column-width, 100%);
+}
+.methodTabsInline { margin: 0; padding: 0; border: 0; }
+.methodTabsInline button { min-height: 42px; }
+.grid > .fullWidth { width: 100%; max-width: 100%; }
+.accountBody > .grid { margin-bottom: 18px; }
+.formStack > .formSubmit {
+  width: 100%;
+  margin: 0;
+  min-height: 46px;
+}
+.formSubmit { background: var(--accent); color: white; border-color: var(--accent); }
+button.primary:disabled, button.formSubmit:disabled {
+  background: #e7ebef; border-color: var(--border); color: #72808a; opacity: 1;
+}
+.inputActionRow { display: flex; width: 100%; gap: 8px; align-items: stretch; }
+.inputActionRow input { width: 0; min-width: 0; flex: 1 1 0; }
+.inputActionRow button { flex: 0 0 auto; min-width: 0; margin: 0; white-space: nowrap; }
+input.codeAwaiting, input.codeAwaiting:focus {
+  border: 2px solid var(--positive);
+  outline: none;
+  box-shadow: 0 0 0 2px #27964b18;
+}
+input.codePulse { animation: codeAwaitingPulse 1.2s ease-in-out infinite; }
+@keyframes codeAwaitingPulse {
+  0%, 100% { border-color: var(--positive); box-shadow: 0 0 0 2px #27964b18; }
+  50% { border-color: var(--positive-text); box-shadow: 0 0 0 4px #27964b10; }
+}
+@media (max-width: 700px) {
+  .accountBody { --form-column-width: 100%; }
+  .sectionHead > button { width: 50%; flex-basis: 50%; }
+  .sectionHead:has(#addSimulator) > h2 { width: 100%; }
+  .sectionHead:has(#addSimulator) > button { width: calc((100% - 12px) / 2); flex-basis: calc((100% - 12px) / 2); }
+  .soundChoices { padding-top: 0; }
+  .inputActionRow { flex-wrap: wrap; }
+  .inputActionRow input { flex-basis: 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  input.codePulse, #save.pending { animation: none; }
+  .accountChevron svg { transition: none; }
+}
+/* Required controls use both a visible symbol and native required semantics. */
+:is(label,.passwordField):has(:is(input,select):required:not([readonly]):not(:disabled):not([data-locked="1"])) > span:first-child::after {
+  content: " *";
+  color: var(--danger);
+}
+
+/* A shared, persistent indication for edits not yet saved or verified. */
+input.unsaved, select.unsaved, input.unsaved:focus, select.unsaved:focus {
+  border: 1px solid var(--error);
+  outline-color: var(--error);
+  box-shadow: 0 0 0 1px #c6363620;
+}
+input[type=checkbox].unsaved { outline: 2px solid var(--error); outline-offset: 2px; }
+input[type=range].unsaved { outline: 1px solid var(--error); outline-offset: 2px; border-radius: 6px; }
+
+/* Keep bracketed hints together; allow internal wrapping only on narrow screens. */
+.inlineNote { display: inline-block; max-width: 100%; vertical-align: baseline; overflow-wrap: anywhere; }
+
+/* Button with adjacent metadata, wrapping together on narrow screens. */
+.sectionTools { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-left: auto; min-width: 0; max-width: 100%; }
+.sectionTools .badge { min-width: 0; overflow-wrap: anywhere; }
+.sectionTools button { flex: 0 0 auto; width: auto; margin: 0; padding: 5px 9px; min-height: 32px; white-space: nowrap; }
+
+/* Match one input column on desktop and the full input width on phones. */
+.formActions { column-gap: 18px; }
+@media (max-width: 700px) { .formActions { grid-template-columns: 1fr; } }
+
+/* Shared action semantics: focus/selection blue, success green, warnings gold. */
+.primary:active, #save:active, #saveWifi:active,
+#loginForm button:active, #passwordForm button:active { background: #08456b; }
+input[type=checkbox], input[type=range] { accent-color: var(--accent); }

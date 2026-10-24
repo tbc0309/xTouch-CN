@@ -1,0 +1,14 @@
+dependencies:
+  idf: ">=6.1,<6.2"
+  espressif/arduino-esp32:
+    version: "==3.3.12"
+    override_path: "../.deps/espressif__arduino-esp32"
+  espressif/esp_h264: "==1.4.1"
+  espressif/esp_codec_dev:
+    version: "==1.5.9"
+    rules:
+      - if: "target == esp32p4"
+  espressif/esp_hosted:
+    version: "==3.0.10"
+    rules:
+      - if: "target == esp32p4"

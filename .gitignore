@@ -1,0 +1,40 @@
+.pio
+.vscode
+.DS_Store
+node_modules
+web/vendor/
+web/firmware/
+web/firmware.json
+web/manifest.json
+_site/
+release-images/
+LOCAL-REVIEW.zh-CN.md
+*.ttf
+*.otf
+python3.cmd
+
+__pycache__/
+*.pyc
+boards/.camera-data/
+**/test-cert.pem
+**/test-key.pem
+
+# Generated previews and local hardware records
+*.ppm
+boards/docs/*
+!boards/docs/README.md
+
+# Local-only helpers and generated test records
+local-tools/
+local-tests/
+test-results/
+boards/build*/
+
+# Private development tools and notes
+tools/thumbnail_lab
+boards/tests
+boards/docs/README.md
+boards/ADAPTATION.md
+boards/SHARED-UI.md
+scripts/check_thumbnail_upstream.py
+resources/thumbnail-upstream.json

@@ -1,0 +1,82 @@
+name: Configuration and web installer
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['web/**', 'scripts/build_web.py', 'scripts/build_error_search.py', 'docs/data/error-codes.json', 'boards/**/ota.json', 'boards/**/manifest.json', 'version.json', '.github/workflows/pages.yml']
+  release:
+    types: [published]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  release-deploy:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Deploy the released version from main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh workflow run pages.yml --ref main
+  deploy:
+    if: github.event_name != 'release'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci && npm run bundle
+        working-directory: web
+      - name: Download released images
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(python -c "import json;print(json.load(open('version.json'))['version'])")
+          gh release download "$version" --repo "$GITHUB_REPOSITORY" --pattern xtouch-2.8.bin --pattern xtouch-2.8-full.bin --dir release-images
+          gh release view "$version" --repo "$GITHUB_REPOSITORY" --json assets > release-assets.json
+      - name: Build installer for available release targets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, shutil, subprocess
+          version=json.load(open('version.json'))['version']
+          names={asset['name'] for asset in json.load(open('release-assets.json'))['assets']}
+          command=['python','scripts/build_web.py','--firmware-dir','release-images','--output','_site']
+          for stem in ('esp32-s3-touch-lcd-2.8-v2','esp32-p4-wifi6-touch-lcd-4.3'):
+              expected={stem+'.bin',stem+'-full.bin'}
+              if not names.intersection(expected): continue
+              if not expected.issubset(names): raise SystemExit('Incomplete release target: '+stem)
+              folder=pathlib.Path('release-images')/stem
+              folder.mkdir()
+              for name in sorted(expected):
+                  subprocess.run(['gh','release','download',version,'--repo',os.environ['GITHUB_REPOSITORY'],'--pattern',name,'--dir',str(folder)],check=True)
+              shutil.copy2(pathlib.Path('boards')/stem/'manifest.json', folder/'manifest.json')
+              command+=['--board-firmware-dir',str(folder)]
+          subprocess.run(command,check=True)
+          PY
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
