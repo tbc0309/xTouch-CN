@@ -1,0 +1,119 @@
+{
+  "target": "esp32-p4x-nano-10.1-a",
+  "manufacturerSources": [
+    "https://docs.waveshare.com/ESP32-P4-NANO",
+    "https://www.waveshare.com/esp32-p4-nano.htm",
+    "https://www.waveshare.com/10.1-dsi-touch-a.htm"
+  ],
+  "photo": {
+    "src": "https://docs.waveshare.com/assets/images/ESP32-P4-NANO-1-8cfe405cb81cae2bf1ffc8e7204f1ed5.webp",
+    "alt": "og:image",
+    "page": "https://docs.waveshare.com/ESP32-P4-NANO"
+  },
+  "memorySpecificationVerified": true,
+  "requiredFlashBytes": 16777216,
+  "physicalTested": false,
+  "releaseSupported": false,
+  "rebuildDecision": "核对硬件后决定；纯图片/文档更新不触发固件重编译",
+  "note": "",
+  "boardAuthorSources": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-P4 + ESP32-C6",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-P4-NANO",
+          "locator": "Features / 外接显示接口"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 10.1,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.waveshare.com/10.1-dsi-touch-a.htm",
+          "locator": "所配10.1-DSI-TOUCH-A规格"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        800,
+        1280
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.waveshare.com/10.1-dsi-touch-a.htm",
+          "locator": "所配10.1-DSI-TOUCH-A规格"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "MIPI DSI",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.waveshare.com/10.1-dsi-touch-a.htm",
+          "locator": "所配10.1-DSI-TOUCH-A规格"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-P4-NANO",
+          "locator": "Features / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 32,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-P4-NANO",
+          "locator": "Features / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "GT911 / I²C",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.waveshare.com/10.1-dsi-touch-a.htm",
+          "locator": "所配10.1-DSI-TOUCH-A规格"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "Codec与功放；外接扬声器接口",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-P4-NANO",
+          "locator": "Features / 外接显示接口"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    }
+  },
+  "parameterAuditComplete": false
+}

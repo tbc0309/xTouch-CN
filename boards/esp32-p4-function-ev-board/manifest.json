@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32p4",
+  "version": "1.0.1-test",
+  "application": "esp32-p4-function-ev-board.bin",
+  "fullImage": "esp32-p4-function-ev-board-full.bin",
+  "applicationBytes": 4948416,
+  "applicationOffset": 131072,
+  "sha256": "ebd7f33aaddd696a25e7e42605bf97b9c53db1f1b4db28d7007f4934d606b9b1",
+  "fullSha256": "be646a81d7a343dd7632b19e20f2f74db3c8e3585eb0403316dcbcc8fc6a4d26",
+  "project": "xp_3f2cf41525379981300b",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

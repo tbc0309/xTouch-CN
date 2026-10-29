@@ -10,6 +10,9 @@
 static sd_pwr_ctrl_handle_t cardPower;
 #endif
 bool NativeCard::begin(){
+#if defined(XTOUCH_PORT_SD_DISABLED) && XTOUCH_PORT_SD_DISABLED
+ return false; // Unmapped sockets must not inherit another board's GPIOs.
+#else
  if(card)return true;
 #if defined(XTOUCH_BOARD_CYD)
  static bool initialized=false;
@@ -48,6 +51,7 @@ bool NativeCard::begin(){
 #endif
  }
  return card!=nullptr;
+#endif
 #endif
 }
 void NativeCard::end(){if(card){esp_vfs_fat_sdcard_unmount("/sdcard",card);card=nullptr;}

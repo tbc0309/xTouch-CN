@@ -1,0 +1,1 @@
+set(XTOUCH_BSP_PROFILE ON)

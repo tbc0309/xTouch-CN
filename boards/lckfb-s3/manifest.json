@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32s3",
+  "version": "1.0.1-test",
+  "application": "lckfb-s3.bin",
+  "fullImage": "lckfb-s3-full.bin",
+  "applicationBytes": 3424704,
+  "applicationOffset": 131072,
+  "sha256": "64ae6ba3dda6b19553711a368fe9b0079789afa128559506439c31d525719faf",
+  "fullSha256": "81ef92c5e33123251e454698b4d2f22f9984be35bcd62291899581f330c4764a",
+  "project": "xt_lckfb_s3",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

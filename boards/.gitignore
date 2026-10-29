@@ -9,3 +9,17 @@ __pycache__/
 *.ppm
 .camera-data/
 **/managed_components/
+
+# New port targets share one dependency lock per MCU family.
+**/dependencies.lock
+!port-project-s3/dependencies.lock
+!port-project-p4/dependencies.lock
+!esp32-s3-box-3/dependencies.lock
+!esp32-s3-korvo2-lcd/dependencies.lock
+!esp32-s3-korvo2-lcd-rndis/dependencies.lock
+!espressif-s3-box/dependencies.lock
+!waveshare-esp32-35/dependencies.lock
+!waveshare-cam-28/dependencies.lock
+!waveshare-cam-35/dependencies.lock
+!m5stack-tab5/dependencies.lock
+!m5stack-tab5-p4x/dependencies.lock

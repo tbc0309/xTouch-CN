@@ -1,0 +1,166 @@
+{
+  "id": "guition-jc4827w543-ext-amp",
+  "chip": "esp32s3",
+  "screen": [
+    480,
+    272
+  ],
+  "screenInches": 4.3,
+  "flashMB": 4,
+  "psramMB": 8,
+  "releaseSupported": false,
+  "physicalTested": false,
+  "nativeBuildAllowed": false,
+  "selection": "retained",
+  "sources": [
+    "https://components.espressif.com/components/guition-jc/guition_boards/versions/0.1.0/readme",
+    "https://raw.githubusercontent.com/Guition-JC/Guition/main/components/board/guition_boards/README.md",
+    "https://www.guition.com/icms/upload/fb081940d6fc11f09850077a33e1404f/FTPData/UEditor/file/2026121/1768961095791/JC4827W543%20Specifications-EN.pdf",
+    "https://www.guition.com/model-selection"
+  ],
+  "otaChannels": [
+    "main",
+    "test"
+  ],
+  "backend": "qspi-nv3041a",
+  "panel": "NV3041A / ST77916 / ST3401A（资料冲突，未选定）",
+  "touch": "N/R/C后缀未选定",
+  "codec": "external-I2S",
+  "pins": {
+    "clock": 47,
+    "cs": 45,
+    "data0": 21,
+    "data1": 48,
+    "data2": 40,
+    "data3": 39,
+    "backlight": 1,
+    "sda": 8,
+    "scl": 4,
+    "touchReset": 38,
+    "touchInterrupt": 3,
+    "bclk": 9,
+    "ws": 14,
+    "dout": 16
+  },
+  "parkLow": [
+    42,
+    2,
+    41
+  ],
+  "blockers": [
+    "容量和面板冲突与标准版相同；未确定外接功放接线前不能驱动未确认的管脚。"
+  ],
+  "implementationTargets": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3R8",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.guition.com/model-selection",
+          "locator": "JC4827W543 N/R/C后缀"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 4.3,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.guition.com/model-selection",
+          "locator": "JC4827W543 N/R/C后缀"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        480,
+        272
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.guition.com/icms/upload/fb081940d6fc11f09850077a33e1404f/FTPData/UEditor/file/2026121/1768961095791/JC4827W543%20Specifications-EN.pdf",
+          "locator": "第3/4页：480×272；第4页Driver chip写ST3401A"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "规格书ST3401A；厂家组件ST77916；既有驱动NV3041A，尚未消歧",
+      "status": "conflict",
+      "sources": [
+        {
+          "url": "https://www.guition.com/icms/upload/fb081940d6fc11f09850077a33e1404f/FTPData/UEditor/file/2026121/1768961095791/JC4827W543%20Specifications-EN.pdf",
+          "locator": "第4页Driver chip，与厂家组件和既有驱动不一致"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Guition-JC/Guition/main/components/board/guition_boards/README.md",
+          "locator": "jc4827w543驱动表"
+        }
+      ],
+      "note": "规格书存在旧SKU文字，不能据此直接更换驱动；需对应PCB/面板批次。"
+    },
+    "flashMB": {
+      "value": 4,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.guition.com/icms/upload/fb081940d6fc11f09850077a33e1404f/FTPData/UEditor/file/2026121/1768961095791/JC4827W543%20Specifications-EN.pdf",
+          "locator": "第3页 Product description：Flash 4MB / PSRAM 8MB"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.guition.com/icms/upload/fb081940d6fc11f09850077a33e1404f/FTPData/UEditor/file/2026121/1768961095791/JC4827W543%20Specifications-EN.pdf",
+          "locator": "第3页 Product description：Flash 4MB / PSRAM 8MB"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "GT911 / XPT2046 / 无，按后缀",
+      "status": "conflict",
+      "sources": [
+        {
+          "url": "https://components.espressif.com/components/guition-jc/guition_boards/versions/0.1.0/readme",
+          "locator": "jc4827w543 表"
+        }
+      ],
+      "note": "厂家选型表写480×270，组件写480×272；不能将无后缀目标等同于某一实物。"
+    },
+    "audio": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    },
+    "indicator": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    }
+  },
+  "parameterAuditComplete": false,
+  "memorySpecificationVerified": true,
+  "sourceStatus": "blocked",
+  "nativeCompiled": false,
+  "requiredInputs": [
+    "确认N/R/C装配后缀和实际面板IC",
+    "外接功放与板载音频信号隔离方案",
+    "为4MB Flash确定可接受的功能/OTA方案"
+  ],
+  "pinsStatus": "原始例程引脚，仅供核对；未注册为可编译目标",
+  "exclusionReasons": [],
+  "defaultTouchAudit": {
+    "status": "retained-touch-configuration",
+    "reason": "对应源码明确初始化GT911坐标触摸，保留该触摸配置；4MB Flash和面板批次冲突单独记为构建阻塞，不再列为触摸待确认。",
+    "sources": []
+  }
+}

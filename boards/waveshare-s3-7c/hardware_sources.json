@@ -1,0 +1,124 @@
+{
+  "target": "waveshare-s3-7c",
+  "manufacturerSources": [
+    "https://docs.waveshare.com/ESP32-S3-Touch-LCD-7C-BOX",
+    "https://github.com/waveshareteam/ESP32-S3-Touch-LCD-7C/tree/73f8b90df1c684858e0c351afca3a09f5b96bdac"
+  ],
+  "photo": {
+    "src": "https://docs.waveshare.com/assets/images/ESP32-S3-Touch-LCD-7C-BOX-1-9fabcab83f7b43da6a0761814fcad1ad.webp",
+    "alt": "og:image",
+    "page": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-7C-BOX"
+  },
+  "memorySpecificationVerified": true,
+  "requiredFlashBytes": 16777216,
+  "physicalTested": false,
+  "releaseSupported": false,
+  "rebuildDecision": "厂家复核已修正CH32寄存器宽度及RGB同步时序；必须重新编译，尚未实物验收。",
+  "note": "厂家现售32MB Flash/16MB PSRAM；固件采用16MB分区和厂家QIO模式。CH32方向/输出为16位，不能套用4.3C的8位接口。",
+  "boardAuthorSources": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-7C-BOX",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 7,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-7C-BOX",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        800,
+        480
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-7C-BOX",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "RGB；型号另核",
+      "status": "partial",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-7C-BOX",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": "已证实部分与仍待确认部分分别说明；不计为整项核实完成。"
+    },
+    "flashMB": {
+      "value": 32,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-7C-BOX",
+          "locator": "Features / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-7C-BOX",
+          "locator": "Features / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "GT911 / I²C",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-7C-BOX",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "ES8389 + ES7210；扬声器接口",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-7C-BOX",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "value": "PWR、充电灯及用户可定义STA灯；非RGB",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-7C-BOX",
+          "locator": "Features / Onboard LED indicators"
+        }
+      ],
+      "note": ""
+    }
+  },
+  "parameterAuditComplete": false
+}

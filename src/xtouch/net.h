@@ -13,6 +13,7 @@
 #include "ota-certs.h"
 #include "ota_endpoint.h"
 #include "firmware_target.h"
+#include "ota_manifest_policy.h"
 
 static std::atomic<bool> xtouch_clock_synced{false};
 static void xtouch_clock_on_sync(struct timeval *) { xtouch_clock_synced.store(true); }
@@ -62,17 +63,18 @@ static bool xtouch_ota_fetch_manifest(String &body,bool manual=false){
     xtouch_start_clock_sync();
     while(time(NULL)<1704067200&&millis()-started<(manual?6000U:3000U))delay(10);
     if(time(NULL)<1704067200)return false;
-    XTouchHttpClient http;http.setConnectTimeout(2000);http.setTimeout(1000);
-    if(!http.begin("https://raw.githubusercontent.com" XTOUCH_OTA_MANIFEST_PATH,xtouch_ota_ca)||http.GET()!=200)return false;
-    const int length=http.getSize();if(length>16384)return false;
-    body="";body.reserve(length>0?length:1024);
-    while(millis()-started<budget&&http.available()){
-        body+=char(http.read());
-        if(body.length()>16384){body="";return false;}
-    }
-    const bool ok=http.complete()&&body.length()>0&&(length<0||body.length()==unsigned(length));
-    if(!ok)body="";
-    return ok;
+    auto fetch=[&](const char *path,String &candidate){
+        if(millis()-started>=budget)return false;
+        XTouchHttpClient http;http.setConnectTimeout(2000);http.setTimeout(1000);
+        const String url=String("https://raw.githubusercontent.com")+path;
+        if(!http.begin(url.c_str(),xtouch_ota_ca)||http.GET()!=200){http.end();return false;}
+        const int length=http.getSize();if(length>16384){http.end();return false;}
+        candidate.reserve(length>0?length:1024);
+        while(millis()-started<budget&&http.available()&&candidate.length()<=16384)candidate+=char(http.read());
+        const bool complete=http.complete()&&candidate.length()>0&&candidate.length()<=16384&&(length<0||candidate.length()==unsigned(length));
+        http.end();return complete;
+    };
+    return XTouchOtaSelection::choose(xtouch_ota_manifest_paths,fetch,XTOUCH_FIRMWARE_FILENAME,XTOUCH_FIRMWARE_MAX_BYTES,body);
 }
 
 static bool xtouch_ota_open(XTouchHttpClient &http,

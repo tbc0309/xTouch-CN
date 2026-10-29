@@ -1,0 +1,123 @@
+{
+  "target": "esp32-p4x-function-ev-board",
+  "manufacturerSources": [
+    "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4-function-ev-board/user_guide.html"
+  ],
+  "photo": {
+    "src": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/_images/esp32-p4-function-ev-board-isometric_v1.5.2.png",
+    "alt": "ESP32-P4-Function-EV-Board",
+    "page": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4-function-ev-board/user_guide.html"
+  },
+  "memorySpecificationVerified": true,
+  "requiredFlashBytes": 16777216,
+  "physicalTested": false,
+  "releaseSupported": false,
+  "rebuildDecision": "核对硬件后决定；纯图片/文档更新不触发固件重编译",
+  "note": "",
+  "boardAuthorSources": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-P4 + ESP32-C6-MINI-1",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4x-function-ev-board/user_guide.html",
+          "locator": "Description of Components / Accessories"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 7,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4x-function-ev-board/user_guide.html",
+          "locator": "Description of Components / Accessories"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        1024,
+        600
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4x-function-ev-board/user_guide.html",
+          "locator": "Description of Components / Accessories"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "EK79007 / MIPI DSI",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4x-function-ev-board/user_guide.html",
+          "locator": "Description of Components / Accessories"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4x-function-ev-board/user_guide.html",
+          "locator": "Description of Components / Accessories"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 32,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4x-function-ev-board/user_guide.html",
+          "locator": "Ordering Information / PSRAM"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "GT911（LCD配件）",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4x-function-ev-board/user_guide.html",
+          "locator": "Description of Components / Accessories"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "ES8311 + NS4150B；外接4Ω/3W扬声器",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4x-function-ev-board/user_guide.html",
+          "locator": "Description of Components / Accessories"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "value": "5V电源指示灯；非RGB",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4x-function-ev-board/user_guide.html",
+          "locator": "Description of Components / Accessories"
+        }
+      ],
+      "note": ""
+    }
+  },
+  "parameterAuditComplete": true
+}

@@ -1,0 +1,118 @@
+{
+  "target": "waveshare-s3-43c",
+  "manufacturerSources": [
+    "https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3C",
+    "https://www.waveshare.com/esp32-s3-touch-lcd-4.3c.htm"
+  ],
+  "photo": {
+    "src": "https://www.waveshare.com/media/catalog/product/cache/1/image/560x560/9df78eab33525d08d6e5fb8d27136e95/e/s/esp32-s3-touch-lcd-4.3c-1.jpg",
+    "alt": "ESP32-S3 4.3inch AI Voice Touch Display Development Board, 800 × 480 Resolution, 5-Point Touch, Dual-MIC Array, Supports 2.4GHz Wi-Fi & BLE 5",
+    "page": "https://www.waveshare.com/esp32-s3-touch-lcd-4.3c.htm"
+  },
+  "memorySpecificationVerified": true,
+  "requiredFlashBytes": 16777216,
+  "physicalTested": false,
+  "releaseSupported": false,
+  "rebuildDecision": "核对硬件后决定；纯图片/文档更新不触发固件重编译",
+  "note": "",
+  "boardAuthorSources": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3C",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 4.3,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3C",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        800,
+        480
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3C",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "RGB；型号另核",
+      "status": "partial",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3C",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": "已证实部分与仍待确认部分分别说明；不计为整项核实完成。"
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3C",
+          "locator": "Features / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3C",
+          "locator": "Features / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "GT911 / I²C",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3C",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "ES8311 + ES7210；扬声器接口",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-4.3C",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    }
+  },
+  "parameterAuditComplete": false
+}

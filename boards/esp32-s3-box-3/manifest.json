@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32s3",
+  "version": "1.0.1-test",
+  "application": "esp32-s3-box-3.bin",
+  "fullImage": "esp32-s3-box-3-full.bin",
+  "applicationBytes": 3445104,
+  "applicationOffset": 131072,
+  "sha256": "bffb067414cbba7546af0fcf7f3ee7956379aba5e71dbb4af7f32a8280e8f19a",
+  "fullSha256": "5bac6bbdc6568c3049d456ca48428317f7965c8687086e166a58b1093fb043cb",
+  "project": "xt_esp32_s3_box_3",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

@@ -4,6 +4,8 @@ from collections import Counter
 import hashlib
 import struct
 import subprocess
+import os
+import sys
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('build_dir',type=pathlib.Path)
 parser.add_argument('--release',action='store_true',help='Reject laboratory test APIs')
@@ -123,11 +125,40 @@ for name,values in portal_arrays:
  payload=bytes(int(value,16) for value in re.findall(r'0x[0-9a-fA-F]+',values))
  if not payload or payload not in image_bytes:raise SystemExit('Linked portal resource does not match source/module profile: '+name)
 dependencies=json.loads((pathlib.Path(__file__).resolve().parents[1]/'boards/dependencies.json').read_text(encoding='utf-8'))
+policy_path=root/'resources/ota_channels.json'
+compiled_ota=None
+if policy_path.exists():
+ policy=json.loads(policy_path.read_text(encoding='utf-8'))
+ channels=policy['channels']
+ if channels not in (['main'],['main','test']) or policy['repository']!='tbc0309/xTouch-CN':
+  raise SystemExit('Unexpected OTA channel policy')
+ from release_policy import read as release_identity
+ try:release=release_identity(root)
+ except ValueError as error:raise SystemExit(str(error))
+ if image_bytes[48:80].split(b'\0',1)[0].decode('ascii')!=release['version']:
+  raise SystemExit('Application descriptor version differs from the release identity; rebuild required')
+ sys.path.insert(0,str(root/'boards'))
+ from board_catalog import BOARDS
+ matches=[board for board in BOARDS.values() if board['project']==project and board['chip']==data.get('target')]
+ if len(matches)!=1:raise SystemExit('Cannot identify exact OTA board from native application')
+ board=matches[0]
+ if board.get('source'):
+  for macro,key in [('XTOUCH_DEEP_WAKE_PIN','deepSleepWakeGpio'),('XTOUCH_SLEEP_BUTTON_PIN','sleepButtonGpio')]:
+   if application_profile.get(macro)!=str(board[key]):raise SystemExit('Compiled board capability changed; reconfigure/rebuild: '+macro)
+  for macro,supported in [('XTOUCH_FEATURE_INDICATOR',board['statusIndicatorSupported']),('XTOUCH_FEATURE_DEEP_SLEEP',board['deepSleepWakeGpio']>=0)]:
+   if not supported and application_profile.get(macro)!='0':raise SystemExit('Unsupported hardware module compiled: '+macro)
+ prefix='/'+policy['repository']+'/'
+ for channel in ['main','test']:
+  path=(prefix+channel+'/boards/'+board['directory']+'/ota.json').encode()
+  if (path in image_bytes)!=(channel in channels):raise SystemExit('Linked OTA endpoints differ from source policy; reconfigure and rebuild')
+ if ('/'+board['stem']+'.bin').encode() not in image_bytes:raise SystemExit('Linked OTA firmware filename differs from exact board identity')
+ compiled_ota={'board':board['directory'],'channels':channels}
 report={'lvgl':dependencies['libraries']['lvgl']['ref'],'laboratoryBuild':laboratory,'passed':True,'target':data.get('target'),'components':len(components),'framework':'ESP-IDF','arduinoFramework':False,'pubSubClient':False,'imageBytes':image.stat().st_size,'otaSlotBytes':slot_bytes,'imageMatchesElf':True,'scope':'build dependency, binary/ELF identity, capacity and final link audit; not hardware validation'}
 report['applicationLvglProfileMatches']=True
 report['indicatorDriverLinked']=bool(indicator_drivers)
 report['compiledPortalMatches']=True
 report['passiveSensorBudget']=passive_sensor_budget
 report['mainTaskCore']=main_task_core
+if compiled_ota:report['compiledOtaPolicy']=compiled_ota
 if args.report:args.report.write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 print(json.dumps(report))

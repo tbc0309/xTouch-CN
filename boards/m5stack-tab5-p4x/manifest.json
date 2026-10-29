@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32p4",
+  "version": "1.0.1-test",
+  "application": "m5stack-tab5-p4x.bin",
+  "fullImage": "m5stack-tab5-p4x-full.bin",
+  "applicationBytes": 5014272,
+  "applicationOffset": 131072,
+  "sha256": "1080d4f5f80580e9cec2628ae62036cded2ac527f692e4686bcb06cf85cdca04",
+  "fullSha256": "c40d418025ce07f3a59009a5dedd6351ea0e21b8f540dda731729919cb7b2ea4",
+  "project": "xt_m5stack_tab5_p4x",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

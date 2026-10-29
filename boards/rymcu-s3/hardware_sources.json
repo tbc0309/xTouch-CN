@@ -1,0 +1,123 @@
+{
+  "target": "rymcu-s3",
+  "manufacturerSources": [
+    "https://raw.githubusercontent.com/rymcu/BigSmart-Open/main/README.md"
+  ],
+  "photo": {
+    "src": "https://raw.githubusercontent.com/rymcu/BigSmart-Open/main/images/home.jpg",
+    "alt": "README product image",
+    "page": "https://raw.githubusercontent.com/rymcu/BigSmart-Open/main/README.md"
+  },
+  "memorySpecificationVerified": true,
+  "requiredFlashBytes": 16777216,
+  "physicalTested": false,
+  "releaseSupported": false,
+  "rebuildDecision": "核对硬件后决定；纯图片/文档更新不触发固件重编译",
+  "note": "",
+  "boardAuthorSources": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3-WROOM-1-N16R8",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/rymcu/BigSmart-Open/blob/main/README.md",
+          "locator": "主要特性"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 2.8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/rymcu/BigSmart-Open/blob/main/README.md",
+          "locator": "主要特性"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        320,
+        240
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/rymcu/BigSmart-Open/blob/main/README.md",
+          "locator": "主要特性"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "ST7789 / SPI",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/rymcu/BigSmart-Open/blob/main/README.md",
+          "locator": "主要特性"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/rymcu/BigSmart-Open/blob/main/README.md",
+          "locator": "主要特性 / N16R8"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/rymcu/BigSmart-Open/blob/main/README.md",
+          "locator": "主要特性 / N16R8"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "GT911 / I²C",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/rymcu/BigSmart-Open/blob/main/README.md",
+          "locator": "主要特性"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "ES8311 + NS4150B；ES7210输入",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/rymcu/BigSmart-Open/blob/main/README.md",
+          "locator": "主要特性"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "value": "WS2812B RGB / GPIO43（与UART0_TX复用）",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/rymcu/BigSmart-Open/blob/main/README.md",
+          "locator": "主要特性"
+        }
+      ],
+      "note": ""
+    }
+  },
+  "parameterAuditComplete": true
+}

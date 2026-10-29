@@ -1,0 +1,5 @@
+dependencies:
+  espressif/esp32_s3_korvo_2:
+    git: https://github.com/espressif/esp-bsp.git
+    path: bsp/esp32_s3_korvo_2
+    version: f259a6abd5808019b1903a422092a4234ca95a51

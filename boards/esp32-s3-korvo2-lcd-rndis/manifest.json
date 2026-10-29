@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32s3",
+  "version": "1.0.1-test",
+  "application": "esp32-s3-korvo2-lcd-rndis.bin",
+  "fullImage": "esp32-s3-korvo2-lcd-rndis-full.bin",
+  "applicationBytes": 3440816,
+  "applicationOffset": 131072,
+  "sha256": "c79b63599b47cd8dfbe6a77d85afeb001095ce42b4ec10eb00743c88e6a6fa98",
+  "fullSha256": "c1f991797e4cac9e14312a265f167fef81966b52fbd1e1073bed63e899228ebc",
+  "project": "xt_esp32_s3_korvo2_lcd_rndis",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

@@ -1,0 +1,124 @@
+{
+  "target": "espressif-s3-lcd-ev2",
+  "manufacturerSources": [
+    "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-lcd-ev-board/user_guide.html",
+    "https://github.com/espressif/esp-bsp/tree/f259a6abd5808019b1903a422092a4234ca95a51/bsp/esp32_s3_lcd_ev_board"
+  ],
+  "photo": {
+    "src": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/_images/ESP32-S3-LCD-EV-Board_800x480.png",
+    "alt": "ESP32-S3-LCD-EV-Board SUB3 800×480",
+    "page": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-lcd-ev-board/user_guide.html"
+  },
+  "memorySpecificationVerified": true,
+  "requiredFlashBytes": 16777216,
+  "physicalTested": false,
+  "releaseSupported": false,
+  "rebuildDecision": "厂家复核已修正面板、时序、模组引脚及背光假设；必须重新编译，尚未实物验收。",
+  "note": "SUB3 4.3寸ST7262E43/GT1151；18MHz；按8/16MB PSRAM模组切换I²C与RGB引脚。无软件背光接口，黑帧待机不能等同关闭背光。",
+  "boardAuthorSources": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3-WROOM-1-N16R16V（当前v1.5）",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-lcd-ev-board/user_guide.html",
+          "locator": "SUB3 / 主板组件"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 4.3,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-lcd-ev-board/user_guide.html",
+          "locator": "SUB3 / 主板组件"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        800,
+        480
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-lcd-ev-board/user_guide.html",
+          "locator": "SUB3 / 主板组件"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "ST7262E43 / RGB；SUB3",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-lcd-ev-board/user_guide.html",
+          "locator": "SUB3 / 主板组件"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-lcd-ev-board/user_guide.html",
+          "locator": "v1.5 / ESP32-S3-WROOM-1-N16R16V"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-lcd-ev-board/user_guide.html",
+          "locator": "v1.5 / ESP32-S3-WROOM-1-N16R16V"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "GT1151 / I²C",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-lcd-ev-board/user_guide.html",
+          "locator": "SUB3 / 主板组件"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "ES8311 + NS4150B；外接扬声器",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-lcd-ev-board/user_guide.html",
+          "locator": "SUB3 / 主板组件"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "value": "可编程RGB LED",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-lcd-ev-board/user_guide.html",
+          "locator": "SUB3 / 主板组件"
+        }
+      ],
+      "note": ""
+    }
+  },
+  "parameterAuditComplete": true
+}

@@ -1,0 +1,212 @@
+{
+  "atk-dnesp32s3-box3": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "chd-esp32s3-box": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "chd-esp32s3-box-lcd35": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4-function-ev-board": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4x-function-ev-board": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp-box": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp-box-3": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32s3-korvo2-v3": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32s3-korvo2-v3-rndis": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp-s3-lcd-ev-board-2": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "freenove-esp32s3-display-2.8-lcd": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "guition-jc4827w543": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "guition-jc4827w543-ext-amp": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "lichuang-dev": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "m5stack-core-s3": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "m5stack-tab5": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "m5stack-tab5-p4x": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "quandong-s3-dev": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-s3-spi-4.0": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "rymcu-bigsmart": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4-nano-10.1-a": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4x-nano-10.1-a": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4-wifi6-touch-lcd-5": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4x-wifi6-touch-lcd-5": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4-wifi6-touch-lcd-7b": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4x-wifi6-touch-lcd-7b": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4-wifi6-touch-lcd-7": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4x-wifi6-touch-lcd-7": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4-wifi6-touch-lcd-8": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4x-wifi6-touch-lcd-8": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4-wifi6-touch-lcd-10.1": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4x-wifi6-touch-lcd-10.1": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4-wifi6-touch-lcd-3.5": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-p4x-wifi6-touch-lcd-3.5": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-s3-cam-2.8": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-s3-cam-3.5": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-s3-touch-lcd-3.5": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-s3-touch-lcd-3.5b": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-s3-touch-lcd-4.3c": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-s3-touch-lcd-7c": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-touch-lcd-3.5": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "yunliao-s3": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  }
+}

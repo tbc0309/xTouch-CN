@@ -1,0 +1,130 @@
+{
+  "target": "esp32-p4-wifi6-touch-lcd-10.1",
+  "manufacturerSources": [
+    "https://docs.waveshare.com/ESP32-P4-WIFI6-Touch-LCD-X",
+    "https://github.com/waveshareteam/ESP32-P4-WIFI6-Touch-LCD-X"
+  ],
+  "photo": {
+    "src": "https://docs.waveshare.com/assets/images/ESP32-P4-WIFI6-Touch-LCD-10.1-1-bd57a5942304d92d5954048cd676f20d.webp",
+    "alt": "esp32-p4-wifi6-touch-lcd-10.1",
+    "page": "https://docs.waveshare.com/ESP32-P4-WIFI6-Touch-LCD-X"
+  },
+  "memorySpecificationVerified": true,
+  "requiredFlashBytes": 33554432,
+  "physicalTested": false,
+  "releaseSupported": false,
+  "rebuildDecision": "核对硬件后决定；纯图片/文档更新不触发固件重编译",
+  "panelTableComparison": {
+    "board": "esp32-p4-wifi6-touch-lcd-10.1",
+    "manufacturerCommands": 200,
+    "localCommands": 200,
+    "matchesManufacturer": true
+  },
+  "note": "",
+  "boardAuthorSources": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-P4 + ESP32-C6",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-P4-WIFI6-Touch-LCD-X",
+          "locator": "Features / Hardware Description"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 10.1,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-P4-WIFI6-Touch-LCD-X",
+          "locator": "Features / Hardware Description"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        800,
+        1280
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-P4-WIFI6-Touch-LCD-X",
+          "locator": "所选屏幕规格 / 厂家示例对应面板"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "MIPI DSI",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-P4-WIFI6-Touch-LCD-X",
+          "locator": "所选屏幕规格 / 厂家示例对应面板"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 32,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-P4-WIFI6-Touch-LCD-X",
+          "locator": "Features / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 32,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-P4-WIFI6-Touch-LCD-X",
+          "locator": "Features / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "电容触摸；控制器按屏幕型号核实",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-P4-WIFI6-Touch-LCD-X",
+          "locator": "所选屏幕规格 / 厂家示例对应面板"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "ES8311；扬声器接口",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-P4-WIFI6-Touch-LCD-X",
+          "locator": "Features / Hardware Description"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "value": "电源/充电指示灯；软件状态灯需按原理图区分",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-P4-WIFI6-Touch-LCD-X",
+          "locator": "Features / Hardware Description"
+        }
+      ],
+      "note": ""
+    }
+  },
+  "parameterAuditComplete": true
+}

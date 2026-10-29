@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32s3",
+  "version": "1.0.1-test",
+  "application": "waveshare-s3-35b.bin",
+  "fullImage": "waveshare-s3-35b-full.bin",
+  "applicationBytes": 4849152,
+  "applicationOffset": 131072,
+  "sha256": "1d14ac7dfd2df781461ff669bcb89b4a4d10e4ac441793b30eca45c58552ab19",
+  "fullSha256": "8f67e9e8470f991d5276b74881d92cebace53e1b213349c1a5518a413c26dc69",
+  "project": "xs_90ef9c57eade348fdce9",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

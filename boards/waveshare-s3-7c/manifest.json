@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32s3",
+  "version": "1.0.1-test",
+  "application": "waveshare-s3-7c.bin",
+  "fullImage": "waveshare-s3-7c-full.bin",
+  "applicationBytes": 4827216,
+  "applicationOffset": 131072,
+  "sha256": "2908c0051bd90a57460ff6e90c8a47e133e9176bdb80f382f965e1245ddd3e74",
+  "fullSha256": "f4e1fcc264a8326f7ebdb2490f61c923035bd2aacf511ea22dd7f86bbdee2e05",
+  "project": "xs_6d32f823f43791067265",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

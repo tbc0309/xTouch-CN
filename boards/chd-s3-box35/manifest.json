@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32s3",
+  "version": "1.0.1-test",
+  "application": "chd-s3-box35.bin",
+  "fullImage": "chd-s3-box35-full.bin",
+  "applicationBytes": 4853072,
+  "applicationOffset": 131072,
+  "sha256": "4370497eb569473763b0b48db5a5654c8201bf571cf26b262173c514e0a3ebe7",
+  "fullSha256": "a99f54d811375eb02076e698796029d9f2fc17bb13f479721731b688ca43fbcb",
+  "project": "xt_chd_s3_box35",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

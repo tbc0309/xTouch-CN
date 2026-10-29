@@ -364,3 +364,9 @@ Official notice: [OPPO / ColorOS](https://www.coloros.com/article/A00000050/). S
 The ST77922 hardware command table is adapted from [xiaozhi-esp32](https://github.com/78/xiaozhi-esp32/tree/38bc4f443b96da306a4f7c77375042e46d588e64/main/boards/lcdwiki-es3c35p), pinned to commit `38bc4f443b96da306a4f7c77375042e46d588e64`. Its full MIT notice is retained in [LICENSE.hardware-init](boards/lcdwiki-es3c35p/LICENSE.hardware-init). This attribution covers the hardware initialization table, not a dependency on the reference application.
 
 The native ES3C35P port additionally uses Espressif esp_lcd_st77922 2.1.1, esp_codec_dev 1.5.9 and led_strip 3.1.1. Their upstream licenses remain in the IDF-managed components; exact versions are pinned in the board component manifest.
+
+## Additional test-board components
+
+The BOX-3, Korvo-2 and Tab5 board support is pinned to Espressif ESP-BSP revision `f259a6abd5808019b1903a422092a4234ca95a51` (Apache-2.0). The retained Tab5 display, touch, audio and power sources preserve their copyright notices; provenance and local changes are recorded in [SOURCE.json](boards/candidates/common/xtouch_tab5_hardware/SOURCE.json), with the full [Apache-2.0 license](boards/candidates/common/xtouch_tab5_hardware/LICENSE). Optional capture, USB, sensor and storage implementations are not included in that retained component.
+
+Other board-specific IDF components retain their original licenses through the dependency manager. Exact component versions are locked in the corresponding project `dependencies.lock` files. Board product images identify hardware variants; their source pages are recorded in [the image source inventory](docs/images/test-boards/SOURCES.json).

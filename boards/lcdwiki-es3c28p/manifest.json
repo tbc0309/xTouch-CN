@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32s3",
+  "version": "1.0.1-test",
+  "application": "lcdwiki-es3c28p.bin",
+  "fullImage": "lcdwiki-es3c28p-full.bin",
+  "applicationBytes": 3447344,
+  "applicationOffset": 131072,
+  "sha256": "9c10c6f2900b5993913657c91239f0a2f1d857ee8e93071ffe963dbe3732ce77",
+  "fullSha256": "98d8cda4ac375b0e676212502d6769a4a16829dae09572941fc15b3d427fdd53",
+  "project": "xt_lcdwiki_es3c28p",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

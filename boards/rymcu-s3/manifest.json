@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32s3",
+  "version": "1.0.1-test",
+  "application": "rymcu-s3.bin",
+  "fullImage": "rymcu-s3-full.bin",
+  "applicationBytes": 3443168,
+  "applicationOffset": 131072,
+  "sha256": "dbf3c5fec21e7cc37df20dc1b8efbb9be23e746ca3d3ae77c7bf4db4d9c267e9",
+  "fullSha256": "37d152b0a4e235320728d28ba12e93f3646808283a5ef94379140475dc636bc6",
+  "project": "xt_rymcu_s3",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

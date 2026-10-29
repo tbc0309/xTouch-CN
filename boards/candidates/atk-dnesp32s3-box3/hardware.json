@@ -1,0 +1,134 @@
+{
+  "id": "atk-dnesp32s3-box3",
+  "chip": "esp32s3",
+  "screen": [
+    320,
+    240
+  ],
+  "screenInches": 2.4,
+  "flashMB": 16,
+  "psramMB": 8,
+  "releaseSupported": false,
+  "physicalTested": false,
+  "nativeBuildAllowed": false,
+  "selection": "pending-touch",
+  "sources": [
+    "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+    "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/download/"
+  ],
+  "photo": {
+    "src": "https://wiki.alientek.com/assets/images/dnesp32s3-box3-show-108091f86c799a2c39e161f98046d971.png",
+    "alt": "atk-dnesp32s3-box3",
+    "page": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/"
+  },
+  "otaChannels": [
+    "main",
+    "test"
+  ],
+  "backend": "i80",
+  "panel": "待核对所配 2.4 寸模块",
+  "touch": "待核对",
+  "codec": "ES8311",
+  "blockers": [
+    "厂家确认的是2.4寸触摸屏接口，尚未确认实际面板和触摸型号；不套用BOX1/BOX2的引脚。"
+  ],
+  "implementationTargets": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3R8",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+          "locator": "硬件基本参数 / 资源分布"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 2.4,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+          "locator": "硬件基本参数 / 资源分布"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    },
+    "display": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+          "locator": "硬件基本参数 / 资源分布"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+          "locator": "硬件基本参数 / 资源分布"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "2.4寸带触摸LCD扩展接口；所装控制器另核",
+      "status": "partial",
+      "sources": [
+        {
+          "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+          "locator": "硬件基本参数 / 资源分布"
+        }
+      ],
+      "note": "已证实部分与仍待确认部分分别说明；不计为整项核实完成。"
+    },
+    "audio": {
+      "value": "ES8311 + NS4150B；板载2520腔体扬声器",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+          "locator": "硬件基本参数 / 资源分布"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "value": "红蓝双色用户LED；蓝色PWR灯",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+          "locator": "硬件基本参数 / 资源分布"
+        }
+      ],
+      "note": ""
+    }
+  },
+  "parameterAuditComplete": false,
+  "memorySpecificationVerified": true,
+  "sourceStatus": "blocked",
+  "nativeCompiled": false,
+  "requiredInputs": [
+    "所配2.4寸面板控制器",
+    "I80数据线与AW9523复位时序",
+    "触摸控制器和接线"
+  ]
+}

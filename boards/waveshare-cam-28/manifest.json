@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32s3",
+  "version": "1.0.1-test",
+  "application": "waveshare-cam-28.bin",
+  "fullImage": "waveshare-cam-28-full.bin",
+  "applicationBytes": 3395216,
+  "applicationOffset": 131072,
+  "sha256": "e643f8e5f0a7f5c931b2cb4b4354c5d7ec4d0c50286e260d1ff38acf20b374e8",
+  "fullSha256": "4dd502e73e9a8c8b895642abc2a72abcebde9165bec02c4858645dfc99450605",
+  "project": "xt_waveshare_cam_28",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

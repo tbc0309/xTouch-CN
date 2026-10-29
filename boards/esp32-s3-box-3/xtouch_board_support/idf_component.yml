@@ -1,0 +1,5 @@
+dependencies:
+  espressif/esp-box-3:
+    git: https://github.com/espressif/esp-bsp.git
+    path: bsp/esp-box-3
+    version: f259a6abd5808019b1903a422092a4234ca95a51

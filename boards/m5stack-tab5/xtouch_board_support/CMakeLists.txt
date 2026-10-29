@@ -1,0 +1,1 @@
+idf_component_register(INCLUDE_DIRS "." REQUIRES xtouch_tab5_hardware espressif__esp_lcd_touch espressif__esp_lcd_touch_st7123 esp_lcd esp_driver_i2c esp_driver_spi esp_driver_ledc esp_psram)

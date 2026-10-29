@@ -1,0 +1,123 @@
+{
+  "target": "lcdwiki-es3c28p",
+  "manufacturerSources": [
+    "https://www.lcdwiki.com/zh/2.8inch_ESP32-S3_Display"
+  ],
+  "photo": {
+    "src": "https://www.lcdwiki.com/images/d/d7/ES3C28P-03.png",
+    "alt": "",
+    "page": "https://www.lcdwiki.com/zh/2.8inch_ESP32-S3_Display"
+  },
+  "memorySpecificationVerified": true,
+  "requiredFlashBytes": 16777216,
+  "physicalTested": false,
+  "releaseSupported": false,
+  "rebuildDecision": "核对硬件后决定；纯图片/文档更新不触发固件重编译",
+  "note": "",
+  "boardAuthorSources": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3 N16R8",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.lcdwiki.com/2.8inch_ESP32-S3_Display",
+          "locator": "产品参数 / 屏幕、触摸、接口定义"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 2.8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.lcdwiki.com/2.8inch_ESP32-S3_Display",
+          "locator": "产品参数 / 屏幕、触摸、接口定义"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        240,
+        320
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.lcdwiki.com/2.8inch_ESP32-S3_Display",
+          "locator": "产品参数 / 屏幕、触摸、接口定义"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "ILI9341V / SPI",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.lcdwiki.com/2.8inch_ESP32-S3_Display",
+          "locator": "产品参数 / 屏幕、触摸、接口定义"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.lcdwiki.com/2.8inch_ESP32-S3_Display",
+          "locator": "ESP32主控参数 / Memory：N16R8"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.lcdwiki.com/2.8inch_ESP32-S3_Display",
+          "locator": "ESP32主控参数 / Memory：N16R8"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "FT6336G / I²C；仅ES3C28P，ES3N28P无触摸",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.lcdwiki.com/2.8inch_ESP32-S3_Display",
+          "locator": "产品参数 / 屏幕、触摸、接口定义"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "ES8311，外接扬声器接口、板载麦克风",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.lcdwiki.com/2.8inch_ESP32-S3_Display",
+          "locator": "产品参数 / 屏幕、触摸、接口定义"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "value": "单线RGB灯 / GPIO42",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.lcdwiki.com/2.8inch_ESP32-S3_Display",
+          "locator": "产品参数 / 屏幕、触摸、接口定义"
+        }
+      ],
+      "note": ""
+    }
+  },
+  "parameterAuditComplete": true
+}

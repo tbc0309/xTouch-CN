@@ -1,0 +1,123 @@
+{
+  "target": "cores3",
+  "manufacturerSources": [
+    "https://docs.m5stack.com/en/core/CoreS3"
+  ],
+  "photo": {
+    "src": "https://m5stack-doc.oss-cn-shenzhen.aliyuncs.com/490/K128_main_pictures_01.jpg",
+    "alt": "M5Stack CoreS3",
+    "page": "https://docs.m5stack.com/en/core/CoreS3"
+  },
+  "memorySpecificationVerified": true,
+  "requiredFlashBytes": 16777216,
+  "physicalTested": false,
+  "releaseSupported": false,
+  "rebuildDecision": "核对硬件后决定；纯图片/文档更新不触发固件重编译",
+  "note": "",
+  "boardAuthorSources": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.m5stack.com/en/core/CoreS3",
+          "locator": "Description / Specifications"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 2,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.m5stack.com/en/core/CoreS3",
+          "locator": "Description / Specifications"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        320,
+        240
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.m5stack.com/en/core/CoreS3",
+          "locator": "Description / Specifications"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "ILI9342C / SPI",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.m5stack.com/en/core/CoreS3",
+          "locator": "Description / Specifications"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.m5stack.com/en/core/CoreS3",
+          "locator": "Specifications / Flash / PSRAM：8MB Quad"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.m5stack.com/en/core/CoreS3",
+          "locator": "Specifications / Flash / PSRAM：8MB Quad"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "FT6336U电容触摸 / I²C",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.m5stack.com/en/core/CoreS3",
+          "locator": "Description / Specifications"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "AW88298，板载扬声器；ES7210双麦克风",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.m5stack.com/en/core/CoreS3",
+          "locator": "Description / Specifications"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "value": "电源指示灯；无已确认可编程RGB状态灯",
+      "status": "partial",
+      "sources": [
+        {
+          "url": "https://docs.m5stack.com/en/core/CoreS3",
+          "locator": "Description / Specifications"
+        }
+      ],
+      "note": "已证实部分与仍待确认部分分别说明；不计为整项核实完成。"
+    }
+  },
+  "parameterAuditComplete": false
+}

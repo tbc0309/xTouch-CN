@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32s3",
+  "version": "1.0.1-test",
+  "application": "espressif-s3-box.bin",
+  "fullImage": "espressif-s3-box-full.bin",
+  "applicationBytes": 3400000,
+  "applicationOffset": 131072,
+  "sha256": "57db814dfca02940b83b63b9fb12a8b5c7a3eff51b4a70d6f1a1f4dc2a9b014b",
+  "fullSha256": "e6a6bf20b5d36d9736ecf765e610d66ab0c692e09e9581c85913d907cccb7ea5",
+  "project": "xt_espressif_s3_box",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

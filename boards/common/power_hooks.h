@@ -1,6 +1,10 @@
 #pragma once
 struct BoardPowerProfile {unsigned minMHz,maxMHz;bool lightSleep;};
-#ifdef XTOUCH_BOARD_ES3C35P
+#if defined(XTOUCH_BOARD_BSP)
+#include "../candidates/common/power.h"
+#elif defined(XTOUCH_BOARD_PORT)
+#include "port_power.h"
+#elif defined(XTOUCH_BOARD_ES3C35P)
 #include "../lcdwiki-es3c35p/power.h"
 #elif defined(XTOUCH_BOARD_S3)
 #include "../esp32-s3-touch-lcd-2.8-v2/power.h"

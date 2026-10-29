@@ -20,6 +20,18 @@ on:
 permissions:
   contents: read
 jobs:
+  targets:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.targets.outputs.matrix }}
+      prerelease: ${{ steps.targets.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - id: targets
+        run: python boards/ci_matrix.py --github-output
   source-checks:
     runs-on: ubuntu-latest
     steps:
@@ -33,12 +45,12 @@ jobs:
       - run: python scripts/check_documentation.py
       - run: python boards/prepare.py
   native-idf:
+    needs: targets
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
       fail-fast: false
-      matrix:
-        board: [cyd, s3, p4, es3c35p]
+      matrix: ${{ fromJSON(needs.targets.outputs.matrix) }}
     container: espressif/idf:v6.1
     steps:
       - uses: actions/checkout@v4
@@ -55,14 +67,15 @@ jobs:
           . "$IDF_PATH/export.sh"
           python -m pip install -r scripts/requirements.txt
           python scripts/check_documentation.py
-          python boards/build.py "${{ matrix.board }}"
+          python boards/build.py "${{ matrix.board }}" --allow-candidate-build
       - uses: actions/upload-artifact@v4
         with:
           name: native-${{ matrix.board }}
           path: boards/build-${{ matrix.board }}/artifacts/
           if-no-files-found: error
   installer-build:
-    needs: native-idf
+    needs: [targets, native-idf]
+    if: needs.targets.outputs.prerelease != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

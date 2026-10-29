@@ -1,0 +1,149 @@
+{
+  "id": "atk-dnesp32s3",
+  "chip": "esp32s3",
+  "screen": [
+    320,
+    240
+  ],
+  "screenInches": 2.4,
+  "flashMB": 16,
+  "psramMB": 8,
+  "releaseSupported": false,
+  "physicalTested": false,
+  "nativeBuildAllowed": false,
+  "selection": "excluded",
+  "sources": [
+    "https://raw.githubusercontent.com/openedv/ATK-DNESP32S3-Board/master/README.md",
+    "https://github.com/openedv/ATK-ESP32-Board-Framework",
+    "https://github.com/openedv/ATK-DNESP32S3-Board"
+  ],
+  "photo": {
+    "src": "https://raw.githubusercontent.com/openedv/ATK-DNESP32S3-Board/c7434a3da5b9e6feda05added5d6a686f1c95f13/1_docs/3_figures/image/1_01_DNESP32S3_Board.png",
+    "alt": "ATK-DNESP32S3 主板（2.4 寸屏选件单独确认）",
+    "page": "https://github.com/openedv/ATK-DNESP32S3-Board"
+  },
+  "otaChannels": [
+    "main",
+    "test"
+  ],
+  "backend": "spi",
+  "panel": "ST7789（2.4 寸选件）",
+  "codec": "ES8388",
+  "blockers": [
+    "本表所列2.4寸ATK-MD0240屏幕组合的厂家SPI/8080接口没有坐标触摸信号，不能用主控电容触摸按键例程代替屏幕触摸；不是因为屏幕需要另购而排除。"
+  ],
+  "implementationTargets": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3R8 / ATK-MWS3S",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+          "locator": "Board Resources / Display options"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 2.4,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+          "locator": "Board Resources / Display options"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        240,
+        320
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+          "locator": "Board Resources / Display options"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "SPI选件",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+          "locator": "Board Resources / Display options"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+          "locator": "README / Module Resources / ATK-MWS3S"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+          "locator": "README / Module Resources / ATK-MWS3S"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    },
+    "audio": {
+      "value": "ES8388，板载扬声器",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+          "locator": "Board Resources / Display options"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "value": "用户单色LED；独立蓝色电源灯",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+          "locator": "Board Resources / Display options"
+        }
+      ],
+      "note": ""
+    }
+  },
+  "parameterAuditComplete": false,
+  "memorySpecificationVerified": true,
+  "sourceStatus": "blocked",
+  "nativeCompiled": false,
+  "requiredInputs": [
+    "2.4寸屏的触摸芯片、触摸片后缀及接线图"
+  ],
+  "exclusionReasons": [
+    "默认主板不带坐标触摸屏；原列 2.4 寸 ATK-MD0240 为独立显示附件，其厂家完整 SPI/8080 接口没有触摸信号。"
+  ],
+  "defaultTouchAudit": {
+    "status": "excluded-default-no-touchscreen",
+    "reason": "默认主板不带坐标触摸屏；原列 2.4 寸 ATK-MD0240 为独立显示附件，其厂家完整 SPI/8080 接口没有触摸信号。",
+    "source": "https://github.com/alientek-module/LCD-module_2.4-inch_ATK-MD0240"
+  }
+}

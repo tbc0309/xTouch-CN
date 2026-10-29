@@ -1,0 +1,2342 @@
+{
+  "atk-dnesp32s3": {
+    "id": "atk-dnesp32s3",
+    "chip": "esp32s3",
+    "screen": [
+      320,
+      240
+    ],
+    "screenInches": 2.4,
+    "flashMB": 16,
+    "psramMB": 8,
+    "releaseSupported": false,
+    "physicalTested": false,
+    "nativeBuildAllowed": false,
+    "selection": "excluded",
+    "sources": [
+      "https://raw.githubusercontent.com/openedv/ATK-DNESP32S3-Board/master/README.md",
+      "https://github.com/openedv/ATK-ESP32-Board-Framework",
+      "https://github.com/openedv/ATK-DNESP32S3-Board"
+    ],
+    "photo": {
+      "src": "https://raw.githubusercontent.com/openedv/ATK-DNESP32S3-Board/c7434a3da5b9e6feda05added5d6a686f1c95f13/1_docs/3_figures/image/1_01_DNESP32S3_Board.png",
+      "alt": "ATK-DNESP32S3 主板（2.4 寸屏选件单独确认）",
+      "page": "https://github.com/openedv/ATK-DNESP32S3-Board"
+    },
+    "otaChannels": [
+      "main",
+      "test"
+    ],
+    "backend": "spi",
+    "panel": "ST7789（2.4 寸选件）",
+    "codec": "ES8388",
+    "blockers": [
+      "本表所列2.4寸ATK-MD0240屏幕组合的厂家SPI/8080接口没有坐标触摸信号，不能用主控电容触摸按键例程代替屏幕触摸；不是因为屏幕需要另购而排除。"
+    ],
+    "implementationTargets": [],
+    "verifiedParameters": {
+      "chip": {
+        "value": "ESP32-S3R8 / ATK-MWS3S",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+            "locator": "Board Resources / Display options"
+          }
+        ],
+        "note": ""
+      },
+      "screenInches": {
+        "value": 2.4,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+            "locator": "Board Resources / Display options"
+          }
+        ],
+        "note": ""
+      },
+      "resolution": {
+        "value": [
+          240,
+          320
+        ],
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+            "locator": "Board Resources / Display options"
+          }
+        ],
+        "note": ""
+      },
+      "display": {
+        "value": "SPI选件",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+            "locator": "Board Resources / Display options"
+          }
+        ],
+        "note": ""
+      },
+      "flashMB": {
+        "value": 16,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+            "locator": "README / Module Resources / ATK-MWS3S"
+          }
+        ],
+        "note": ""
+      },
+      "psramMB": {
+        "value": 8,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+            "locator": "README / Module Resources / ATK-MWS3S"
+          }
+        ],
+        "note": ""
+      },
+      "touch": {
+        "status": "unverified",
+        "sources": [],
+        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      },
+      "audio": {
+        "value": "ES8388，板载扬声器",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+            "locator": "Board Resources / Display options"
+          }
+        ],
+        "note": ""
+      },
+      "indicator": {
+        "value": "用户单色LED；独立蓝色电源灯",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/openedv/ATK-DNESP32S3-Board",
+            "locator": "Board Resources / Display options"
+          }
+        ],
+        "note": ""
+      }
+    },
+    "parameterAuditComplete": false,
+    "memorySpecificationVerified": true,
+    "sourceStatus": "blocked",
+    "nativeCompiled": false,
+    "requiredInputs": [
+      "2.4寸屏的触摸芯片、触摸片后缀及接线图"
+    ],
+    "exclusionReasons": [
+      "默认主板不带坐标触摸屏；原列 2.4 寸 ATK-MD0240 为独立显示附件，其厂家完整 SPI/8080 接口没有触摸信号。"
+    ],
+    "defaultTouchAudit": {
+      "status": "excluded-default-no-touchscreen",
+      "reason": "默认主板不带坐标触摸屏；原列 2.4 寸 ATK-MD0240 为独立显示附件，其厂家完整 SPI/8080 接口没有触摸信号。",
+      "source": "https://github.com/alientek-module/LCD-module_2.4-inch_ATK-MD0240"
+    }
+  },
+  "atk-dnesp32s3-box3": {
+    "id": "atk-dnesp32s3-box3",
+    "chip": "esp32s3",
+    "screen": [
+      320,
+      240
+    ],
+    "screenInches": 2.4,
+    "flashMB": 16,
+    "psramMB": 8,
+    "releaseSupported": false,
+    "physicalTested": false,
+    "nativeBuildAllowed": false,
+    "selection": "pending-touch",
+    "sources": [
+      "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+      "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/download/"
+    ],
+    "photo": {
+      "src": "https://wiki.alientek.com/assets/images/dnesp32s3-box3-show-108091f86c799a2c39e161f98046d971.png",
+      "alt": "atk-dnesp32s3-box3",
+      "page": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/"
+    },
+    "otaChannels": [
+      "main",
+      "test"
+    ],
+    "backend": "i80",
+    "panel": "待核对所配 2.4 寸模块",
+    "touch": "待核对",
+    "codec": "ES8311",
+    "blockers": [
+      "厂家确认的是2.4寸触摸屏接口，尚未确认实际面板和触摸型号；不套用BOX1/BOX2的引脚。"
+    ],
+    "implementationTargets": [],
+    "verifiedParameters": {
+      "chip": {
+        "value": "ESP32-S3R8",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+            "locator": "硬件基本参数 / 资源分布"
+          }
+        ],
+        "note": ""
+      },
+      "screenInches": {
+        "value": 2.4,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+            "locator": "硬件基本参数 / 资源分布"
+          }
+        ],
+        "note": ""
+      },
+      "resolution": {
+        "status": "unverified",
+        "sources": [],
+        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      },
+      "display": {
+        "status": "unverified",
+        "sources": [],
+        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      },
+      "flashMB": {
+        "value": 16,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+            "locator": "硬件基本参数 / 资源分布"
+          }
+        ],
+        "note": ""
+      },
+      "psramMB": {
+        "value": 8,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+            "locator": "硬件基本参数 / 资源分布"
+          }
+        ],
+        "note": ""
+      },
+      "touch": {
+        "value": "2.4寸带触摸LCD扩展接口；所装控制器另核",
+        "status": "partial",
+        "sources": [
+          {
+            "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+            "locator": "硬件基本参数 / 资源分布"
+          }
+        ],
+        "note": "已证实部分与仍待确认部分分别说明；不计为整项核实完成。"
+      },
+      "audio": {
+        "value": "ES8311 + NS4150B；板载2520腔体扬声器",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+            "locator": "硬件基本参数 / 资源分布"
+          }
+        ],
+        "note": ""
+      },
+      "indicator": {
+        "value": "红蓝双色用户LED；蓝色PWR灯",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
+            "locator": "硬件基本参数 / 资源分布"
+          }
+        ],
+        "note": ""
+      }
+    },
+    "parameterAuditComplete": false,
+    "memorySpecificationVerified": true,
+    "sourceStatus": "blocked",
+    "nativeCompiled": false,
+    "requiredInputs": [
+      "所配2.4寸面板控制器",
+      "I80数据线与AW9523复位时序",
+      "触摸控制器和接线"
+    ]
+  },
+  "df-k10": {
+    "id": "df-k10",
+    "chip": "esp32s3",
+    "screen": [
+      320,
+      240
+    ],
+    "screenInches": 2.8,
+    "flashMB": 16,
+    "psramMB": 8,
+    "releaseSupported": false,
+    "physicalTested": false,
+    "nativeBuildAllowed": false,
+    "selection": "excluded",
+    "sources": [
+      "https://wiki.dfrobot.com/dfr0992-en/",
+      "https://www.dfrobot.com/product-2904.html",
+      "https://github.com/DFRobot/platform-unihiker"
+    ],
+    "photo": {
+      "src": "https://dfimg.dfrobot.com/enshop/image/data/DFR0992-EN/K10.jpg",
+      "alt": "df-k10",
+      "page": "https://www.dfrobot.com/product-2904.html"
+    },
+    "otaChannels": [
+      "main",
+      "test"
+    ],
+    "backend": "spi",
+    "panel": "ILI9341",
+    "codec": "ES8311",
+    "blockers": [
+      "厂家 K10/M10 参数对照中，K10 是2.8寸彩屏，只有M10标明支持触摸；K10不能以A/B实体按键或金手指触摸输入替代坐标触摸屏。"
+    ],
+    "implementationTargets": [],
+    "verifiedParameters": {
+      "chip": {
+        "value": "ESP32-S3",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.dfrobot.com/product-2904.html",
+            "locator": "Specifications"
+          }
+        ],
+        "note": ""
+      },
+      "screenInches": {
+        "value": 2.8,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.dfrobot.com/product-2904.html",
+            "locator": "Specifications"
+          }
+        ],
+        "note": ""
+      },
+      "resolution": {
+        "value": [
+          240,
+          320
+        ],
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.dfrobot.com/product-2904.html",
+            "locator": "Specifications"
+          }
+        ],
+        "note": ""
+      },
+      "display": {
+        "value": "ILI9341 / SPI（厂家K10框架配置）",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/DFRobot/framework-arduinounihiker/blob/master/libraries/TFT_eSPI/User_Setup.h",
+            "locator": "厂家K10框架User_Setup.h启用ILI9341_DRIVER"
+          }
+        ],
+        "note": ""
+      },
+      "flashMB": {
+        "value": 16,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.dfrobot.com/product-2904.html",
+            "locator": "Specifications / Memory"
+          }
+        ],
+        "note": ""
+      },
+      "psramMB": {
+        "value": 8,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.dfrobot.com/product-2904.html",
+            "locator": "Specifications / Memory"
+          }
+        ],
+        "note": ""
+      },
+      "touch": {
+        "value": "坐标触摸存在资料冲突；A/B触摸按键不等同于屏幕触摸",
+        "status": "conflict",
+        "sources": [
+          {
+            "url": "https://github.com/DFRobot/platform-unihiker",
+            "locator": "README touchscreen 与官网规格未列坐标触摸控制器"
+          }
+        ],
+        "note": ""
+      },
+      "audio": {
+        "value": "板载扬声器与麦克风",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.dfrobot.com/product-2904.html",
+            "locator": "Specifications"
+          }
+        ],
+        "note": ""
+      },
+      "indicator": {
+        "value": "3颗可编程RGB / GPIO46",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/DFRobot/framework-arduinounihiker/blob/master/libraries/unihiker_k10/src/unihiker_k10.h",
+            "locator": "PIXEL_PIN 46 / PIXEL_COUNT 3"
+          }
+        ],
+        "note": ""
+      }
+    },
+    "parameterAuditComplete": false,
+    "memorySpecificationVerified": true,
+    "sourceStatus": "blocked",
+    "nativeCompiled": false,
+    "requiredInputs": [
+      "坐标触摸硬件及接线的厂家依据，或另行确定无触摸交互方式"
+    ],
+    "exclusionReasons": [
+      "厂家 K10/M10 参数对照中，K10 是2.8寸彩屏，只有M10标明支持触摸；K10不能以A/B实体按键或金手指触摸输入替代坐标触摸屏。"
+    ],
+    "defaultTouchAudit": {
+      "status": "excluded-default-no-touchscreen",
+      "reason": "厂家 K10/M10 参数对照中，K10 是2.8寸彩屏，只有M10标明支持触摸；K10不能以A/B实体按键或金手指触摸输入替代坐标触摸屏。",
+      "source": "https://www.unihiker.com.cn/"
+    }
+  },
+  "esp-box": {
+    "id": "esp-box",
+    "chip": "esp32s3",
+    "screen": [
+      320,
+      240
+    ],
+    "screenInches": 2.4,
+    "flashMB": 16,
+    "psramMB": 8,
+    "releaseSupported": false,
+    "physicalTested": false,
+    "nativeBuildAllowed": false,
+    "selection": "retained",
+    "sources": [
+      "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp-box/README.md",
+      "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box"
+    ],
+    "photo": {
+      "src": "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp-box/doc/esp-box.webp",
+      "alt": "",
+      "page": "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp-box/README.md"
+    },
+    "otaChannels": [
+      "main",
+      "test"
+    ],
+    "backend": "bsp-spi",
+    "component": "espressif/esp-box",
+    "panel": "ILI9341",
+    "touch": "TT21100",
+    "codec": "ES8311",
+    "blockers": [
+      "原生编译及镜像审计通过；屏幕、触摸、音频、联网和待机尚未完成新板实物验收。",
+      "SD及独立深睡唤醒未映射；硬件功能以逐项支持说明为准。"
+    ],
+    "implementationTargets": [
+      "espressif-s3-box"
+    ],
+    "verifiedParameters": {
+      "chip": {
+        "value": "ESP32-S3",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+            "locator": "Overview / Capabilities"
+          }
+        ],
+        "note": ""
+      },
+      "screenInches": {
+        "value": 2.4,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+            "locator": "Overview / Capabilities"
+          }
+        ],
+        "note": ""
+      },
+      "resolution": {
+        "value": [
+          320,
+          240
+        ],
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+            "locator": "Overview / Capabilities"
+          }
+        ],
+        "note": ""
+      },
+      "display": {
+        "value": "ILI9341 / SPI",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+            "locator": "Overview / Capabilities"
+          }
+        ],
+        "note": ""
+      },
+      "flashMB": {
+        "value": 16,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+            "locator": "BSP README / Overview"
+          }
+        ],
+        "note": ""
+      },
+      "psramMB": {
+        "value": 8,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+            "locator": "BSP README / Overview"
+          }
+        ],
+        "note": ""
+      },
+      "touch": {
+        "value": "TT21100 / I²C",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+            "locator": "Overview / Capabilities"
+          }
+        ],
+        "note": ""
+      },
+      "audio": {
+        "value": "ES8311；板载扬声器",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+            "locator": "Overview / Capabilities"
+          }
+        ],
+        "note": ""
+      },
+      "indicator": {
+        "status": "unverified",
+        "sources": [],
+        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      }
+    },
+    "parameterAuditComplete": false,
+    "memorySpecificationVerified": true,
+    "sourceStatus": "native-compiled-awaiting-physical-validation",
+    "nativeCompiled": true,
+    "nativeValidation": {
+      "framework": "ESP-IDF",
+      "lvgl": "v9.6.0",
+      "imageBytes": 3401248,
+      "otaSlotBytes": 6291456,
+      "imageMatchesElf": true,
+      "compiledOtaPolicy": {
+        "board": "espressif-s3-box",
+        "channels": [
+          "main",
+          "test"
+        ]
+      }
+    }
+  },
+  "esp-box-3": {
+    "id": "esp-box-3",
+    "chip": "esp32s3",
+    "screen": [
+      320,
+      240
+    ],
+    "screenInches": 2.4,
+    "flashMB": 16,
+    "psramMB": 16,
+    "releaseSupported": false,
+    "physicalTested": false,
+    "nativeBuildAllowed": false,
+    "selection": "retained",
+    "sources": [
+      "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp-box-3/README.md",
+      "https://docs.espressif.com/projects/esp-board-manager/en/latest/references/boards/esp32_s3_box_3.html",
+      "https://github.com/espressif/esp-box/blob/master/docs/getting_started.md"
+    ],
+    "photo": {
+      "src": "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp-box-3/doc/esp-box-3.webp",
+      "alt": "",
+      "page": "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp-box-3/README.md"
+    },
+    "otaChannels": [
+      "main",
+      "test"
+    ],
+    "backend": "bsp-spi",
+    "component": "espressif/esp-box-3",
+    "panel": "ILI9341",
+    "touch": "TT21100 / GT911",
+    "codec": "ES8311",
+    "blockers": [
+      "原生编译及镜像审计通过；屏幕、触摸、音频、联网和待机尚未完成新板实物验收。",
+      "SD及独立深睡唤醒未映射；硬件功能以逐项支持说明为准。"
+    ],
+    "implementationTargets": [
+      "esp32-s3-box-3"
+    ],
+    "verifiedParameters": {
+      "chip": {
+        "value": "ESP32-S3",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box-3",
+            "locator": "Overview / Capabilities"
+          }
+        ],
+        "note": ""
+      },
+      "screenInches": {
+        "value": 2.4,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box-3",
+            "locator": "Overview / Capabilities"
+          }
+        ],
+        "note": ""
+      },
+      "resolution": {
+        "value": [
+          320,
+          240
+        ],
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box-3",
+            "locator": "Overview / Capabilities"
+          }
+        ],
+        "note": ""
+      },
+      "display": {
+        "value": "ST7789 / ILI9342，按BOX-3批次",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box-3",
+            "locator": "Overview / Capabilities"
+          }
+        ],
+        "note": ""
+      },
+      "flashMB": {
+        "value": 16,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box-3",
+            "locator": "BSP README / Overview"
+          }
+        ],
+        "note": ""
+      },
+      "psramMB": {
+        "value": 16,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box-3",
+            "locator": "BSP README / Overview"
+          }
+        ],
+        "note": ""
+      },
+      "touch": {
+        "value": "TT21100 / GT911，按BOX-3批次",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box-3",
+            "locator": "Overview / Capabilities"
+          }
+        ],
+        "note": ""
+      },
+      "audio": {
+        "value": "ES8311；板载扬声器",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box-3",
+            "locator": "Overview / Capabilities"
+          }
+        ],
+        "note": ""
+      },
+      "indicator": {
+        "status": "unverified",
+        "sources": [],
+        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      }
+    },
+    "parameterAuditComplete": false,
+    "memorySpecificationVerified": true,
+    "sourceStatus": "native-compiled-awaiting-physical-validation",
+    "nativeCompiled": true,
+    "nativeValidation": {
+      "framework": "ESP-IDF",
+      "lvgl": "v9.6.0",
+      "imageBytes": 3446208,
+      "otaSlotBytes": 6291456,
+      "imageMatchesElf": true,
+      "compiledOtaPolicy": {
+        "board": "esp32-s3-box-3",
+        "channels": [
+          "main",
+          "test"
+        ]
+      }
+    }
+  },
+  "esp32s3-korvo2-v3": {
+    "id": "esp32s3-korvo2-v3",
+    "chip": "esp32s3",
+    "screen": [
+      320,
+      240
+    ],
+    "screenInches": 2.4,
+    "flashMB": 16,
+    "psramMB": 8,
+    "releaseSupported": false,
+    "physicalTested": false,
+    "nativeBuildAllowed": false,
+    "selection": "retained",
+    "sources": [
+      "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp32_s3_korvo_2/README.md",
+      "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html"
+    ],
+    "photo": {
+      "src": "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp32_s3_korvo_2/doc/esp32_s3_korvo_2.webp",
+      "alt": "",
+      "page": "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp32_s3_korvo_2/README.md"
+    },
+    "otaChannels": [
+      "main",
+      "test"
+    ],
+    "backend": "bsp-spi",
+    "component": "espressif/esp32_s3_korvo_2",
+    "panel": "ILI9341",
+    "touch": "TT21100 / GT911",
+    "codec": "ES8311",
+    "blockers": [
+      "原生编译及镜像审计通过；屏幕、触摸、音频、联网和待机尚未完成新板实物验收。",
+      "SD及独立深睡唤醒未映射；硬件功能以逐项支持说明为准。"
+    ],
+    "implementationTargets": [
+      "esp32-s3-korvo2-lcd"
+    ],
+    "verifiedParameters": {
+      "chip": {
+        "value": "ESP32-S3-WROOM-1-N16R8",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html",
+            "locator": "LCD V1.0 2.4寸扩展板"
+          }
+        ],
+        "note": ""
+      },
+      "screenInches": {
+        "value": 2.4,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html",
+            "locator": "LCD V1.0 2.4寸扩展板"
+          }
+        ],
+        "note": ""
+      },
+      "resolution": {
+        "value": [
+          320,
+          240
+        ],
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html",
+            "locator": "LCD V1.0 2.4寸扩展板"
+          }
+        ],
+        "note": ""
+      },
+      "display": {
+        "value": "ILI9341 / SPI",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html",
+            "locator": "LCD V1.0 2.4寸扩展板"
+          }
+        ],
+        "note": ""
+      },
+      "flashMB": {
+        "value": 16,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.espressif.com/en/products/devkits",
+            "locator": "ESP32-S3-Korvo-2 行，Flash(MB) / PSRAM(MB)"
+          }
+        ],
+        "note": ""
+      },
+      "psramMB": {
+        "value": 8,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.espressif.com/en/products/devkits",
+            "locator": "ESP32-S3-Korvo-2 行，Flash(MB) / PSRAM(MB)"
+          }
+        ],
+        "note": ""
+      },
+      "touch": {
+        "value": "TT21100 / GT911，按LCD批次",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html",
+            "locator": "LCD V1.0 2.4寸扩展板"
+          }
+        ],
+        "note": ""
+      },
+      "audio": {
+        "value": "ES8311 + NS4150；外接扬声器",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2.html",
+            "locator": "Description of Components"
+          }
+        ],
+        "note": ""
+      },
+      "indicator": {
+        "value": "红/绿软件控制LED；不是RGB灯",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2.html",
+            "locator": "Description of Components"
+          }
+        ],
+        "note": ""
+      }
+    },
+    "parameterAuditComplete": true,
+    "memorySpecificationVerified": true,
+    "sourceStatus": "native-compiled-awaiting-physical-validation",
+    "nativeCompiled": true,
+    "exclusionReasons": [],
+    "defaultTouchAudit": {
+      "status": "retained-touch-configuration",
+      "reason": "按对应编译目标和触摸屏组合保留；屏幕另购不构成排除理由。触摸配置依据与编译/实物验收分别记录。",
+      "sources": []
+    },
+    "nativeValidation": {
+      "framework": "ESP-IDF",
+      "lvgl": "v9.6.0",
+      "imageBytes": 3441968,
+      "otaSlotBytes": 6291456,
+      "imageMatchesElf": true,
+      "compiledOtaPolicy": {
+        "board": "esp32-s3-korvo2-lcd",
+        "channels": [
+          "main",
+          "test"
+        ]
+      }
+    }
+  },
+  "esp32s3-korvo2-v3-rndis": {
+    "id": "esp32s3-korvo2-v3-rndis",
+    "chip": "esp32s3",
+    "screen": [
+      320,
+      240
+    ],
+    "screenInches": 2.4,
+    "flashMB": 16,
+    "psramMB": 8,
+    "releaseSupported": false,
+    "physicalTested": false,
+    "nativeBuildAllowed": false,
+    "selection": "retained",
+    "sources": [
+      "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp32_s3_korvo_2/README.md",
+      "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html"
+    ],
+    "photo": {
+      "src": "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp32_s3_korvo_2/doc/esp32_s3_korvo_2.webp",
+      "alt": "",
+      "page": "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp32_s3_korvo_2/README.md"
+    },
+    "otaChannels": [
+      "main",
+      "test"
+    ],
+    "backend": "bsp-spi",
+    "component": "espressif/esp32_s3_korvo_2",
+    "panel": "ILI9341",
+    "touch": "TT21100 / GT911",
+    "codec": "ES8311",
+    "blockers": [
+      "原生编译及镜像审计通过；屏幕、触摸、音频、联网和待机尚未完成新板实物验收。",
+      "SD及独立深睡唤醒未映射；硬件功能以逐项支持说明为准。"
+    ],
+    "implementationTargets": [
+      "esp32-s3-korvo2-lcd-rndis"
+    ],
+    "verifiedParameters": {
+      "chip": {
+        "value": "ESP32-S3-WROOM-1-N16R8",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html",
+            "locator": "LCD V1.0 2.4寸扩展板"
+          }
+        ],
+        "note": ""
+      },
+      "screenInches": {
+        "value": 2.4,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html",
+            "locator": "LCD V1.0 2.4寸扩展板"
+          }
+        ],
+        "note": ""
+      },
+      "resolution": {
+        "value": [
+          320,
+          240
+        ],
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html",
+            "locator": "LCD V1.0 2.4寸扩展板"
+          }
+        ],
+        "note": ""
+      },
+      "display": {
+        "value": "ILI9341 / SPI",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html",
+            "locator": "LCD V1.0 2.4寸扩展板"
+          }
+        ],
+        "note": ""
+      },
+      "flashMB": {
+        "value": 16,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.espressif.com/en/products/devkits",
+            "locator": "ESP32-S3-Korvo-2 行，Flash(MB) / PSRAM(MB)"
+          }
+        ],
+        "note": ""
+      },
+      "psramMB": {
+        "value": 8,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.espressif.com/en/products/devkits",
+            "locator": "ESP32-S3-Korvo-2 行，Flash(MB) / PSRAM(MB)"
+          }
+        ],
+        "note": ""
+      },
+      "touch": {
+        "value": "TT21100 / GT911，按LCD批次",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html",
+            "locator": "LCD V1.0 2.4寸扩展板"
+          }
+        ],
+        "note": ""
+      },
+      "audio": {
+        "value": "ES8311 + NS4150；外接扬声器",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2.html",
+            "locator": "Description of Components"
+          }
+        ],
+        "note": ""
+      },
+      "indicator": {
+        "value": "红/绿软件控制LED；不是RGB灯",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2.html",
+            "locator": "Description of Components"
+          }
+        ],
+        "note": ""
+      }
+    },
+    "parameterAuditComplete": true,
+    "memorySpecificationVerified": true,
+    "sourceStatus": "native-compiled-awaiting-physical-validation",
+    "nativeCompiled": true,
+    "exclusionReasons": [],
+    "defaultTouchAudit": {
+      "status": "retained-touch-configuration",
+      "reason": "按对应编译目标和触摸屏组合保留；屏幕另购不构成排除理由。触摸配置依据与编译/实物验收分别记录。",
+      "sources": []
+    },
+    "limitations": [
+      "本项目使用普通 Wi-Fi 联网，不提供 USB RNDIS 联网功能。"
+    ],
+    "nativeValidation": {
+      "framework": "ESP-IDF",
+      "lvgl": "v9.6.0",
+      "imageBytes": 3441984,
+      "otaSlotBytes": 6291456,
+      "imageMatchesElf": true,
+      "compiledOtaPolicy": {
+        "board": "esp32-s3-korvo2-lcd-rndis",
+        "channels": [
+          "main",
+          "test"
+        ]
+      }
+    }
+  },
+  "guition-jc4827w543": {
+    "id": "guition-jc4827w543",
+    "chip": "esp32s3",
+    "screen": [
+      480,
+      272
+    ],
+    "screenInches": 4.3,
+    "flashMB": 4,
+    "psramMB": 8,
+    "releaseSupported": false,
+    "physicalTested": false,
+    "nativeBuildAllowed": false,
+    "selection": "retained",
+    "sources": [
+      "https://components.espressif.com/components/guition-jc/guition_boards/versions/0.1.0/readme",
+      "https://raw.githubusercontent.com/Guition-JC/Guition/main/components/board/guition_boards/README.md",
+      "https://www.guition.com/icms/upload/fb081940d6fc11f09850077a33e1404f/FTPData/UEditor/file/2026121/1768961095791/JC4827W543%20Specifications-EN.pdf",
+      "https://www.guition.com/model-selection"
+    ],
+    "otaChannels": [
+      "main",
+      "test"
+    ],
+    "backend": "qspi-nv3041a",
+    "panel": "NV3041A / ST77916 / ST3401A（资料冲突，未选定）",
+    "touch": "N/R/C后缀未选定",
+    "codec": "NS4168",
+    "pins": {
+      "clock": 47,
+      "cs": 45,
+      "data0": 21,
+      "data1": 48,
+      "data2": 40,
+      "data3": 39,
+      "backlight": 1,
+      "sda": 8,
+      "scl": 4,
+      "touchReset": 38,
+      "touchInterrupt": 3,
+      "bclk": 42,
+      "ws": 2,
+      "dout": 41
+    },
+    "blockers": [
+      "4MB Flash不能容纳现有完整功能双OTA，且厂家资料存在NV3041A/ST77916/ST3401A冲突，不能直接选定驱动或暗中删减功能。"
+    ],
+    "implementationTargets": [],
+    "verifiedParameters": {
+      "chip": {
+        "value": "ESP32-S3R8",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.guition.com/model-selection",
+            "locator": "JC4827W543 N/R/C后缀"
+          }
+        ],
+        "note": ""
+      },
+      "screenInches": {
+        "value": 4.3,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.guition.com/model-selection",
+            "locator": "JC4827W543 N/R/C后缀"
+          }
+        ],
+        "note": ""
+      },
+      "resolution": {
+        "value": [
+          480,
+          272
+        ],
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.guition.com/icms/upload/fb081940d6fc11f09850077a33e1404f/FTPData/UEditor/file/2026121/1768961095791/JC4827W543%20Specifications-EN.pdf",
+            "locator": "第3/4页：480×272；第4页Driver chip写ST3401A"
+          }
+        ],
+        "note": ""
+      },
+      "display": {
+        "value": "规格书ST3401A；厂家组件ST77916；既有驱动NV3041A，尚未消歧",
+        "status": "conflict",
+        "sources": [
+          {
+            "url": "https://www.guition.com/icms/upload/fb081940d6fc11f09850077a33e1404f/FTPData/UEditor/file/2026121/1768961095791/JC4827W543%20Specifications-EN.pdf",
+            "locator": "第4页Driver chip，与厂家组件和既有驱动不一致"
+          },
+          {
+            "url": "https://raw.githubusercontent.com/Guition-JC/Guition/main/components/board/guition_boards/README.md",
+            "locator": "jc4827w543驱动表"
+          }
+        ],
+        "note": "规格书存在旧SKU文字，不能据此直接更换驱动；需对应PCB/面板批次。"
+      },
+      "flashMB": {
+        "value": 4,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.guition.com/icms/upload/fb081940d6fc11f09850077a33e1404f/FTPData/UEditor/file/2026121/1768961095791/JC4827W543%20Specifications-EN.pdf",
+            "locator": "第3页 Product description：Flash 4MB / PSRAM 8MB"
+          }
+        ],
+        "note": ""
+      },
+      "psramMB": {
+        "value": 8,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.guition.com/icms/upload/fb081940d6fc11f09850077a33e1404f/FTPData/UEditor/file/2026121/1768961095791/JC4827W543%20Specifications-EN.pdf",
+            "locator": "第3页 Product description：Flash 4MB / PSRAM 8MB"
+          }
+        ],
+        "note": ""
+      },
+      "touch": {
+        "value": "GT911 / XPT2046 / 无，按后缀",
+        "status": "conflict",
+        "sources": [
+          {
+            "url": "https://components.espressif.com/components/guition-jc/guition_boards/versions/0.1.0/readme",
+            "locator": "jc4827w543 表"
+          }
+        ],
+        "note": "厂家选型表写480×270，组件写480×272；不能将无后缀目标等同于某一实物。"
+      },
+      "audio": {
+        "status": "unverified",
+        "sources": [],
+        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      },
+      "indicator": {
+        "status": "unverified",
+        "sources": [],
+        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      }
+    },
+    "parameterAuditComplete": false,
+    "memorySpecificationVerified": true,
+    "sourceStatus": "blocked",
+    "nativeCompiled": false,
+    "requiredInputs": [
+      "确认N/R/C装配后缀和实际面板IC",
+      "为4MB Flash确定可接受的功能/OTA方案"
+    ],
+    "pinsStatus": "原始例程引脚，仅供核对；未注册为可编译目标",
+    "exclusionReasons": [],
+    "defaultTouchAudit": {
+      "status": "retained-touch-configuration",
+      "reason": "对应源码明确初始化GT911坐标触摸，保留该触摸配置；4MB Flash和面板批次冲突单独记为构建阻塞，不再列为触摸待确认。",
+      "sources": []
+    }
+  },
+  "guition-jc4827w543-ext-amp": {
+    "id": "guition-jc4827w543-ext-amp",
+    "chip": "esp32s3",
+    "screen": [
+      480,
+      272
+    ],
+    "screenInches": 4.3,
+    "flashMB": 4,
+    "psramMB": 8,
+    "releaseSupported": false,
+    "physicalTested": false,
+    "nativeBuildAllowed": false,
+    "selection": "retained",
+    "sources": [
+      "https://components.espressif.com/components/guition-jc/guition_boards/versions/0.1.0/readme",
+      "https://raw.githubusercontent.com/Guition-JC/Guition/main/components/board/guition_boards/README.md",
+      "https://www.guition.com/icms/upload/fb081940d6fc11f09850077a33e1404f/FTPData/UEditor/file/2026121/1768961095791/JC4827W543%20Specifications-EN.pdf",
+      "https://www.guition.com/model-selection"
+    ],
+    "otaChannels": [
+      "main",
+      "test"
+    ],
+    "backend": "qspi-nv3041a",
+    "panel": "NV3041A / ST77916 / ST3401A（资料冲突，未选定）",
+    "touch": "N/R/C后缀未选定",
+    "codec": "external-I2S",
+    "pins": {
+      "clock": 47,
+      "cs": 45,
+      "data0": 21,
+      "data1": 48,
+      "data2": 40,
+      "data3": 39,
+      "backlight": 1,
+      "sda": 8,
+      "scl": 4,
+      "touchReset": 38,
+      "touchInterrupt": 3,
+      "bclk": 9,
+      "ws": 14,
+      "dout": 16
+    },
+    "parkLow": [
+      42,
+      2,
+      41
+    ],
+    "blockers": [
+      "容量和面板冲突与标准版相同；未确定外接功放接线前不能驱动未确认的管脚。"
+    ],
+    "implementationTargets": [],
+    "verifiedParameters": {
+      "chip": {
+        "value": "ESP32-S3R8",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.guition.com/model-selection",
+            "locator": "JC4827W543 N/R/C后缀"
+          }
+        ],
+        "note": ""
+      },
+      "screenInches": {
+        "value": 4.3,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.guition.com/model-selection",
+            "locator": "JC4827W543 N/R/C后缀"
+          }
+        ],
+        "note": ""
+      },
+      "resolution": {
+        "value": [
+          480,
+          272
+        ],
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.guition.com/icms/upload/fb081940d6fc11f09850077a33e1404f/FTPData/UEditor/file/2026121/1768961095791/JC4827W543%20Specifications-EN.pdf",
+            "locator": "第3/4页：480×272；第4页Driver chip写ST3401A"
+          }
+        ],
+        "note": ""
+      },
+      "display": {
+        "value": "规格书ST3401A；厂家组件ST77916；既有驱动NV3041A，尚未消歧",
+        "status": "conflict",
+        "sources": [
+          {
+            "url": "https://www.guition.com/icms/upload/fb081940d6fc11f09850077a33e1404f/FTPData/UEditor/file/2026121/1768961095791/JC4827W543%20Specifications-EN.pdf",
+            "locator": "第4页Driver chip，与厂家组件和既有驱动不一致"
+          },
+          {
+            "url": "https://raw.githubusercontent.com/Guition-JC/Guition/main/components/board/guition_boards/README.md",
+            "locator": "jc4827w543驱动表"
+          }
+        ],
+        "note": "规格书存在旧SKU文字，不能据此直接更换驱动；需对应PCB/面板批次。"
+      },
+      "flashMB": {
+        "value": 4,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.guition.com/icms/upload/fb081940d6fc11f09850077a33e1404f/FTPData/UEditor/file/2026121/1768961095791/JC4827W543%20Specifications-EN.pdf",
+            "locator": "第3页 Product description：Flash 4MB / PSRAM 8MB"
+          }
+        ],
+        "note": ""
+      },
+      "psramMB": {
+        "value": 8,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.guition.com/icms/upload/fb081940d6fc11f09850077a33e1404f/FTPData/UEditor/file/2026121/1768961095791/JC4827W543%20Specifications-EN.pdf",
+            "locator": "第3页 Product description：Flash 4MB / PSRAM 8MB"
+          }
+        ],
+        "note": ""
+      },
+      "touch": {
+        "value": "GT911 / XPT2046 / 无，按后缀",
+        "status": "conflict",
+        "sources": [
+          {
+            "url": "https://components.espressif.com/components/guition-jc/guition_boards/versions/0.1.0/readme",
+            "locator": "jc4827w543 表"
+          }
+        ],
+        "note": "厂家选型表写480×270，组件写480×272；不能将无后缀目标等同于某一实物。"
+      },
+      "audio": {
+        "status": "unverified",
+        "sources": [],
+        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      },
+      "indicator": {
+        "status": "unverified",
+        "sources": [],
+        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      }
+    },
+    "parameterAuditComplete": false,
+    "memorySpecificationVerified": true,
+    "sourceStatus": "blocked",
+    "nativeCompiled": false,
+    "requiredInputs": [
+      "确认N/R/C装配后缀和实际面板IC",
+      "外接功放与板载音频信号隔离方案",
+      "为4MB Flash确定可接受的功能/OTA方案"
+    ],
+    "pinsStatus": "原始例程引脚，仅供核对；未注册为可编译目标",
+    "exclusionReasons": [],
+    "defaultTouchAudit": {
+      "status": "retained-touch-configuration",
+      "reason": "对应源码明确初始化GT911坐标触摸，保留该触摸配置；4MB Flash和面板批次冲突单独记为构建阻塞，不再列为触摸待确认。",
+      "sources": []
+    }
+  },
+  "m5stack-tab5": {
+    "id": "m5stack-tab5",
+    "chip": "esp32p4",
+    "screen": [
+      1280,
+      720
+    ],
+    "screenInches": 5,
+    "flashMB": 16,
+    "psramMB": 32,
+    "releaseSupported": false,
+    "physicalTested": false,
+    "nativeBuildAllowed": false,
+    "selection": "retained",
+    "sources": [
+      "https://docs.m5stack.com/zh_CN/core/Tab5",
+      "https://docs.m5stack.com/zh_CN/uiflow/m5burner/intro",
+      "https://docs.m5stack.com/en/core/Tab5",
+      "https://github.com/m5stack/M5Tab5-UserDemo",
+      "https://github.com/espressif/esp-bsp/tree/master/bsp/m5stack_tab5"
+    ],
+    "photo": {
+      "src": "https://m5stack-doc.oss-cn-shenzhen.aliyuncs.com/1132/tab5_m5_bus_extension_01.jpg",
+      "alt": "",
+      "page": "https://docs.m5stack.com/zh_CN/core/Tab5"
+    },
+    "otaChannels": [
+      "main",
+      "test"
+    ],
+    "backend": "bsp-mipi",
+    "component": "espressif/m5stack_tab5",
+    "panel": "ILI9881C / ST7123 / ST7121",
+    "touch": "GT911 / ST7123",
+    "codec": "ES8388",
+    "siliconRevision": 1,
+    "blockers": [
+      "原生编译及镜像审计通过；屏幕、触摸、音频、联网和待机尚未完成新板实物验收。",
+      "SD及独立深睡唤醒未映射；硬件功能以逐项支持说明为准。"
+    ],
+    "implementationTargets": [
+      "m5stack-tab5"
+    ],
+    "verifiedParameters": {
+      "chip": {
+        "value": "ESP32-P4 + ESP32-C6-MINI-1U",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Hardware Revisions"
+          }
+        ],
+        "note": ""
+      },
+      "screenInches": {
+        "value": 5,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Hardware Revisions"
+          }
+        ],
+        "note": ""
+      },
+      "resolution": {
+        "value": [
+          720,
+          1280
+        ],
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Hardware Revisions"
+          }
+        ],
+        "note": ""
+      },
+      "display": {
+        "value": "ILI9881C / ST7123 / ST7121；按批次",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Hardware Revisions"
+          }
+        ],
+        "note": ""
+      },
+      "flashMB": {
+        "value": 16,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Flash / PSRAM：32MB Octal"
+          }
+        ],
+        "note": ""
+      },
+      "psramMB": {
+        "value": 32,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Flash / PSRAM：32MB Octal"
+          }
+        ],
+        "note": ""
+      },
+      "touch": {
+        "value": "GT911 / ST7123；按批次",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Hardware Revisions"
+          }
+        ],
+        "note": ""
+      },
+      "audio": {
+        "value": "ES8388；板载扬声器",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Hardware Revisions"
+          }
+        ],
+        "note": ""
+      },
+      "indicator": {
+        "value": "未提供可编程RGB状态灯；电源管理指示不计入",
+        "status": "partial",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/f259a6abd5808019b1903a422092a4234ca95a51/bsp/m5stack_tab5",
+            "locator": "Capabilities：LED未提供"
+          }
+        ],
+        "note": "已证实部分与仍待确认部分分别说明；不计为整项核实完成。"
+      }
+    },
+    "parameterAuditComplete": false,
+    "memorySpecificationVerified": true,
+    "sourceStatus": "native-compiled-awaiting-physical-validation",
+    "nativeCompiled": true,
+    "nativeValidation": {
+      "framework": "ESP-IDF",
+      "lvgl": "v9.6.0",
+      "imageBytes": 5005792,
+      "otaSlotBytes": 6291456,
+      "imageMatchesElf": true,
+      "compiledOtaPolicy": {
+        "board": "m5stack-tab5",
+        "channels": [
+          "main",
+          "test"
+        ]
+      }
+    }
+  },
+  "m5stack-tab5-p4x": {
+    "id": "m5stack-tab5-p4x",
+    "chip": "esp32p4",
+    "screen": [
+      1280,
+      720
+    ],
+    "screenInches": 5,
+    "flashMB": 16,
+    "psramMB": 32,
+    "releaseSupported": false,
+    "physicalTested": false,
+    "nativeBuildAllowed": false,
+    "selection": "retained",
+    "sources": [
+      "https://docs.m5stack.com/zh_CN/core/Tab5",
+      "https://docs.m5stack.com/zh_CN/uiflow/m5burner/intro",
+      "https://docs.m5stack.com/en/core/Tab5",
+      "https://github.com/espressif/esp-bsp/tree/master/bsp/m5stack_tab5"
+    ],
+    "photo": {
+      "src": "https://m5stack-doc.oss-cn-shenzhen.aliyuncs.com/1132/tab5_m5_bus_extension_01.jpg",
+      "alt": "",
+      "page": "https://docs.m5stack.com/zh_CN/core/Tab5"
+    },
+    "otaChannels": [
+      "main",
+      "test"
+    ],
+    "backend": "bsp-mipi",
+    "component": "espressif/m5stack_tab5",
+    "panel": "ILI9881C / ST7123 / ST7121",
+    "touch": "GT911 / ST7123",
+    "codec": "ES8388",
+    "siliconRevision": 3,
+    "blockers": [
+      "原生编译及镜像审计通过；屏幕、触摸、音频、联网和待机尚未完成新板实物验收。",
+      "SD及独立深睡唤醒未映射；硬件功能以逐项支持说明为准。"
+    ],
+    "implementationTargets": [
+      "m5stack-tab5-p4x"
+    ],
+    "verifiedParameters": {
+      "chip": {
+        "value": "ESP32-P4 + ESP32-C6-MINI-1U",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Hardware Revisions"
+          }
+        ],
+        "note": ""
+      },
+      "screenInches": {
+        "value": 5,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Hardware Revisions"
+          }
+        ],
+        "note": ""
+      },
+      "resolution": {
+        "value": [
+          720,
+          1280
+        ],
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Hardware Revisions"
+          }
+        ],
+        "note": ""
+      },
+      "display": {
+        "value": "ILI9881C / ST7123 / ST7121；按批次",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Hardware Revisions"
+          }
+        ],
+        "note": ""
+      },
+      "flashMB": {
+        "value": 16,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Flash / PSRAM：32MB Octal"
+          }
+        ],
+        "note": ""
+      },
+      "psramMB": {
+        "value": 32,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Flash / PSRAM：32MB Octal"
+          }
+        ],
+        "note": ""
+      },
+      "touch": {
+        "value": "GT911 / ST7123；按批次",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Hardware Revisions"
+          }
+        ],
+        "note": ""
+      },
+      "audio": {
+        "value": "ES8388；板载扬声器",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.m5stack.com/en/core/Tab5",
+            "locator": "Specifications / Hardware Revisions"
+          }
+        ],
+        "note": ""
+      },
+      "indicator": {
+        "value": "未提供可编程RGB状态灯；电源管理指示不计入",
+        "status": "partial",
+        "sources": [
+          {
+            "url": "https://github.com/espressif/esp-bsp/tree/f259a6abd5808019b1903a422092a4234ca95a51/bsp/m5stack_tab5",
+            "locator": "Capabilities：LED未提供"
+          }
+        ],
+        "note": "已证实部分与仍待确认部分分别说明；不计为整项核实完成。"
+      }
+    },
+    "parameterAuditComplete": false,
+    "memorySpecificationVerified": true,
+    "sourceStatus": "native-compiled-awaiting-physical-validation",
+    "nativeCompiled": true,
+    "nativeValidation": {
+      "framework": "ESP-IDF",
+      "lvgl": "v9.6.0",
+      "imageBytes": 5013952,
+      "otaSlotBytes": 6291456,
+      "imageMatchesElf": true,
+      "compiledOtaPolicy": {
+        "board": "m5stack-tab5-p4x",
+        "channels": [
+          "main",
+          "test"
+        ]
+      }
+    }
+  },
+  "esp32-s3-cam-2.8": {
+    "id": "esp32-s3-cam-2.8",
+    "chip": "esp32s3",
+    "screen": [
+      320,
+      240
+    ],
+    "screenInches": 2.8,
+    "flashMB": 16,
+    "psramMB": 8,
+    "releaseSupported": false,
+    "physicalTested": false,
+    "nativeBuildAllowed": false,
+    "selection": "retained",
+    "sources": [
+      "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx/Instructions-For-Use",
+      "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx/Resources-And-Documents"
+    ],
+    "otaChannels": [
+      "main",
+      "test"
+    ],
+    "backend": "bsp-spi",
+    "component": "waveshare/esp32_s3_cam_ovxxxx",
+    "panel": "待核对 2.8 寸选件",
+    "touch": "待核对",
+    "codec": "ES8311",
+    "blockers": [
+      "原生编译及镜像审计通过；屏幕、触摸、音频、联网和待机尚未完成新板实物验收。",
+      "SD及独立深睡唤醒未映射；硬件功能以逐项支持说明为准。"
+    ],
+    "implementationTargets": [
+      "waveshare-cam-28"
+    ],
+    "verifiedParameters": {
+      "chip": {
+        "value": "ESP32-S3R8",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx",
+            "locator": "Features / Onboard Resources"
+          }
+        ],
+        "note": ""
+      },
+      "screenInches": {
+        "value": 2.8,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.waveshare.com/wiki/2.8inch_Capacitive_Touch_LCD",
+            "locator": "主板使用指南所链接的2.8inch Capacitive Touch LCD / Parameters"
+          }
+        ],
+        "note": ""
+      },
+      "resolution": {
+        "value": [
+          240,
+          320
+        ],
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.waveshare.com/wiki/2.8inch_Capacitive_Touch_LCD",
+            "locator": "主板使用指南所链接的2.8inch Capacitive Touch LCD / Parameters"
+          }
+        ],
+        "note": ""
+      },
+      "display": {
+        "value": "ST7789T3 / SPI",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.waveshare.com/wiki/2.8inch_Capacitive_Touch_LCD",
+            "locator": "主板使用指南所链接的2.8inch Capacitive Touch LCD / Parameters"
+          }
+        ],
+        "note": ""
+      },
+      "flashMB": {
+        "value": 16,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx",
+            "locator": "Features / Memory"
+          }
+        ],
+        "note": ""
+      },
+      "psramMB": {
+        "value": 8,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx",
+            "locator": "Features / Memory"
+          }
+        ],
+        "note": ""
+      },
+      "touch": {
+        "value": "CST328 / I²C",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.waveshare.com/wiki/2.8inch_Capacitive_Touch_LCD",
+            "locator": "主板使用指南所链接的2.8inch Capacitive Touch LCD / Parameters"
+          }
+        ],
+        "note": ""
+      },
+      "audio": {
+        "value": "ES8311 + NS4150B，外接扬声器；ES7210输入",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx",
+            "locator": "Features / Onboard Resources"
+          }
+        ],
+        "note": ""
+      },
+      "indicator": {
+        "value": "USER指示灯及充电灯；RGB未证实",
+        "status": "partial",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx",
+            "locator": "Features / Onboard Resources"
+          }
+        ],
+        "note": "已证实部分与仍待确认部分分别说明；不计为整项核实完成。"
+      }
+    },
+    "parameterAuditComplete": false,
+    "memorySpecificationVerified": true,
+    "sourceStatus": "native-compiled-awaiting-physical-validation",
+    "nativeCompiled": true,
+    "exclusionReasons": [],
+    "defaultTouchAudit": {
+      "status": "retained-touch-configuration",
+      "reason": "按对应编译目标和触摸屏组合保留；屏幕另购不构成排除理由。触摸配置依据与编译/实物验收分别记录。",
+      "sources": []
+    },
+    "nativeValidation": {
+      "framework": "ESP-IDF",
+      "lvgl": "v9.6.0",
+      "imageBytes": 3396544,
+      "otaSlotBytes": 6291456,
+      "imageMatchesElf": true,
+      "compiledOtaPolicy": {
+        "board": "waveshare-cam-28",
+        "channels": [
+          "main",
+          "test"
+        ]
+      }
+    }
+  },
+  "esp32-s3-cam-3.5": {
+    "id": "esp32-s3-cam-3.5",
+    "chip": "esp32s3",
+    "screen": [
+      480,
+      320
+    ],
+    "screenInches": 3.5,
+    "flashMB": 16,
+    "psramMB": 8,
+    "releaseSupported": false,
+    "physicalTested": false,
+    "nativeBuildAllowed": false,
+    "selection": "retained",
+    "sources": [
+      "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx/Instructions-For-Use",
+      "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx/Resources-And-Documents"
+    ],
+    "otaChannels": [
+      "main",
+      "test"
+    ],
+    "backend": "bsp-spi",
+    "component": "waveshare/esp32_s3_cam_ovxxxx",
+    "panel": "待核对 3.5 寸选件",
+    "touch": "待核对",
+    "codec": "ES8311",
+    "blockers": [
+      "原生编译及镜像审计通过；屏幕、触摸、音频、联网和待机尚未完成新板实物验收。",
+      "SD及独立深睡唤醒未映射；硬件功能以逐项支持说明为准。"
+    ],
+    "implementationTargets": [
+      "waveshare-cam-35"
+    ],
+    "verifiedParameters": {
+      "chip": {
+        "value": "ESP32-S3R8",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx",
+            "locator": "Features / Onboard Resources"
+          }
+        ],
+        "note": ""
+      },
+      "screenInches": {
+        "value": 3.5,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.waveshare.com/wiki/3.5inch_Capacitive_Touch_LCD",
+            "locator": "主板使用指南所链接的3.5inch Capacitive Touch LCD / Specifications"
+          }
+        ],
+        "note": ""
+      },
+      "resolution": {
+        "value": [
+          320,
+          480
+        ],
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.waveshare.com/wiki/3.5inch_Capacitive_Touch_LCD",
+            "locator": "主板使用指南所链接的3.5inch Capacitive Touch LCD / Specifications"
+          }
+        ],
+        "note": ""
+      },
+      "display": {
+        "value": "ST7796S / SPI",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.waveshare.com/wiki/3.5inch_Capacitive_Touch_LCD",
+            "locator": "主板使用指南所链接的3.5inch Capacitive Touch LCD / Specifications"
+          }
+        ],
+        "note": ""
+      },
+      "flashMB": {
+        "value": 16,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx",
+            "locator": "Features / Memory"
+          }
+        ],
+        "note": ""
+      },
+      "psramMB": {
+        "value": 8,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx",
+            "locator": "Features / Memory"
+          }
+        ],
+        "note": ""
+      },
+      "touch": {
+        "value": "FT6336U / I²C",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://www.waveshare.com/wiki/3.5inch_Capacitive_Touch_LCD",
+            "locator": "主板使用指南所链接的3.5inch Capacitive Touch LCD / Specifications"
+          }
+        ],
+        "note": ""
+      },
+      "audio": {
+        "value": "ES8311 + NS4150B，外接扬声器；ES7210输入",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx",
+            "locator": "Features / Onboard Resources"
+          }
+        ],
+        "note": ""
+      },
+      "indicator": {
+        "value": "USER指示灯及充电灯；RGB未证实",
+        "status": "partial",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx",
+            "locator": "Features / Onboard Resources"
+          }
+        ],
+        "note": "已证实部分与仍待确认部分分别说明；不计为整项核实完成。"
+      }
+    },
+    "parameterAuditComplete": false,
+    "memorySpecificationVerified": true,
+    "sourceStatus": "native-compiled-awaiting-physical-validation",
+    "nativeCompiled": true,
+    "exclusionReasons": [],
+    "defaultTouchAudit": {
+      "status": "retained-touch-configuration",
+      "reason": "按对应编译目标和触摸屏组合保留；屏幕另购不构成排除理由。触摸配置依据与编译/实物验收分别记录。",
+      "sources": []
+    },
+    "nativeValidation": {
+      "framework": "ESP-IDF",
+      "lvgl": "v9.6.0",
+      "imageBytes": 4828192,
+      "otaSlotBytes": 6291456,
+      "imageMatchesElf": true,
+      "compiledOtaPolicy": {
+        "board": "waveshare-cam-35",
+        "channels": [
+          "main",
+          "test"
+        ]
+      }
+    }
+  },
+  "esp32-touch-lcd-3.5": {
+    "id": "esp32-touch-lcd-3.5",
+    "chip": "esp32",
+    "screen": [
+      480,
+      320
+    ],
+    "screenInches": 3.5,
+    "flashMB": 16,
+    "psramMB": 2,
+    "releaseSupported": false,
+    "physicalTested": false,
+    "nativeBuildAllowed": false,
+    "selection": "retained",
+    "sources": [
+      "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+      "https://www.waveshare.com/esp32-touch-lcd-3.5.htm",
+      "https://www.waveshare.com/wiki/ESP32-Touch-LCD-3.5",
+      "https://github.com/waveshareteam/ESP32-Touch-LCD-3.5",
+      "https://github.com/waveshareteam/ESP32-Touch-LCD-3.5/blob/51f354d2aeb2245fd7b748c9f3ea93cea1c527ae/examples/esp-idf/01_factory/components/esp_port/esp_3inch5_lcd_port.c"
+    ],
+    "photo": {
+      "src": "https://docs.waveshare.com/assets/images/ESP32-Touch-LCD-3.5-1-85547669ab9056ba1778b23916b336c8.webp",
+      "alt": "esp32-touch-lcd-3.5",
+      "page": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5"
+    },
+    "otaChannels": [
+      "main",
+      "test"
+    ],
+    "backend": "spi",
+    "component": "espressif/esp_lcd_st7796",
+    "panel": "ST7796",
+    "touch": "FT6336",
+    "codec": "ES8311",
+    "pins": {
+      "clock": 18,
+      "mosi": 23,
+      "cs": 5,
+      "dc": 27,
+      "backlight": 25,
+      "sda": 21,
+      "scl": 22,
+      "touchInterrupt": 37
+    },
+    "blockers": [
+      "原生编译及镜像审计通过；屏幕、触摸、音频、联网和待机尚未完成新板实物验收。",
+      "SD及独立深睡唤醒未映射；硬件功能以逐项支持说明为准。"
+    ],
+    "implementationTargets": [
+      "waveshare-esp32-35"
+    ],
+    "verifiedParameters": {
+      "chip": {
+        "value": "ESP32-D0WDR2-V3",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+            "locator": "Features / Onboard Resources"
+          }
+        ],
+        "note": ""
+      },
+      "screenInches": {
+        "value": 3.5,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+            "locator": "Features / Onboard Resources"
+          }
+        ],
+        "note": ""
+      },
+      "resolution": {
+        "value": [
+          320,
+          480
+        ],
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+            "locator": "Features / Onboard Resources"
+          }
+        ],
+        "note": ""
+      },
+      "display": {
+        "value": "ST7796 / SPI",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+            "locator": "Features / Onboard Resources"
+          }
+        ],
+        "note": ""
+      },
+      "flashMB": {
+        "value": 16,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+            "locator": "Features / Memory"
+          }
+        ],
+        "note": ""
+      },
+      "psramMB": {
+        "value": 2,
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+            "locator": "Features / Memory"
+          }
+        ],
+        "note": ""
+      },
+      "touch": {
+        "value": "FT6336 / I²C",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+            "locator": "Features / Onboard Resources"
+          }
+        ],
+        "note": ""
+      },
+      "audio": {
+        "value": "ES8311，外接扬声器接口",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+            "locator": "Features / Onboard Resources"
+          }
+        ],
+        "note": ""
+      },
+      "indicator": {
+        "value": "电源/充电指示灯；RGB未证实",
+        "status": "partial",
+        "sources": [
+          {
+            "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+            "locator": "Features / Onboard Resources"
+          }
+        ],
+        "note": "已证实部分与仍待确认部分分别说明；不计为整项核实完成。"
+      }
+    },
+    "parameterAuditComplete": false,
+    "memorySpecificationVerified": true,
+    "sourceStatus": "native-compiled-awaiting-physical-validation",
+    "nativeCompiled": true,
+    "cameraModes": [
+      "jpeg"
+    ],
+    "orientationBaseline": "厂家01_factory的90度横屏旋转；实际方向和触摸仍待实物验收",
+    "nativeValidation": {
+      "framework": "ESP-IDF",
+      "lvgl": "v9.6.0",
+      "imageBytes": 4796640,
+      "otaSlotBytes": 6291456,
+      "imageMatchesElf": true,
+      "compiledOtaPolicy": {
+        "board": "waveshare-esp32-35",
+        "channels": [
+          "main",
+          "test"
+        ]
+      }
+    },
+    "limitations": [
+      "经典 ESP32 的摄像头播放仅支持 JPEG；不支持 H.264 RTSP 解码。"
+    ]
+  },
+  "yunliao-s3": {
+    "id": "yunliao-s3",
+    "chip": "esp32s3",
+    "screen": [
+      320,
+      240
+    ],
+    "screenInches": 2.8,
+    "releaseSupported": false,
+    "physicalTested": false,
+    "nativeBuildAllowed": false,
+    "selection": "pending-touch",
+    "sources": [],
+    "otaChannels": [
+      "main",
+      "test"
+    ],
+    "backend": "spi",
+    "panel": "ILI9341",
+    "codec": "待核对",
+    "blockers": [
+      "容量与坐标触摸尚无可靠厂家依据，不使用项目默认16/8MB冒充实物规格。"
+    ],
+    "implementationTargets": [],
+    "verifiedParameters": {
+      "chip": {
+        "value": "ESP32-S3",
+        "status": "owner-confirmed",
+        "sources": [],
+        "note": ""
+      },
+      "screenInches": {
+        "value": 2.8,
+        "status": "owner-confirmed",
+        "sources": [],
+        "note": ""
+      },
+      "resolution": {
+        "status": "unverified",
+        "sources": [],
+        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      },
+      "display": {
+        "status": "unverified",
+        "sources": [],
+        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      },
+      "flashMB": {
+        "status": "unverified",
+        "sources": [],
+        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      },
+      "psramMB": {
+        "status": "unverified",
+        "sources": [],
+        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      },
+      "touch": {
+        "status": "unverified",
+        "sources": [],
+        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      },
+      "audio": {
+        "value": "ES8388；8389仅为作者后续计划",
+        "status": "owner-confirmed",
+        "sources": [],
+        "note": ""
+      },
+      "indicator": {
+        "status": "unverified",
+        "sources": [],
+        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      }
+    },
+    "parameterAuditComplete": false,
+    "memorySpecificationVerified": false,
+    "sourceStatus": "blocked",
+    "nativeCompiled": false,
+    "requiredInputs": [
+      "实际Flash/PSRAM容量",
+      "坐标触摸芯片和接线",
+      "PCB版本对应的显示/电源资料"
+    ],
+    "manufacturerEvidencePending": true
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "target": "waveshare-s3-35b",
+  "manufacturerSources": [
+    "https://docs.waveshare.com/ESP32-S3-Touch-LCD-3.5B",
+    "https://www.waveshare.com/esp32-s3-touch-lcd-3.5b.htm"
+  ],
+  "photo": {
+    "src": "https://docs.waveshare.com/assets/images/ESP32-S3-Touch-LCD-3.5B-1-b9bca67ff92e420b4f602e9357012ab6.webp",
+    "alt": "esp32-s3-touch-lcd-3.5b",
+    "page": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-3.5B"
+  },
+  "memorySpecificationVerified": true,
+  "requiredFlashBytes": 16777216,
+  "physicalTested": false,
+  "releaseSupported": false,
+  "rebuildDecision": "核对硬件后决定；纯图片/文档更新不触发固件重编译",
+  "note": "",
+  "boardAuthorSources": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-3.5B",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 3.5,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-3.5B",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        320,
+        480
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-3.5B",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "AXS15231B / QSPI",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-3.5B",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-3.5B",
+          "locator": "Features / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-3.5B",
+          "locator": "Features / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "AXS15231B / I²C",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-3.5B",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "ES8311；扬声器接口",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-3.5B",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "value": "电源与充电指示灯；未确认可编程RGB",
+      "status": "partial",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-Touch-LCD-3.5B",
+          "locator": "Onboard Resources"
+        }
+      ],
+      "note": "已证实部分与仍待确认部分分别说明；不计为整项核实完成。"
+    }
+  },
+  "parameterAuditComplete": false
+}

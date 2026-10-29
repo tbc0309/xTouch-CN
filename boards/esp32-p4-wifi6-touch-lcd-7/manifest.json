@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 33554432,
+  "applicationSlotBytes": 12582912,
+  "chip": "esp32p4",
+  "version": "1.0.1-test",
+  "application": "esp32-p4-wifi6-touch-lcd-7.bin",
+  "fullImage": "esp32-p4-wifi6-touch-lcd-7-full.bin",
+  "applicationBytes": 4954624,
+  "applicationOffset": 131072,
+  "sha256": "4b5f96f96a4b643e560e7a1e4871c67da1b408550a058234ee58fed567cfdf54",
+  "fullSha256": "a57ebd8e2fdac8986d7b59d1f710bbb43456f7c1184b1e5cf3342d088d8c0c20",
+  "project": "xp_1b70dedfb09fd9b2a773",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

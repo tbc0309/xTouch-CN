@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32p4",
+  "version": "1.0.1-test",
+  "application": "m5stack-tab5.bin",
+  "fullImage": "m5stack-tab5-full.bin",
+  "applicationBytes": 5006080,
+  "applicationOffset": 131072,
+  "sha256": "ce1d11d5e8bf04bf1ae6488f938d3b9e03af73e1032822270309be42b37fbaf1",
+  "fullSha256": "7f5be8cb69da1d4b389b75e9a28a74bc46ffe917f2cc13b275e820c9629219bd",
+  "project": "xt_m5stack_tab5",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

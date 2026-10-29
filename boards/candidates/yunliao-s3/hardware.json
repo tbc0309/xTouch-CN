@@ -1,0 +1,85 @@
+{
+  "id": "yunliao-s3",
+  "chip": "esp32s3",
+  "screen": [
+    320,
+    240
+  ],
+  "screenInches": 2.8,
+  "releaseSupported": false,
+  "physicalTested": false,
+  "nativeBuildAllowed": false,
+  "selection": "pending-touch",
+  "sources": [],
+  "otaChannels": [
+    "main",
+    "test"
+  ],
+  "backend": "spi",
+  "panel": "ILI9341",
+  "codec": "待核对",
+  "blockers": [
+    "容量与坐标触摸尚无可靠厂家依据，不使用项目默认16/8MB冒充实物规格。"
+  ],
+  "implementationTargets": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3",
+      "status": "owner-confirmed",
+      "sources": [],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 2.8,
+      "status": "owner-confirmed",
+      "sources": [],
+      "note": ""
+    },
+    "resolution": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    },
+    "display": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    },
+    "flashMB": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    },
+    "psramMB": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    },
+    "touch": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    },
+    "audio": {
+      "value": "ES8388；8389仅为作者后续计划",
+      "status": "owner-confirmed",
+      "sources": [],
+      "note": ""
+    },
+    "indicator": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    }
+  },
+  "parameterAuditComplete": false,
+  "memorySpecificationVerified": false,
+  "sourceStatus": "blocked",
+  "nativeCompiled": false,
+  "requiredInputs": [
+    "实际Flash/PSRAM容量",
+    "坐标触摸芯片和接线",
+    "PCB版本对应的显示/电源资料"
+  ],
+  "manufacturerEvidencePending": true
+}

@@ -1,0 +1,171 @@
+{
+  "id": "esp32s3-korvo2-v3-rndis",
+  "chip": "esp32s3",
+  "screen": [
+    320,
+    240
+  ],
+  "screenInches": 2.4,
+  "flashMB": 16,
+  "psramMB": 8,
+  "releaseSupported": false,
+  "physicalTested": false,
+  "nativeBuildAllowed": false,
+  "selection": "retained",
+  "sources": [
+    "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp32_s3_korvo_2/README.md",
+    "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html"
+  ],
+  "photo": {
+    "src": "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp32_s3_korvo_2/doc/esp32_s3_korvo_2.webp",
+    "alt": "",
+    "page": "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp32_s3_korvo_2/README.md"
+  },
+  "otaChannels": [
+    "main",
+    "test"
+  ],
+  "backend": "bsp-spi",
+  "component": "espressif/esp32_s3_korvo_2",
+  "panel": "ILI9341",
+  "touch": "TT21100 / GT911",
+  "codec": "ES8311",
+  "blockers": [
+    "原生编译及镜像审计通过；屏幕、触摸、音频、联网和待机尚未完成新板实物验收。",
+    "SD及独立深睡唤醒未映射；硬件功能以逐项支持说明为准。"
+  ],
+  "implementationTargets": [
+    "esp32-s3-korvo2-lcd-rndis"
+  ],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3-WROOM-1-N16R8",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html",
+          "locator": "LCD V1.0 2.4寸扩展板"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 2.4,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html",
+          "locator": "LCD V1.0 2.4寸扩展板"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        320,
+        240
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html",
+          "locator": "LCD V1.0 2.4寸扩展板"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "ILI9341 / SPI",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html",
+          "locator": "LCD V1.0 2.4寸扩展板"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.espressif.com/en/products/devkits",
+          "locator": "ESP32-S3-Korvo-2 行，Flash(MB) / PSRAM(MB)"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.espressif.com/en/products/devkits",
+          "locator": "ESP32-S3-Korvo-2 行，Flash(MB) / PSRAM(MB)"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "TT21100 / GT911，按LCD批次",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2-lcd.html",
+          "locator": "LCD V1.0 2.4寸扩展板"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "ES8311 + NS4150；外接扬声器",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2.html",
+          "locator": "Description of Components"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "value": "红/绿软件控制LED；不是RGB灯",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.espressif.com/projects/esp-adf/en/latest/multimedia-boards/dev-boards/user-guide-esp32-s3-korvo-2.html",
+          "locator": "Description of Components"
+        }
+      ],
+      "note": ""
+    }
+  },
+  "parameterAuditComplete": true,
+  "memorySpecificationVerified": true,
+  "sourceStatus": "native-compiled-awaiting-physical-validation",
+  "nativeCompiled": true,
+  "exclusionReasons": [],
+  "defaultTouchAudit": {
+    "status": "retained-touch-configuration",
+    "reason": "按对应编译目标和触摸屏组合保留；屏幕另购不构成排除理由。触摸配置依据与编译/实物验收分别记录。",
+    "sources": []
+  },
+  "limitations": [
+    "本项目使用普通 Wi-Fi 联网，不提供 USB RNDIS 联网功能。"
+  ],
+  "nativeValidation": {
+    "framework": "ESP-IDF",
+    "lvgl": "v9.6.0",
+    "imageBytes": 3441984,
+    "otaSlotBytes": 6291456,
+    "imageMatchesElf": true,
+    "compiledOtaPolicy": {
+      "board": "esp32-s3-korvo2-lcd-rndis",
+      "channels": [
+        "main",
+        "test"
+      ]
+    }
+  }
+}

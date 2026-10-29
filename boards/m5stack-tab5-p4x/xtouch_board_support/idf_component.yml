@@ -1,0 +1,3 @@
+dependencies:
+  xtouch_tab5_hardware:
+    path: "../../candidates/common/xtouch_tab5_hardware"

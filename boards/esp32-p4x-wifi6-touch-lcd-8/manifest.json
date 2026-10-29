@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 33554432,
+  "applicationSlotBytes": 12582912,
+  "chip": "esp32p4",
+  "version": "1.0.1-test",
+  "application": "esp32-p4x-wifi6-touch-lcd-8.bin",
+  "fullImage": "esp32-p4x-wifi6-touch-lcd-8-full.bin",
+  "applicationBytes": 4961984,
+  "applicationOffset": 131072,
+  "sha256": "8257f2ed621bdfa2234769a495fd5870adac7ea2daa77f7d0f31d96867206b6b",
+  "fullSha256": "bfa5b268223ef60cbdb49da2ecee768c3a7662b7d0b8d182ed8c21933ac88a78",
+  "project": "xp_51d16f48291038cf13a1",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

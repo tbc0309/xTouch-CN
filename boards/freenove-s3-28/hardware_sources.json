@@ -1,0 +1,124 @@
+{
+  "target": "freenove-s3-28",
+  "manufacturerSources": [
+    "https://raw.githubusercontent.com/Freenove/Freenove_ESP32_S3_Display/master/README.md",
+    "https://www.lcdwiki.com/2.8inch_ESP32-S3_Display"
+  ],
+  "photo": {
+    "src": "https://raw.githubusercontent.com/Freenove/Freenove_ESP32_S3_Display/master/Picture/FNK0104B_Top.png",
+    "alt": "",
+    "page": "https://raw.githubusercontent.com/Freenove/Freenove_ESP32_S3_Display/master/README.md"
+  },
+  "memorySpecificationVerified": true,
+  "requiredFlashBytes": 16777216,
+  "physicalTested": false,
+  "releaseSupported": false,
+  "rebuildDecision": "核对硬件后决定；纯图片/文档更新不触发固件重编译",
+  "note": "",
+  "boardAuthorSources": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3 N16R8",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/Freenove/Freenove_ESP32_S3_Display",
+          "locator": "README / FNK0104B"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 2.8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/Freenove/Freenove_ESP32_S3_Display",
+          "locator": "README / FNK0104B"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        240,
+        320
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/Freenove/Freenove_ESP32_S3_Display",
+          "locator": "README / FNK0104B"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "ILI9341 / SPI",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/Freenove/Freenove_ESP32_S3_Display",
+          "locator": "README / FNK0104B"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.freenove.com/projects/fnk0115/en/latest/fnk0115/codes/Tutorial/Preface.html",
+          "locator": "ESP32-S3 WROOM：四型号均为N16R8"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.freenove.com/projects/fnk0115/en/latest/fnk0115/codes/Tutorial/Preface.html",
+          "locator": "ESP32-S3 WROOM：四型号均为N16R8"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "FNK0104B电容触摸；FNK0104A无触摸",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/Freenove/Freenove_ESP32_S3_Display",
+          "locator": "README / FNK0104B"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "ES8311 + SC8002B，外接扬声器接口",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/Freenove/Freenove_ESP32_S3_Display/main/Schematic/2.8inch_ESP32-S3_Display_Schematic.pdf",
+          "locator": "原理图：U5 ES8311 / U2 SC8002B / LED2 WS2812B / GPIO42"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "value": "WS2812B RGB / GPIO42",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/Freenove/Freenove_ESP32_S3_Display/main/Schematic/2.8inch_ESP32-S3_Display_Schematic.pdf",
+          "locator": "原理图：U5 ES8311 / U2 SC8002B / LED2 WS2812B / GPIO42"
+        }
+      ],
+      "note": ""
+    }
+  },
+  "parameterAuditComplete": true
+}

@@ -1,0 +1,156 @@
+{
+  "id": "esp-box",
+  "chip": "esp32s3",
+  "screen": [
+    320,
+    240
+  ],
+  "screenInches": 2.4,
+  "flashMB": 16,
+  "psramMB": 8,
+  "releaseSupported": false,
+  "physicalTested": false,
+  "nativeBuildAllowed": false,
+  "selection": "retained",
+  "sources": [
+    "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp-box/README.md",
+    "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box"
+  ],
+  "photo": {
+    "src": "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp-box/doc/esp-box.webp",
+    "alt": "",
+    "page": "https://raw.githubusercontent.com/espressif/esp-bsp/master/bsp/esp-box/README.md"
+  },
+  "otaChannels": [
+    "main",
+    "test"
+  ],
+  "backend": "bsp-spi",
+  "component": "espressif/esp-box",
+  "panel": "ILI9341",
+  "touch": "TT21100",
+  "codec": "ES8311",
+  "blockers": [
+    "原生编译及镜像审计通过；屏幕、触摸、音频、联网和待机尚未完成新板实物验收。",
+    "SD及独立深睡唤醒未映射；硬件功能以逐项支持说明为准。"
+  ],
+  "implementationTargets": [
+    "espressif-s3-box"
+  ],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+          "locator": "Overview / Capabilities"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 2.4,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+          "locator": "Overview / Capabilities"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        320,
+        240
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+          "locator": "Overview / Capabilities"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "ILI9341 / SPI",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+          "locator": "Overview / Capabilities"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+          "locator": "BSP README / Overview"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+          "locator": "BSP README / Overview"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "TT21100 / I²C",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+          "locator": "Overview / Capabilities"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "ES8311；板载扬声器",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/espressif/esp-bsp/tree/master/bsp/esp-box",
+          "locator": "Overview / Capabilities"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    }
+  },
+  "parameterAuditComplete": false,
+  "memorySpecificationVerified": true,
+  "sourceStatus": "native-compiled-awaiting-physical-validation",
+  "nativeCompiled": true,
+  "nativeValidation": {
+    "framework": "ESP-IDF",
+    "lvgl": "v9.6.0",
+    "imageBytes": 3401248,
+    "otaSlotBytes": 6291456,
+    "imageMatchesElf": true,
+    "compiledOtaPolicy": {
+      "board": "espressif-s3-box",
+      "channels": [
+        "main",
+        "test"
+      ]
+    }
+  }
+}

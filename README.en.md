@@ -1,5 +1,7 @@
 # xTouch-CN
 
+**Test branch `1.0.1-test`**: see the [test board catalog](README.test.md) for additional boards, firmware options and validation status. The guide below describes the four existing release boards.
+
 [简体中文](README.md) | English
 
 An independent touchscreen controller for Bambu Lab printers. Monitor printing, AMS and environmental readings; control temperature, fans and movement; manage printers and cloud accounts in a browser. Not affiliated with Bambu Lab.

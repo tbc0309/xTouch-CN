@@ -1,0 +1,1 @@
+idf_component_register(INCLUDE_DIRS "." REQUIRES espressif__esp_lcd_st7796 espressif__esp_codec_dev esp_lcd esp_driver_i2c esp_driver_spi esp_driver_ledc esp_psram)

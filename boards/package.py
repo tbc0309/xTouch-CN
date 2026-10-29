@@ -12,6 +12,9 @@ def validate_identity(data,name,chip,project):
   raise ValueError('Application project identity differs from the configured board build')
 
 def package(build,name):
+ sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]/'scripts'))
+ from release_policy import read as release_identity
+ release=release_identity(pathlib.Path(__file__).resolve().parents[1])
  build=pathlib.Path(build);out=build/'artifacts';out.mkdir(exist_ok=True)
  meta=json.loads((build/'flasher_args.json').read_text('utf-8'));chip=meta['extra_esptool_args']['chip']
  if chip=='esp32p4':
@@ -25,7 +28,7 @@ def package(build,name):
  command=[sys.executable,'-m','esptool','--chip',chip,'merge-bin','-o',str(out/(name+'-full.bin'))]+meta['write_flash_args']
  for offset,path in meta['flash_files'].items():command.extend([offset,str(build/path)])
  subprocess.run(command,check=True)
- version=json.loads((pathlib.Path(__file__).resolve().parents[1]/'version.json').read_text('utf-8'))['version']
+ version=release['version']
  if data[48:80].split(b'\0',1)[0].decode('ascii')!=version:
   raise ValueError('Application descriptor version differs from version.json; rebuild before packaging')
  full=(out/(name+'-full.bin')).read_bytes()
@@ -41,9 +44,10 @@ def package(build,name):
  laboratory=b'/api/test/' in data
  manifest={'laboratoryBuild':laboratory,'flashBytes':flash_bytes,'applicationSlotBytes':slot,'chip':chip,'version':version,'application':name+'.bin','fullImage':name+'-full.bin','applicationBytes':len(data),'applicationOffset':app_offset,'sha256':hashlib.sha256(data).hexdigest(),'fullSha256':hashlib.sha256(full).hexdigest()}
  manifest['project']=project
+ manifest['releaseTag']=release['tag'];manifest['prerelease']=release['prerelease']
  (out/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n','utf-8')
  (out/(name+'-manifest.json')).write_text(json.dumps(manifest,indent=2)+'\n','utf-8')
- ota={'version':version,'url':f'https://github.com/tbc0309/xTouch-CN/releases/download/{version}/{name}.bin','size':len(data),'md5':hashlib.md5(data).hexdigest()}
+ ota={'version':version,'releaseTag':release['tag'],'prerelease':release['prerelease'],'url':f'https://github.com/tbc0309/xTouch-CN/releases/download/{release["tag"]}/{name}.bin','size':len(data),'md5':hashlib.md5(data).hexdigest()}
  if laboratory:(out/'ota.json').unlink(missing_ok=True)
  else:(out/'ota.json').write_text(json.dumps(ota,indent=2)+'\n','utf-8')
  (out/'SHA256SUMS.txt').write_text(f"{manifest['sha256']}  {name}.bin\n{manifest['fullSha256']}  {name}-full.bin\n",'utf-8')

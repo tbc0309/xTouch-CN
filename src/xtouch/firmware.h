@@ -14,38 +14,18 @@ static void xtouch_firmware_reportOtaStack(XTouchStackMargin::Path path)
     if (minimum != UINT_MAX && uxTaskGetStackHighWaterMark(nullptr) >= 2048)
         ConsoleInfo.printf("[OTA] stack-min %s=%u bytes\n", XTouchStackMargin::name(path), minimum);
 }
-// #include <semver.h>
+#include "ota_manifest_policy.h"
 
-struct SemVer
-{
-    int major;
-    int minor;
-    int patch;
-};
+using SemVer = XTouchOtaSelection::Version;
 
 bool parseSemVer(const char *version, SemVer &semver)
 {
-    if (!version) return false;
-    char suffix;
-    int parsed = sscanf(version, "%d.%d.%d%c", &semver.major, &semver.minor, &semver.patch, &suffix);
-    return parsed == 3 && semver.major >= 0 && semver.minor >= 0 && semver.patch >= 0;
+    return XTouchOtaSelection::parse(version, semver);
 }
 
 int compareSemVer(const SemVer &v1, const SemVer &v2)
 {
-    if (v1.major != v2.major)
-    {
-        return v1.major - v2.major;
-    }
-    if (v1.minor != v2.minor)
-    {
-        return v1.minor - v2.minor;
-    }
-    if (v1.patch != v2.patch)
-    {
-        return v1.patch - v2.patch;
-    }
-    return 0; // Both versions are equal
+    return XTouchOtaSelection::compare(v1, v2);
 }
 
 bool isSemVerGreaterThan(const SemVer &v1, const SemVer &v2)
@@ -70,8 +50,7 @@ static bool xtouch_firmware_manifest_valid(JsonDocument &doc)
     const char *md5 = doc["md5"] | "";
     SemVer parsed;
     if (!parseSemVer(version, parsed) || strlen(md5) != 32 ||
-        !String(url).startsWith("https://github.com/tbc0309/xTouch-CN/releases/download/") ||
-        !String(url).endsWith(XTOUCH_FIRMWARE_FILENAME) ||
+        !XTouchOtaSelection::imageUrl(url, version, XTOUCH_FIRMWARE_FILENAME) ||
         !doc["size"].is<unsigned>() || doc["size"].as<unsigned>() == 0 ||
         doc["size"].as<unsigned>() > XTOUCH_FIRMWARE_MAX_BYTES) return false;
     for (unsigned i = 0; i < 32; i++) if (!isxdigit(md5[i])) return false;

@@ -1,0 +1,118 @@
+{
+  "target": "lckfb-s3",
+  "manufacturerSources": [
+    "https://item.szlcsc.com/43285221.html",
+    "https://wiki.lckfb.com/zh-hans/szpi-esp32s3/"
+  ],
+  "photo": {
+    "src": "https://alimg.szlcsc.com/upload/public/product/breviary/20241016/0A3B1BB53A096FF24AFEBD14BCC4C492.jpg",
+    "alt": "og:image",
+    "page": "https://item.szlcsc.com/43285221.html"
+  },
+  "memorySpecificationVerified": true,
+  "requiredFlashBytes": 16777216,
+  "physicalTested": false,
+  "releaseSupported": false,
+  "rebuildDecision": "核对硬件后决定；纯图片/文档更新不触发固件重编译",
+  "note": "",
+  "boardAuthorSources": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3-WROOM-1-N16R8",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://wiki.lckfb.com/zh-hans/szpi-esp32s3/beginner/introduction.html",
+          "locator": "1.1 总体介绍"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 2,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://wiki.lckfb.com/zh-hans/szpi-esp32s3/beginner/introduction.html",
+          "locator": "1.1 总体介绍"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        320,
+        240
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://wiki.lckfb.com/zh-hans/szpi-esp32s3/beginner/introduction.html",
+          "locator": "1.1 总体介绍"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "ST7789 / SPI",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://wiki.lckfb.com/zh-hans/szpi-esp32s3/beginner/introduction.html",
+          "locator": "1.1 总体介绍"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://wiki.lckfb.com/zh-hans/szpi-esp32s3/beginner/introduction.html",
+          "locator": "1.1 总体介绍"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://wiki.lckfb.com/zh-hans/szpi-esp32s3/beginner/introduction.html",
+          "locator": "1.1 总体介绍"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "电容触摸；FT6336/FT5x06见原理图",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://wiki.lckfb.com/zh-hans/szpi-esp32s3/beginner/introduction.html",
+          "locator": "1.1 总体介绍"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "ES8311输出、ES7210输入；1W扬声器",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://wiki.lckfb.com/zh-hans/szpi-esp32s3/beginner/introduction.html",
+          "locator": "1.1 总体介绍"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    }
+  },
+  "parameterAuditComplete": false
+}

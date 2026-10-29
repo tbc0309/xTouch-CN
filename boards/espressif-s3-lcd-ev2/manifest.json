@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32s3",
+  "version": "1.0.1-test",
+  "application": "espressif-s3-lcd-ev2.bin",
+  "fullImage": "espressif-s3-lcd-ev2-full.bin",
+  "applicationBytes": 4835008,
+  "applicationOffset": 131072,
+  "sha256": "6216013a54a7b16e85df86977f1f78e4c6dbd2e9e3e4449cb63aa9a5364f0f19",
+  "fullSha256": "1a2e5fd79782a86d65dbe42cd78bde1da767807fa76b3e67e98744c7d28cbdfc",
+  "project": "xs_0e9e92c754524a7614cc",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

@@ -1,0 +1,163 @@
+{
+  "id": "esp32-s3-cam-2.8",
+  "chip": "esp32s3",
+  "screen": [
+    320,
+    240
+  ],
+  "screenInches": 2.8,
+  "flashMB": 16,
+  "psramMB": 8,
+  "releaseSupported": false,
+  "physicalTested": false,
+  "nativeBuildAllowed": false,
+  "selection": "retained",
+  "sources": [
+    "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx/Instructions-For-Use",
+    "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx/Resources-And-Documents"
+  ],
+  "otaChannels": [
+    "main",
+    "test"
+  ],
+  "backend": "bsp-spi",
+  "component": "waveshare/esp32_s3_cam_ovxxxx",
+  "panel": "待核对 2.8 寸选件",
+  "touch": "待核对",
+  "codec": "ES8311",
+  "blockers": [
+    "原生编译及镜像审计通过；屏幕、触摸、音频、联网和待机尚未完成新板实物验收。",
+    "SD及独立深睡唤醒未映射；硬件功能以逐项支持说明为准。"
+  ],
+  "implementationTargets": [
+    "waveshare-cam-28"
+  ],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3R8",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 2.8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.waveshare.com/wiki/2.8inch_Capacitive_Touch_LCD",
+          "locator": "主板使用指南所链接的2.8inch Capacitive Touch LCD / Parameters"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        240,
+        320
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.waveshare.com/wiki/2.8inch_Capacitive_Touch_LCD",
+          "locator": "主板使用指南所链接的2.8inch Capacitive Touch LCD / Parameters"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "ST7789T3 / SPI",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.waveshare.com/wiki/2.8inch_Capacitive_Touch_LCD",
+          "locator": "主板使用指南所链接的2.8inch Capacitive Touch LCD / Parameters"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx",
+          "locator": "Features / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx",
+          "locator": "Features / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "CST328 / I²C",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.waveshare.com/wiki/2.8inch_Capacitive_Touch_LCD",
+          "locator": "主板使用指南所链接的2.8inch Capacitive Touch LCD / Parameters"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "ES8311 + NS4150B，外接扬声器；ES7210输入",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "value": "USER指示灯及充电灯；RGB未证实",
+      "status": "partial",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-S3-CAM-OVxxxx",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": "已证实部分与仍待确认部分分别说明；不计为整项核实完成。"
+    }
+  },
+  "parameterAuditComplete": false,
+  "memorySpecificationVerified": true,
+  "sourceStatus": "native-compiled-awaiting-physical-validation",
+  "nativeCompiled": true,
+  "exclusionReasons": [],
+  "defaultTouchAudit": {
+    "status": "retained-touch-configuration",
+    "reason": "按对应编译目标和触摸屏组合保留；屏幕另购不构成排除理由。触摸配置依据与编译/实物验收分别记录。",
+    "sources": []
+  },
+  "nativeValidation": {
+    "framework": "ESP-IDF",
+    "lvgl": "v9.6.0",
+    "imageBytes": 3396544,
+    "otaSlotBytes": 6291456,
+    "imageMatchesElf": true,
+    "compiledOtaPolicy": {
+      "board": "waveshare-cam-28",
+      "channels": [
+        "main",
+        "test"
+      ]
+    }
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "id": "esp32-touch-lcd-3.5",
+  "chip": "esp32",
+  "screen": [
+    480,
+    320
+  ],
+  "screenInches": 3.5,
+  "flashMB": 16,
+  "psramMB": 2,
+  "releaseSupported": false,
+  "physicalTested": false,
+  "nativeBuildAllowed": false,
+  "selection": "retained",
+  "sources": [
+    "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+    "https://www.waveshare.com/esp32-touch-lcd-3.5.htm",
+    "https://www.waveshare.com/wiki/ESP32-Touch-LCD-3.5",
+    "https://github.com/waveshareteam/ESP32-Touch-LCD-3.5",
+    "https://github.com/waveshareteam/ESP32-Touch-LCD-3.5/blob/51f354d2aeb2245fd7b748c9f3ea93cea1c527ae/examples/esp-idf/01_factory/components/esp_port/esp_3inch5_lcd_port.c"
+  ],
+  "photo": {
+    "src": "https://docs.waveshare.com/assets/images/ESP32-Touch-LCD-3.5-1-85547669ab9056ba1778b23916b336c8.webp",
+    "alt": "esp32-touch-lcd-3.5",
+    "page": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5"
+  },
+  "otaChannels": [
+    "main",
+    "test"
+  ],
+  "backend": "spi",
+  "component": "espressif/esp_lcd_st7796",
+  "panel": "ST7796",
+  "touch": "FT6336",
+  "codec": "ES8311",
+  "pins": {
+    "clock": 18,
+    "mosi": 23,
+    "cs": 5,
+    "dc": 27,
+    "backlight": 25,
+    "sda": 21,
+    "scl": 22,
+    "touchInterrupt": 37
+  },
+  "blockers": [
+    "原生编译及镜像审计通过；屏幕、触摸、音频、联网和待机尚未完成新板实物验收。",
+    "SD及独立深睡唤醒未映射；硬件功能以逐项支持说明为准。"
+  ],
+  "implementationTargets": [
+    "waveshare-esp32-35"
+  ],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-D0WDR2-V3",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 3.5,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        320,
+        480
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "ST7796 / SPI",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+          "locator": "Features / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 2,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+          "locator": "Features / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "FT6336 / I²C",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "ES8311，外接扬声器接口",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "value": "电源/充电指示灯；RGB未证实",
+      "status": "partial",
+      "sources": [
+        {
+          "url": "https://docs.waveshare.com/ESP32-Touch-LCD-3.5",
+          "locator": "Features / Onboard Resources"
+        }
+      ],
+      "note": "已证实部分与仍待确认部分分别说明；不计为整项核实完成。"
+    }
+  },
+  "parameterAuditComplete": false,
+  "memorySpecificationVerified": true,
+  "sourceStatus": "native-compiled-awaiting-physical-validation",
+  "nativeCompiled": true,
+  "cameraModes": [
+    "jpeg"
+  ],
+  "orientationBaseline": "厂家01_factory的90度横屏旋转；实际方向和触摸仍待实物验收",
+  "nativeValidation": {
+    "framework": "ESP-IDF",
+    "lvgl": "v9.6.0",
+    "imageBytes": 4796640,
+    "otaSlotBytes": 6291456,
+    "imageMatchesElf": true,
+    "compiledOtaPolicy": {
+      "board": "waveshare-esp32-35",
+      "channels": [
+        "main",
+        "test"
+      ]
+    }
+  },
+  "limitations": [
+    "经典 ESP32 的摄像头播放仅支持 JPEG；不支持 H.264 RTSP 解码。"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "repository": "https://github.com/espressif/esp-bsp",
+  "revision": "f259a6abd5808019b1903a422092a4234ca95a51",
+  "path": "bsp/m5stack_tab5",
+  "scope": "Only display, touch, audio and power sources retained; camera/USB/sensor/storage implementations omitted. Original copyright notices retained.",
+  "localChanges": [
+    "Only display/touch/audio/I2C/expander sources retained; optional capture/USB/sensors/storage implementations omitted.",
+    "Unknown panel returns an error instead of asserting.",
+    "Panel reset/init/orientation errors propagate through the existing cleanup path."
+  ]
+}

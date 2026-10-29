@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32",
+  "version": "1.0.1-test",
+  "application": "waveshare-esp32-35.bin",
+  "fullImage": "waveshare-esp32-35-full.bin",
+  "applicationBytes": 4795424,
+  "applicationOffset": 131072,
+  "sha256": "93c412a41400074f97d5d2f61bf1b60e588ef001251be519bfee70902c88760c",
+  "fullSha256": "50b499dec6aa0f518b5c50675e7c52aa148dd6a9caea908ed38aa65401b38510",
+  "project": "xt_waveshare_esp32_35",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

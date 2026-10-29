@@ -1,0 +1,8 @@
+{
+  "version": "1.0.1-test",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true,
+  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.1-test/esp32-s3-korvo2-lcd.bin",
+  "size": 3440800,
+  "md5": "49e6d9670ee1f1c6ec273e5f1c0d5a0c"
+}

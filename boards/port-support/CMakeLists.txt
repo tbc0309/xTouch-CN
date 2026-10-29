@@ -1,0 +1,7 @@
+set(PORT_DEPS espressif__esp_lcd_ili9341 espressif__esp_lcd_st7796 espressif__esp_codec_dev espressif__led_strip)
+if(IDF_TARGET STREQUAL "esp32s3")
+ list(APPEND PORT_DEPS espressif__esp_lcd_axs15231b)
+else()
+ list(APPEND PORT_DEPS espressif__esp_lcd_ek79007 espressif__esp_lcd_jd9365 espressif__esp_lcd_ili9881c waveshare__esp_lcd_hx8394)
+endif()
+idf_component_register(INCLUDE_DIRS "." REQUIRES ${PORT_DEPS} esp_driver_rmt esp_psram)

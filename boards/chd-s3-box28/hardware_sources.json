@@ -1,0 +1,70 @@
+{
+  "target": "chd-s3-box28",
+  "manufacturerSources": [],
+  "memorySpecificationVerified": true,
+  "requiredFlashBytes": 16777216,
+  "physicalTested": false,
+  "releaseSupported": false,
+  "rebuildDecision": "核对硬件后决定；纯图片/文档更新不触发固件重编译",
+  "note": "开发板作者在PR中确认N16R8、2.8寸ST7789/3.5寸ST7796及GT911/FT6336；仍未找到独立厂家图片/原理图，本项目未做实物验收。",
+  "boardAuthorSources": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3 N16R8",
+      "status": "owner-confirmed",
+      "sources": [],
+      "note": "板卡作者确认；独立厂家原理图尚未取得。"
+    },
+    "screenInches": {
+      "value": 2.8,
+      "status": "owner-confirmed",
+      "sources": [],
+      "note": "板卡作者确认；独立厂家原理图尚未取得。"
+    },
+    "resolution": {
+      "value": [
+        240,
+        320
+      ],
+      "status": "owner-confirmed",
+      "sources": [],
+      "note": "板卡作者确认；独立厂家原理图尚未取得。"
+    },
+    "display": {
+      "value": "ST7789 / SPI",
+      "status": "owner-confirmed",
+      "sources": [],
+      "note": "板卡作者确认；独立厂家原理图尚未取得。"
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "owner-confirmed",
+      "sources": [],
+      "note": "板卡作者确认；独立厂家原理图尚未取得。"
+    },
+    "psramMB": {
+      "value": 8,
+      "status": "owner-confirmed",
+      "sources": [],
+      "note": "板卡作者确认；独立厂家原理图尚未取得。"
+    },
+    "touch": {
+      "value": "GT911 / FT6336G，按装配批次",
+      "status": "owner-confirmed",
+      "sources": [],
+      "note": "板卡作者确认；独立厂家原理图尚未取得。"
+    },
+    "audio": {
+      "value": "ES8311 + NS4156；ES7210输入",
+      "status": "owner-confirmed",
+      "sources": [],
+      "note": "板卡作者确认；独立厂家原理图尚未取得。"
+    },
+    "indicator": {
+      "status": "unverified",
+      "sources": [],
+      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+    }
+  },
+  "parameterAuditComplete": false
+}

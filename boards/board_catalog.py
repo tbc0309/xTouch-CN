@@ -1,5 +1,6 @@
 """Shared identities for native builds, packaged assets and the web installer."""
 import json
+from pathlib import Path
 
 BOARDS = {
     'cyd': dict(directory='esp32-2432s028r', stem='xtouch-2.8', chip='esp32', project='xtouch_cyd',
@@ -18,11 +19,20 @@ BOARDS = {
                     boot_offset=0, app_offset=0x20000, screen=[480,320],
                     hint=['仅适用于 LCDWIKI ES3C35P 3.5 英寸 ST77922 主板。','For LCDWIKI ES3C35P 3.5-inch ST77922 boards only.']),
 }
+exclusion_path=Path(__file__).with_name('target_exclusions.json')
+EXCLUDED_TARGETS=json.loads(exclusion_path.read_text(encoding='utf8')) if exclusion_path.exists() else {}
+for catalog_name in ('port_targets.json','bsp_targets.json'):
+    port_catalog=Path(__file__).with_name(catalog_name)
+    if port_catalog.exists():
+        for key,profile in json.loads(port_catalog.read_text('utf8')).items():
+            if key in EXCLUDED_TARGETS or profile.get('candidateId') in EXCLUDED_TARGETS:continue
+            if key in BOARDS:raise ValueError('Port profile must not replace an existing board')
+            BOARDS[key]=profile
 BY_STEM = {board['stem']: dict(id=key, **board) for key,board in BOARDS.items()}
 
 def browser_module():
     targets={key:dict(stem=b['stem'],manifest='manifest.json' if key=='cyd' else 'manifest-'+key+'.json',
-                      screen=b['screen'],hint=b['hint']) for key,b in BOARDS.items()}
+                      screen=b['screen'],hint=b['hint']) for key,b in BOARDS.items() if b.get('releaseSupported',True)}
     return '// Generated from boards/board_catalog.py.\nexport default '+json.dumps(targets,ensure_ascii=False,separators=(',',':'))+';\n'
 
 

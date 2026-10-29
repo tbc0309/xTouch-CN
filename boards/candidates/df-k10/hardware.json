@@ -1,0 +1,155 @@
+{
+  "id": "df-k10",
+  "chip": "esp32s3",
+  "screen": [
+    320,
+    240
+  ],
+  "screenInches": 2.8,
+  "flashMB": 16,
+  "psramMB": 8,
+  "releaseSupported": false,
+  "physicalTested": false,
+  "nativeBuildAllowed": false,
+  "selection": "excluded",
+  "sources": [
+    "https://wiki.dfrobot.com/dfr0992-en/",
+    "https://www.dfrobot.com/product-2904.html",
+    "https://github.com/DFRobot/platform-unihiker"
+  ],
+  "photo": {
+    "src": "https://dfimg.dfrobot.com/enshop/image/data/DFR0992-EN/K10.jpg",
+    "alt": "df-k10",
+    "page": "https://www.dfrobot.com/product-2904.html"
+  },
+  "otaChannels": [
+    "main",
+    "test"
+  ],
+  "backend": "spi",
+  "panel": "ILI9341",
+  "codec": "ES8311",
+  "blockers": [
+    "厂家 K10/M10 参数对照中，K10 是2.8寸彩屏，只有M10标明支持触摸；K10不能以A/B实体按键或金手指触摸输入替代坐标触摸屏。"
+  ],
+  "implementationTargets": [],
+  "verifiedParameters": {
+    "chip": {
+      "value": "ESP32-S3",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.dfrobot.com/product-2904.html",
+          "locator": "Specifications"
+        }
+      ],
+      "note": ""
+    },
+    "screenInches": {
+      "value": 2.8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.dfrobot.com/product-2904.html",
+          "locator": "Specifications"
+        }
+      ],
+      "note": ""
+    },
+    "resolution": {
+      "value": [
+        240,
+        320
+      ],
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.dfrobot.com/product-2904.html",
+          "locator": "Specifications"
+        }
+      ],
+      "note": ""
+    },
+    "display": {
+      "value": "ILI9341 / SPI（厂家K10框架配置）",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/DFRobot/framework-arduinounihiker/blob/master/libraries/TFT_eSPI/User_Setup.h",
+          "locator": "厂家K10框架User_Setup.h启用ILI9341_DRIVER"
+        }
+      ],
+      "note": ""
+    },
+    "flashMB": {
+      "value": 16,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.dfrobot.com/product-2904.html",
+          "locator": "Specifications / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "psramMB": {
+      "value": 8,
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.dfrobot.com/product-2904.html",
+          "locator": "Specifications / Memory"
+        }
+      ],
+      "note": ""
+    },
+    "touch": {
+      "value": "坐标触摸存在资料冲突；A/B触摸按键不等同于屏幕触摸",
+      "status": "conflict",
+      "sources": [
+        {
+          "url": "https://github.com/DFRobot/platform-unihiker",
+          "locator": "README touchscreen 与官网规格未列坐标触摸控制器"
+        }
+      ],
+      "note": ""
+    },
+    "audio": {
+      "value": "板载扬声器与麦克风",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://www.dfrobot.com/product-2904.html",
+          "locator": "Specifications"
+        }
+      ],
+      "note": ""
+    },
+    "indicator": {
+      "value": "3颗可编程RGB / GPIO46",
+      "status": "confirmed",
+      "sources": [
+        {
+          "url": "https://github.com/DFRobot/framework-arduinounihiker/blob/master/libraries/unihiker_k10/src/unihiker_k10.h",
+          "locator": "PIXEL_PIN 46 / PIXEL_COUNT 3"
+        }
+      ],
+      "note": ""
+    }
+  },
+  "parameterAuditComplete": false,
+  "memorySpecificationVerified": true,
+  "sourceStatus": "blocked",
+  "nativeCompiled": false,
+  "requiredInputs": [
+    "坐标触摸硬件及接线的厂家依据，或另行确定无触摸交互方式"
+  ],
+  "exclusionReasons": [
+    "厂家 K10/M10 参数对照中，K10 是2.8寸彩屏，只有M10标明支持触摸；K10不能以A/B实体按键或金手指触摸输入替代坐标触摸屏。"
+  ],
+  "defaultTouchAudit": {
+    "status": "excluded-default-no-touchscreen",
+    "reason": "厂家 K10/M10 参数对照中，K10 是2.8寸彩屏，只有M10标明支持触摸；K10不能以A/B实体按键或金手指触摸输入替代坐标触摸屏。",
+    "source": "https://www.unihiker.com.cn/"
+  }
+}

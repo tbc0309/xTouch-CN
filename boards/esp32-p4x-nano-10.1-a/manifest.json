@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32p4",
+  "version": "1.0.1-test",
+  "application": "esp32-p4x-nano-10.1-a.bin",
+  "fullImage": "esp32-p4x-nano-10.1-a-full.bin",
+  "applicationBytes": 4962784,
+  "applicationOffset": 131072,
+  "sha256": "bc869d37adccd8c2e4ac667924a63c2c99954684f3b745978835bad11a30f51f",
+  "fullSha256": "39d98c869e12c8904e87205c3e3c2ba43fea04eeea031a07f3490a9a1da0eab3",
+  "project": "xp_95b1aa07bc54c2b5da4b",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

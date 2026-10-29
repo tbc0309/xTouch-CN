@@ -1,0 +1,12 @@
+{
+  "atk-dnesp32s3": {
+    "board": "atk-dnesp32s3",
+    "reason": "本表所列2.4寸ATK-MD0240屏幕组合的厂家SPI/8080接口没有坐标触摸信号，不能用主控电容触摸按键例程代替屏幕触摸；不是因为屏幕需要另购而排除。",
+    "source": "https://github.com/alientek-module/LCD-module_2.4-inch_ATK-MD0240"
+  },
+  "df-k10": {
+    "board": "df-k10",
+    "reason": "厂家 K10/M10 参数对照中，K10 是2.8寸彩屏，只有M10标明支持触摸；K10不能以A/B实体按键或金手指触摸输入替代坐标触摸屏。",
+    "source": "https://www.unihiker.com.cn/"
+  }
+}
