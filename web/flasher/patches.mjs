@@ -59,7 +59,7 @@ export function patchLoader(source) {
             [0,size*1024,65536,4096,256,65535].forEach((value,i)=>view.setUint32(i*4,value,true));
             await this.checkCommand("configure P4 SPI flash",0x0b,params);
         }else{
-            const required={"ESP32":4096,"ESP32-S3":16384}[this.chip.CHIP_NAME];
+            const required={"ESP32":4096,"ESP32-S3":16384,"ESP32-C5":32768,"ESP32-C6":16384}[this.chip.CHIP_NAME];
             if(required && await this.getFlashSize()!==required)
                 throw Error("Flash capacity does not match this supported board ("+required/1024+"MB required).");
         }`);
