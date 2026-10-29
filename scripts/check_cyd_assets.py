@@ -39,11 +39,12 @@ def check(path, asset_size="small", icon_set="original"):
         address, index = symbols[name]
         section = sections[index]
         at = section[4]+address-section[3]
-        actual = struct.unpack_from('<hh', data, at+8)
+        # LVGL 9.6: dsc/fallback/user_data and three callbacks precede int32 metrics.
+        actual = struct.unpack_from('<ii', data, at+24)
         if actual != expected:
             raise ValueError(f'CYD {name}: linked metrics {actual}, expected {asset_size}/{icon_set} {expected}')
         # Compare the linked pixels, not just a matching size or symbol name.
-        font_dsc=struct.unpack_from('<I',data,at+16)[0]
+        font_dsc=struct.unpack_from('<I',data,at)[0]
         bitmap=struct.unpack('<I',linked_bytes(font_dsc,4))[0]
         source=reference.read_text('utf-8').split('glyph_bitmap[]',1)[1].split('{',1)[1].split('};',1)[0]
         source=re.sub(r'/\*.*?\*/','',source,flags=re.S)

@@ -4,6 +4,14 @@
 #include "xtouch/hms.h"
 #include "xtouch/errors.h"
 
+/* Highlight only the authorization advice, using the shared warning role. */
+static void append_authorization_hint(lv_obj_t *caption){
+ const char *hint=strchr(XTOUCH_TEXT_CONTROL_AUTH_ERROR,'\n');
+ char marker[12];snprintf(marker,sizeof(marker),"\n#%06X ",(unsigned)UI_COLOR_WARNING);
+ lv_label_ins_text(caption,LV_LABEL_POS_LAST,marker);
+ lv_label_ins_text(caption,LV_LABEL_POS_LAST,hint?hint+1:XTOUCH_TEXT_CONTROL_AUTH_ERROR);
+ lv_label_ins_text(caption,LV_LABEL_POS_LAST,"#");
+}
 static uint32_t activePrintError;
 static unsigned errorOwner;
 static uint32_t errorRevision;
@@ -88,10 +96,13 @@ void ui_hmsPanelComponent_onXTouchHMSError(lv_event_t *e)
     // and hiding the dialog releases it; no second full-list buffer is kept.
     lv_obj_t *caption=ui_comp_get_child(ui_hmsComponent,UI_COMP_HMSPANEL_HMSPANELCONTAINER_HMSPANELCAPTION);
     char line[32];
-    bool chinese=xtouch_language_get()<=1;
+
     if(print){
         snprintf(line,sizeof(line),"0x%08X",(unsigned)print);lv_label_set_text(caption,line);
-        const char *description=xtouch_errors_getDeviceErrorDescription(print,chinese);
+        if(print==84033543UL&&hms_authorization_advisory_pending()){
+            append_authorization_hint(caption);
+        }
+        const char *description=xtouch_errors_getDeviceErrorDescription(print);
         if(description){lv_label_ins_text(caption,LV_LABEL_POS_LAST,"\n");lv_label_ins_text(caption,LV_LABEL_POS_LAST,description);}
     }else lv_label_set_text(caption,"");
     unsigned shown=0;
@@ -101,13 +112,11 @@ void ui_hmsPanelComponent_onXTouchHMSError(lv_event_t *e)
         snprintf(line,sizeof(line),"%sHMS %04X-%04X-%04X-%04X",(print||shown)?"\n":"",(unsigned)(code>>48),(unsigned)((code>>32)&65535),(unsigned)((code>>16)&65535),(unsigned)(code&65535));
         ++shown;
         lv_label_ins_text(caption,LV_LABEL_POS_LAST,line);
-        const char *description=xtouch_errors_getHMSErrorDescription(code,chinese);
+        if(code==UINT64_C(0x0500050000010007)&&hms_authorization_advisory_pending()){
+            append_authorization_hint(caption);
+        }
+        const char *description=xtouch_errors_getHMSErrorDescription(code);
         if(description){lv_label_ins_text(caption,LV_LABEL_POS_LAST,"\n");lv_label_ins_text(caption,LV_LABEL_POS_LAST,description);}
-    }
-    if(hms_authorization_advisory_pending()){
-        const char *hint=strchr(XTOUCH_TEXT_CONTROL_AUTH_ERROR,'\n');
-        lv_label_ins_text(caption,LV_LABEL_POS_LAST,"\n");
-        lv_label_ins_text(caption,LV_LABEL_POS_LAST,hint?hint+1:XTOUCH_TEXT_CONTROL_AUTH_ERROR);
     }
     if(hms_health_truncated())lv_label_ins_text(caption,LV_LABEL_POS_LAST,"\n...");
     char key[9];snprintf(key,sizeof(key),"%08X",(unsigned)print);

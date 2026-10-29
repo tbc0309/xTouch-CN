@@ -1,0 +1,31 @@
+{
+  "localOnly": [
+    "AGENTS.md",
+    "LOCAL-REVIEW.zh-CN.md",
+    "local-tools/**",
+    "local-tests/**",
+    "test-results/**",
+    "boards/ADAPTATION.md",
+    "boards/SHARED-UI.md",
+    "docs/DEVELOPMENT-RULES*.md",
+    "docs/DOCUMENTATION-RULES*.md",
+    "boards/docs/**",
+    "tests/**"
+  ],
+  "internalPhrases": [
+    "本分支",
+    "当前分支",
+    "本轮",
+    "this branch",
+    "current branch",
+    "this test branch",
+    "pending=[]",
+    "COM9",
+    "COM10",
+    "COM11",
+    "COM13",
+    "192.168.9.",
+    "实验分支",
+    "验证分支"
+  ]
+}

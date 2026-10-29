@@ -3,7 +3,7 @@
 #include "button.h"
 #include "runtime.h"
 #include "features/config.h"
-#include <Arduino.h>
+#include "platform/idf/runtime.h"
 #include "xtouch/portal.h"
 #include "xtouch/types.h"
 extern void xtouch_screen_sleep();

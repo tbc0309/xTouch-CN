@@ -6,10 +6,13 @@
 #include "camera_frame.h"
 #include "camera_messages.h"
 #include "camera_rtsp.h"
+#include "frame_exchange.h"
+#include "features/network/task_budget.h"
+#include "features/diagnostics/stack_margin.h"
 #include <esp_heap_caps.h>
-#include <Arduino.h>
-#include <WiFi.h>
-#include <WiFiClientSecure.h>
+#include "platform/idf/runtime.h"
+#include "platform/idf/wifi.h"
+#include "platform/idf/socket.h"
 #include <JPEGDEC.h>
 #include "xtouch/types.h"
 #include "xtouch/printers.h"
@@ -35,10 +38,18 @@ bool useRtsps=false;
 bool wifiPowerHeld=false;wifi_ps_type_t previousWifiPower=WIFI_PS_MIN_MODEM;
 std::atomic<unsigned> frameWidth{0},frameHeight{0};unsigned lastWidth=0,lastHeight=0,lastLanguage=255;
 const char *msg(int n){return cameraMessage(n,xtouch_language_get());}
-void closeView(){stop=true;wantRestart=false;if(view.overlay){lv_obj_del(view.overlay);lv_img_cache_invalidate_src(&descriptor);view={};}}
+enum class CloseReason : unsigned { None, User, Suspend, Network, Maintenance, Source, Credentials };
+CloseReason lastClose=CloseReason::None;
+void closeView(CloseReason reason){
+ stop=true;wantRestart=false;
+ if(view.overlay){
+  lastClose=reason;Serial.printf("[CAMERA] closed reason=%u state=%d frames=%u\n",unsigned(reason),int(result),unsigned(frames));
+  lv_obj_del(view.overlay);lv_img_cache_invalidate_src(&descriptor);view={};
+ }
+}
 void action(CameraAction a){
- if(a==CameraAction::Close){closeView();return;}
- if(strcmp(serial,xTouchConfig.xTouchSerialNumber)){closeView();return;}
+ if(a==CameraAction::Close){closeView(CloseReason::User);return;}
+ if(strcmp(serial,xTouchConfig.xTouchSerialNumber)){closeView(CloseReason::Source);return;}
  if(a==CameraAction::Light){if(xtouch_printer_online()&&uint32_t(millis()-lastLight)>=1000){lastLight=millis();lv_msg_send(XTOUCH_COMMAND_LIGHT_TOGGLE,nullptr);}return;}
  if(a==CameraAction::Freeze){if(result==6)paused=!paused;return;}
  if(a==CameraAction::Retry){stop=true;wantRestart=true;paused=false;result=8;}
@@ -52,17 +63,23 @@ int draw(JPEGDRAW *p){
 }
 bool readExact(WiFiClientSecure &client,uint8_t *p,size_t n,bool header=false){return CameraProtocol::receive(client,p,n,[]{return uint32_t(millis());},[]{vTaskDelay(pdMS_TO_TICKS(5));},[]{return bool(stop);},header?20000:15000,header?20000:5000);}
 bool waitRetry(unsigned failures){uint32_t start=millis(),delay=failures==1?500:failures==2?1000:2000;while(!stop&&uint32_t(millis()-start)<delay)vTaskDelay(pdMS_TO_TICKS(20));return !stop;}
+void publishFrame(unsigned w,unsigned h){
+ if(xSemaphoreTake(lock,pdMS_TO_TICKS(10))!=pdTRUE)return;
+ CameraBuffer::publish(decoded,ready);
+ frameWidth=w;frameHeight=h;++frames;lastFrame=millis();xSemaphoreGive(lock);
+}
 void worker(void *){
- // Decode on the other core at full speed; release the lock on every exit.
+ auto stackPath=useRtsps?XTouchStackMargin::Path::H264:XTouchStackMargin::Path::Jpeg;
+ XTouchStackMargin::sample(stackPath,true);
+ Serial.printf("[CAMERA] worker core=%d\n", int(xPortGetCoreID()));
+ // Keep decoding on CPU0; the UI task affinity is selected in sdkconfig.
  esp_pm_lock_handle_t frequencyLock=nullptr;
  if(esp_pm_lock_create(ESP_PM_CPU_FREQ_MAX,0,"camera-playback",&frequencyLock)==ESP_OK)esp_pm_lock_acquire(frequencyLock);
  unsigned failures=0;
  while(!stop){
   ++connections;
   if(useRtsps){
-   CameraRtspSink sink{decoded,unsigned(cameraWidth),unsigned(cameraHeight),[](unsigned w,unsigned h){
-    frameWidth=w;frameHeight=h;if(xSemaphoreTake(lock,pdMS_TO_TICKS(10))==pdTRUE){memcpy(ready,decoded,cameraWidth*cameraHeight*2);++frames;lastFrame=millis();xSemaphoreGive(lock);}
-   },[](int state){result=state;}};
+   CameraRtspSink sink{[]{return decoded;},unsigned(cameraWidth),unsigned(cameraHeight),publishFrame,[](int state){result=state;}};
    unsigned before=frames;int failure=cameraRtspRun(host,code,stop,sink);if(stop)break;if(frames!=before)failures=0;result=failure;
    if(failure==3||failure==5||failure==7||failure==11||failure==12||++failures>=3)break;
    result=8;if(!waitRetry(failures))break;continue;
@@ -84,9 +101,9 @@ void worker(void *){
     bool ok=decoder->decode(0,0,flag);decoder->close();
     if(ok)ok=CameraFrame::present(decoded,(w+factor-1)/factor,(h+factor-1)/factor,cameraWidth,cameraHeight,CameraFrame::fit(w,h,cameraWidth,cameraHeight),cancelled,[]{vTaskDelay(1);});
     if(!ok){failure=cancelled()?11:3;break;}
-    if(heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT)<32768){failure=5;break;}
-    frameWidth=w;frameHeight=h;
-    if(xSemaphoreTake(lock,pdMS_TO_TICKS(10))==pdTRUE){memcpy(ready,decoded,cameraWidth*cameraHeight*2);++frames;lastFrame=millis();xSemaphoreGive(lock);}
+    if(heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT)<CameraFrame::streamInternalReserve){failure=5;break;}
+    publishFrame(w,h);
+    XTouchStackMargin::sample(stackPath);
     failures=0;result=6;vTaskDelay(pdMS_TO_TICKS(20));
    }
   }
@@ -95,6 +112,7 @@ void worker(void *){
   result=8;if(!waitRetry(failures))break;
  }
  if(frequencyLock){esp_pm_lock_release(frequencyLock);esp_pm_lock_delete(frequencyLock);}
+ XTouchStackMargin::sample(stackPath,true);
  memset(code,0,sizeof(code));running=false;vTaskDelete(nullptr);
 }
 void releaseBuffers(){free(decoded);free(ready);free(shown);free(jpegBytes);if(decoder){decoder->~JPEGDEC();free(decoder);}decoded=shown=ready=nullptr;jpegBytes=nullptr;decoder=nullptr;memset(code,0,sizeof(code));}
@@ -123,12 +141,12 @@ void startStream(){
   if(state)decoder=new(state) JPEGDEC();
  }
  if(!lock||!decoded||!ready||!shown||(!useRtsps&&(!jpegBytes||!decoder))){releaseBuffers();result=5;return;}
- memset(shown,0,cameraWidth*cameraHeight*2);descriptor={};descriptor.header.cf=LV_IMG_CF_TRUE_COLOR;descriptor.header.w=cameraWidth;descriptor.header.h=cameraHeight;descriptor.data_size=cameraWidth*cameraHeight*2;descriptor.data=(uint8_t*)shown;lv_img_set_src(view.image,&descriptor);
+ memset(shown,0,cameraWidth*cameraHeight*2);descriptor={};descriptor.header.magic=LV_IMAGE_HEADER_MAGIC;descriptor.header.cf=LV_IMG_CF_TRUE_COLOR;descriptor.header.w=cameraWidth;descriptor.header.stride=cameraWidth*2;descriptor.header.h=cameraHeight;descriptor.data_size=cameraWidth*cameraHeight*2;descriptor.data=(uint8_t*)shown;lv_img_set_src(view.image,&descriptor);
  if(!wifiPowerHeld){previousWifiPower=WiFi.getSleep();wifiPowerHeld=WiFi.setSleep(WIFI_PS_NONE);}
- running=true;if(xTaskCreatePinnedToCore(worker,"bambu-camera",12288,nullptr,2,nullptr,0)!=pdPASS){running=false;lv_img_set_src(view.image,nullptr);lv_img_cache_invalidate_src(&descriptor);releaseBuffers();result=5;}
+ running=true;if(xTaskCreatePinnedToCore(worker,"bambu-camera",XTouchNetworkBudgets::CameraWorkerStackBytes,nullptr,2,nullptr,0)!=pdPASS){running=false;lv_img_set_src(view.image,nullptr);lv_img_cache_invalidate_src(&descriptor);releaseBuffers();result=5;}
 }
 }
-void xtouch_camera_suspend(){closeView();}
+void xtouch_camera_suspend(){closeView(CloseReason::Suspend);}
 bool xtouch_camera_available(){
  char candidateHost[64],candidateCode[9];
  bool valid=xtouch_printer_camera_credentials(candidateHost,sizeof(candidateHost),candidateCode,sizeof(candidateCode));
@@ -141,19 +159,20 @@ bool xtouch_camera_available(){
  return CameraProtocol::lan(bytes)&&protocol!=CameraProtocol::Stream::Unknown;
 }
 void xtouch_camera_open(){
- if(view.overlay){closeView();return;}if(running)return;
+ if(view.overlay){closeView(CloseReason::User);return;}if(running)return;
  if(!xtouch_camera_available())return;
- lastLight=millis()-1000;lastResult=-1;lastLanguage=255;wantRestart=true;xtouch_print_preview_suspend(true);cameraUiCreate(view,msg(0),action);
+ lastClose=CloseReason::None;lastLight=millis()-1000;lastResult=-1;lastLanguage=255;wantRestart=true;xtouch_print_preview_suspend(true);cameraUiCreate(view,msg(0),action);
  if(!xtouch_print_preview_status().busy){wantRestart=false;startStream();}
 }
 void xtouch_camera_poll(){
  static uint32_t availabilityAt=0;static bool available=false;
  if(uint32_t(millis()-availabilityAt)>=250){availabilityAt=millis();bool next=xtouch_camera_available();if(next!=available){available=next;lv_msg_send(XTOUCH_ON_IPCAM,nullptr);}}
- if(view.overlay&&(WiFi.status()!=WL_CONNECTED||xtouch_portal_maintenance()))closeView();
- if(view.overlay&&serial[0]&&(strcmp(serial,xTouchConfig.xTouchSerialNumber)||cloudSource!=xtouch_printer_cloud()||strcmp(account,xtouch_printer_account())))closeView();
+ if(view.overlay&&WiFi.status()!=WL_CONNECTED)closeView(CloseReason::Network);
+ if(view.overlay&&xtouch_portal_maintenance())closeView(CloseReason::Maintenance);
+ if(view.overlay&&serial[0]&&(strcmp(serial,xTouchConfig.xTouchSerialNumber)||cloudSource!=xtouch_printer_cloud()||strcmp(account,xtouch_printer_account())))closeView(CloseReason::Source);
  if(view.overlay&&running){
   char currentHost[64],currentCode[9];
-  if(!xtouch_printer_camera_credentials(currentHost,sizeof(currentHost),currentCode,sizeof(currentCode))||strcmp(host,currentHost)||strcmp(code,currentCode))closeView();
+  if(!xtouch_printer_camera_credentials(currentHost,sizeof(currentHost),currentCode,sizeof(currentCode))||strcmp(host,currentHost)||strcmp(code,currentCode))closeView(CloseReason::Credentials);
   memset(currentCode,0,sizeof(currentCode));
  }
  if(view.overlay&&wantRestart&&!running&&!xtouch_print_preview_status().busy){wantRestart=false;lv_img_set_src(view.image,nullptr);lv_img_cache_invalidate_src(&descriptor);startStream();}
@@ -171,7 +190,7 @@ void xtouch_camera_poll(){
  if(!view.overlay&&!running){releaseBuffers();serial[0]=0;xtouch_print_preview_suspend(false);}
 }
 
-XTouchCameraStatus xtouch_camera_status(){return {view.overlay!=nullptr,bool(running),unsigned(frames),unsigned(connections),unsigned(paused&&result==6?9:int(result)),unsigned(frameWidth),unsigned(frameHeight),lastFrame?uint32_t(millis()-lastFrame):0,heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT)};}
+XTouchCameraStatus xtouch_camera_status(){return {view.overlay!=nullptr,bool(running),unsigned(frames),unsigned(connections),unsigned(paused&&result==6?9:int(result)),unsigned(frameWidth),unsigned(frameHeight),lastFrame?uint32_t(millis()-lastFrame):0,heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),unsigned(lastClose)};}
 
 #else
 #include "camera.h"

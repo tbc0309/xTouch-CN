@@ -1,0 +1,14 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32s3",
+  "version": "1.0.1",
+  "application": "lcdwiki-es3c35p.bin",
+  "fullImage": "lcdwiki-es3c35p-full.bin",
+  "applicationBytes": 4941776,
+  "applicationOffset": 131072,
+  "sha256": "f2e177dc485c9874cbb429b9f850fb5655e5ddcd83db502f7d0ae86786bf7ffd",
+  "fullSha256": "6f88456151d8c6361196e05a0ed408e77b66ffa2ca912ceed112609e0edf7f47",
+  "project": "xtouch_es3c35p"
+}

@@ -3,11 +3,11 @@
 #include "home_environment.h"
 #endif
 #if defined(XTOUCH_HAS_CAMERA) && XTOUCH_HAS_CAMERA
-#include <lvgl.h>
+#include "ui/lvgl_compat.h"
 #include "camera.h"
 static void cameraClick(lv_event_t *event){(void)event;if(xtouch_camera_available())xtouch_camera_open();}
 #endif
-#include <Arduino.h>
+#include "platform/idf/runtime.h"
 #include <stdio.h>
 #include "../ui.h"
 #include "../printer_models.h"
@@ -24,7 +24,12 @@ static void print_preview_fit(lv_event_t *event){
     int w=lv_obj_get_content_width(printPreviewBox),h=lv_obj_get_content_height(printPreviewBox);
     if(w<=0||h<=0)return;
     unsigned zoomX=(unsigned)w*256/image->header.w,zoomY=(unsigned)h*256/image->header.h;
+#if XTOUCH_SINGLE_PRINTER_LOGO
+    /* The fixed logo fits the small card without a transient transform tile. */
+    lv_img_set_zoom(printPreviewImage,256);
+#else
     lv_img_set_zoom(printPreviewImage,image->header.cf==LV_IMG_CF_RAW?256:(zoomX<zoomY?zoomX:zoomY));
+#endif
     lv_obj_center(printPreviewImage);
 }
 void ui_home_preview_bounds(uint16_t *width,uint16_t *height){
@@ -50,7 +55,7 @@ void ui_home_preview_set(const lv_img_dsc_t *image){
 }
 static void print_preview_deleted(lv_event_t *event){(void)event;printPreviewHasThumbnail=false;printPreviewSource=NULL;printPreviewBox=printPreviewImage=printPreviewEmpty=NULL;}
 static void print_button_layout(lv_event_t *event){
-    ui_layout_print_button(lv_event_get_target(event));
+    ui_layout_print_button(lv_event_get_target_obj(event));
 }
 #include "../ams_display.h"
 #include "../printer_picker.h"
@@ -67,7 +72,7 @@ static void set_device_model(lv_obj_t *label)
     lv_obj_update_layout(row);
     ui_layout_device_model(row);
 }
-static void device_model_updated(lv_event_t *e){set_device_model(lv_event_get_target(e));}
+static void device_model_updated(lv_event_t *e){set_device_model(lv_event_get_target_obj(e));}
 
 static void on_next_printer(lv_event_t *e)
 {
@@ -111,7 +116,7 @@ const char *xtouch_device_get_print_state()
 void ui_event_comp_homeComponent_mainScreenPlayPauseButton(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_homeComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -121,7 +126,7 @@ void ui_event_comp_homeComponent_mainScreenPlayPauseButton(lv_event_t *e)
 void ui_event_comp_homeComponent_mainScreenStopButton(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_homeComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -131,7 +136,7 @@ void ui_event_comp_homeComponent_mainScreenStopButton(lv_event_t *e)
 void ui_event_comp_homeComponent_mainScreenSpeedDropDown(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_homeComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_VALUE_CHANGED)
     {
@@ -141,7 +146,7 @@ void ui_event_comp_homeComponent_mainScreenSpeedDropDown(lv_event_t *e)
 void ui_event_comp_homeComponent_mainScreenLightButton(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_homeComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -152,7 +157,7 @@ void ui_event_comp_homeComponent_mainScreenLightButton(lv_event_t *e)
 void ui_event_comp_homeComponent_mainScreenBedTemp(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_homeComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -162,7 +167,7 @@ void ui_event_comp_homeComponent_mainScreenBedTemp(lv_event_t *e)
 void ui_event_comp_homeComponent_mainScreenNozzleTemp(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_homeComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -173,7 +178,7 @@ void ui_event_comp_homeComponent_mainScreenNozzleTemp(lv_event_t *e)
 void ui_event_comp_homeComponent_mainScreenSpeedChange(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     int last_speed = bambuStatus.printing_speed_lvl;
     if (event_code == LV_EVENT_VALUE_CHANGED)
     {
@@ -201,7 +206,7 @@ void ui_event_comp_homeComponent_mainScreenSpeedChange(lv_event_t *e)
 void onXTouchLightMessage(lv_event_t *e)
 {
 
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_msg_t *m = lv_event_get_msg(e);
 
     struct XTOUCH_MESSAGE_DATA *message = (struct XTOUCH_MESSAGE_DATA *)m->payload;
@@ -220,7 +225,7 @@ void onXTouchLightMessage(lv_event_t *e)
 void onXTouchBedTemp(lv_event_t *e)
 {
 
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_msg_t *m = lv_event_get_msg(e);
 
     struct XTOUCH_MESSAGE_DATA *message = (struct XTOUCH_MESSAGE_DATA *)m->payload;
@@ -236,7 +241,7 @@ void onXTouchBedTemp(lv_event_t *e)
 void onXTouchChamberTemp(lv_event_t *e)
 {
 
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_msg_t *m = lv_event_get_msg(e);
 
     struct XTOUCH_MESSAGE_DATA *message = (struct XTOUCH_MESSAGE_DATA *)m->payload;
@@ -254,7 +259,7 @@ void onXTouchChamberTemp(lv_event_t *e)
 void onXTouchBedTempTarget(lv_event_t *e)
 {
 
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_msg_t *m = lv_event_get_msg(e);
 
     struct XTOUCH_MESSAGE_DATA *message = (struct XTOUCH_MESSAGE_DATA *)m->payload;
@@ -264,7 +269,7 @@ void onXTouchBedTempTarget(lv_event_t *e)
 void onXTouchWifiSignal(lv_event_t *e)
 {
 
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_msg_t *m = lv_event_get_msg(e);
 
     struct XTOUCH_MESSAGE_DATA *message = (struct XTOUCH_MESSAGE_DATA *)m->payload;
@@ -272,7 +277,7 @@ void onXTouchWifiSignal(lv_event_t *e)
 }
 
 static void printerSignal(lv_event_t *e){
-    lv_obj_t *label=lv_event_get_target(e);
+    lv_obj_t *label=lv_event_get_target_obj(e);
     char text[16];
     if(bambuStatus.wifi_signal_valid)snprintf(text,sizeof(text),"%d",-bambuStatus.wifi_signal);
     else text[0]='\0';
@@ -327,7 +332,7 @@ static void refreshCameraIcon(lv_obj_t *target)
 }
 void onXTouchIPCam(lv_event_t *e)
 {
-    refreshCameraIcon(lv_event_get_target(e));
+    refreshCameraIcon(lv_event_get_target_obj(e));
 }
 
 int printingLevelToIndex(int lvl)
@@ -351,7 +356,7 @@ int printingLevelToIndex(int lvl)
 
 void onXTouchPrintStatus(lv_event_t *e)
 {
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_homeComponent = lv_event_get_user_data(e);
     static char previewTask[sizeof(bambuStatus.subtask_name)];
     static unsigned previewOwner=~0u;
@@ -368,9 +373,16 @@ void onXTouchPrintStatus(lv_event_t *e)
     confirmationState=bambuStatus.print_status;
 
     char layerText[32];
-    sprintf(layerText, "%d/%d", bambuStatus.current_layer, bambuStatus.total_layers);
+    char currentLayer[16],totalLayers[16];
+    if(bambuStatus.current_layer_valid)snprintf(currentLayer,sizeof(currentLayer),"%d",bambuStatus.current_layer);
+    else snprintf(currentLayer,sizeof(currentLayer),"--");
+    if(bambuStatus.total_layers>0)snprintf(totalLayers,sizeof(totalLayers),"%d",bambuStatus.total_layers);
+    else snprintf(totalLayers,sizeof(totalLayers),"--");
+    snprintf(layerText,sizeof(layerText),"%s/%s",currentLayer,totalLayers);
     lv_label_set_text(comp_homeComponent[UI_COMP_HOMECOMPONENT_MAINSCREENLEFT_MAINSCREENPLAYER_MAINSCREENCONTROLLER2_MAINSCREENLAYER], layerText);
-    lv_slider_set_value(comp_homeComponent[UI_COMP_HOMECOMPONENT_MAINSCREENLEFT_MAINSCREENPLAYER_MAINSCREENPROGRESSBAR], bambuStatus.mc_print_percent, LV_ANIM_ON);
+    lv_obj_t *progress=comp_homeComponent[UI_COMP_HOMECOMPONENT_MAINSCREENLEFT_MAINSCREENPLAYER_MAINSCREENPROGRESSBAR];
+    int percent=bambuStatus.print_status==XTOUCH_PRINT_STATUS_PREPARE?0:bambuStatus.mc_print_percent;
+    lv_slider_set_value(progress,percent,percent<lv_slider_get_value(progress)||percent==0?LV_ANIM_OFF:LV_ANIM_ON);
     /* Printers can report RUNNING during heating/levelling before layer one.
        A missing layer report is not evidence of layer zero. */
     bool preparing=bambuStatus.print_status==XTOUCH_PRINT_STATUS_PREPARE ||
@@ -379,10 +391,11 @@ void onXTouchPrintStatus(lv_event_t *e)
     lv_obj_set_style_bg_color(comp_homeComponent[UI_COMP_HOMECOMPONENT_MAINSCREENLEFT_MAINSCREENPLAYER_MAINSCREENPROGRESSBAR],lv_color_hex(preparing?UI_COLOR_WARNING:0x00FF00),LV_PART_INDICATOR);
 
     char remainingTimeText[48];
-    _ui_seconds_to_timeleft(bambuStatus.mc_left_time, remainingTimeText);
+    if(bambuStatus.mc_left_time<0)snprintf(remainingTimeText,sizeof(remainingTimeText),"--");
+    else _ui_seconds_to_timeleft(bambuStatus.mc_left_time, remainingTimeText);
 
     char percentAndRemaining[100]; // Adjust the size accordingly
-    snprintf(percentAndRemaining,sizeof(percentAndRemaining), "%d%% %s", bambuStatus.mc_print_percent, remainingTimeText);
+    snprintf(percentAndRemaining,sizeof(percentAndRemaining), "%d%% %s", percent, remainingTimeText);
 
     lv_label_set_text(target, percentAndRemaining);
     ui_layout_print_metrics(lv_obj_get_parent(lv_obj_get_parent(target)));
@@ -425,10 +438,10 @@ void onXTouchPrintStatus(lv_event_t *e)
         lv_obj_t *statusCaption = ui_comp_get_child(ui_mainStatusComponent, UI_COMP_MAINSCREENSTATUS_MAINSCREENSTATUSCAPTION);
         if (isPrinterNoticeActive()) {
             lv_obj_set_style_text_color(statusCaption, lv_color_hex(UI_COLOR_BLUE), 0);
-            lv_label_set_text_fmt(statusCaption, XTOUCH_TEXT_SWITCHING_PRINTER, xtouch_printer_name());
+            ui_text_variable_caption(statusCaption, XTOUCH_TEXT_SWITCHING_PRINTER, xtouch_printer_name(),lv_color_hex(xtouch_printer_source_color(xtouch_printer_active())));
         } else {
             lv_obj_set_style_text_color(statusCaption, lv_color_white(), 0);
-            lv_label_set_text(statusCaption, xtouch_device_get_print_state());
+            ui_text_variable_caption(statusCaption, NULL, xtouch_device_get_print_state(),lv_color_white());
         }
         lv_obj_add_state(dropDown, LV_STATE_DISABLED);
         break;
@@ -1099,7 +1112,7 @@ lv_obj_t *ui_homeComponent_create(lv_obj_t *comp_parent)
 
     lv_obj_t *cui_mainScreenTemps;
     cui_mainScreenTemps = lv_obj_create(cui_mainScreenRight);
-    lv_obj_set_height(cui_mainScreenTemps, 130);
+    ui_specs_fill_remaining(cui_mainScreenTemps, true);
     lv_obj_set_width(cui_mainScreenTemps, lv_pct(100));
     lv_obj_set_x(cui_mainScreenTemps, 386);
     lv_obj_set_y(cui_mainScreenTemps, 178);

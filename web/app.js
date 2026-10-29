@@ -1,6 +1,13 @@
+import boardTargets from './board-targets.js';
+import testBoardTargets from './test-board-targets.js';
+import {installerChannel,validateFirmwareCatalog} from './installer-channel.js';
 import {websiteLanguage,saveWebsiteLanguage} from './language.js';
 import {renderFooter} from './page-footer.js';
 const words = {
+  testChannel: ['测试版', 'Test firmware'],
+  testWarning: ['正在选择测试固件。请核对完整主板型号、屏幕与芯片修订，安装前备份配置。实测状态请查看测试版主板列表。', 'Test firmware selected. Check the exact board, display and chip revision, and back up your settings. See the test board list for validation status.'],
+  testUnavailable: ['此测试固件目录暂不可用，未切换到正式版。请稍后重试。', 'This test firmware catalog is unavailable. No release firmware was substituted. Please retry later.'],
+  testRebuilding: ['此版本测试固件正在重新编译，暂不可安装。', 'Test firmware for this version is being rebuilt and is not yet available for installation.'],
   "errorLookup": [
     "故障码查询",
     "Error lookup"
@@ -62,8 +69,8 @@ const words = {
     "Wi-Fi and setup"
   ],
   "setup1": [
-    "CYD 首次开机需触摸校准；S3 V2/P4 无需校准。",
-    "Calibrate CYD on first boot; S3 V2/P4 need no calibration."
+    "CYD 首次开机需触摸校准；S3 V2/P4/ES3C35P 无需校准。",
+    "Calibrate CYD on first boot; S3 V2/P4/ES3C35P need no calibration."
   ],
   "setup2": [
     "扫描屏幕二维码连接 XTOUCH-CN 热点；密码 12345678。",
@@ -115,8 +122,9 @@ const words = {
   ]
 };
 let lang=websiteLanguage(), metadata=null, installerReady=false, boardCatalog=[];
-const boardPreferenceKey="xTouch-CN.installer.board";
-function rememberedBoard(){try{return localStorage.getItem(boardPreferenceKey);}catch{return null;}}
+let channel=installerChannel(false), activeTargets=boardTargets, firmwareRequest=0, requestController=null;
+const boardPreferenceKey=()=>"xTouch-CN.installer.board"+(channel.id==='test'?'.test':'');
+function rememberedBoard(){try{return localStorage.getItem(boardPreferenceKey());}catch{return null;}}
 const $=id=>document.getElementById(id), t=key=>(words[key]||[key,key])[lang==="en"?1:0];
 function text(tag,value,className){const el=document.createElement(tag);el.textContent=value;if(className)el.className=className;return el;}
 function boardName(board){return board.name.replace(/^Waveshare · /,lang==="zh"?"微雪 · ":"Waveshare · ");}
@@ -125,62 +133,64 @@ function applyLanguage(){
  $("language").value=lang;document.documentElement.lang=lang==="zh"?"zh-CN":"en";
  document.title=lang==="zh"?"xTouch-CN · 在线刷写":"xTouch-CN · Web installer";
  document.querySelectorAll("[data-i18n]").forEach(el=>el.textContent=t(el.dataset.i18n));
- if(metadata)$("version").textContent=`${t("version")} v${metadata.version}`;
+ if(metadata)$("version").textContent=`${t("version")} v${metadata.version}${channel.id==="test"?" · "+t("testChannel"):""}`;
  if(installerReady && $("connect-installer"))$("connect-installer").textContent=t("connect");
  if(metadata){
   $("board-name").textContent=boardName(metadata);
   for(const option of $("board").options){const board=boardCatalog.find(b=>b.id===option.value);if(board)option.textContent=boardName(board);}
-  $("board-screen").textContent=metadata.id==="p4"?"800 × 480": "320 × 240";
-  document.querySelector('[data-i18n="boardHint"]').textContent=metadata.id==="cyd"?t("boardHint"):
-   metadata.id==="p4"?(lang==="zh"?"仅适用于所选 P4 4.3 英寸主板，适用 ESP32-P4 芯片版本 v3.x（最低 v3.0），不适用于早期 v1.x 版本。":"For this P4 4.3-inch board only. Supports ESP32-P4 chip revision v3.x (minimum v3.0), not earlier v1.x revisions."):
-   (lang==="zh"?"仅适用于 S3 2.8 英寸 V2 / CST3530，不适用于 V1 或其它后缀型号。":"For S3 2.8-inch V2 / CST3530 only, not V1 or other board variants.");
+  $("board-screen").textContent=activeTargets[metadata.id].screen.join(" × ");
+  const hint=activeTargets[metadata.id].hint;
+  document.querySelector('[data-i18n="boardHint"]').textContent=hint?hint[lang==="zh"?0:1]:t("boardHint");
  }
 }
 function selectBoard(){
  metadata=boardCatalog.find(board=>board.id===$("board").value);
- if(metadata)try{localStorage.setItem(boardPreferenceKey,metadata.id);}catch{}
+ if(metadata)try{localStorage.setItem(boardPreferenceKey(),metadata.id);}catch{}
  installerReady=false;$("installer-widget").replaceChildren();$("load-installer").disabled=!metadata;
  $("load-installer").hidden=false;
  $("installer-status").textContent="";applyLanguage();
 }
 $("board").addEventListener("change",selectBoard);
 $("language").addEventListener("change",()=>{lang=$("language").value;saveWebsiteLanguage(lang);applyLanguage();});
+$("test-channel").addEventListener("change",()=>{
+ channel=installerChannel($("test-channel").checked);
+ activeTargets=channel.id==='test'?testBoardTargets:boardTargets;
+ $("usb-install-card").classList.toggle('test-channel',channel.id==='test');
+ $("test-channel-note").hidden=channel.id!=='test';
+ initFirmware();
+});
 async function initFirmware() {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 10000);
+  const request=++firmwareRequest;
+  requestController?.abort();
+  const controller=requestController=new AbortController();
+  const selectedChannel=channel, targets=activeTargets;
+  metadata=null;boardCatalog=[];installerReady=false;
+  $("board").replaceChildren();$("board").disabled=true;
+  $("installer-widget").replaceChildren();$("load-installer").disabled=true;
+  $("load-installer").hidden=false;$("version").textContent='—';
+  $("board-name").textContent=selectedChannel.id==='test'?t('testChannel'):'xTouch-CN';
+  $("board-screen").textContent='—';$("installer-status").textContent=t('loading');
+  const timer=setTimeout(()=>controller.abort(),10000);
   try {
-    const response = await fetch("firmware.json", {
-      cache: "no-cache",
-      signal: controller.signal,
-    });
-    if (!response.ok) throw Error();
-    const data = await response.json();
-    if (!/^\d+\.\d+\.\d+$/.test(data.version) || !Array.isArray(data.boards))
-      throw Error();
-    const targets={cyd:["xtouch-2.8","manifest.json"],s3:["esp32-s3-touch-lcd-2.8-v2","manifest-s3.json"],p4:["esp32-p4-wifi6-touch-lcd-4.3","manifest-p4.json"]};
-    boardCatalog=data.boards;
-    const ids=new Set();
-    for(const board of boardCatalog){
-      const target=targets[board.id];
-      if(!target||ids.has(board.id)||board.version!==data.version||board.manifest!==target[1]||
-         board.fullPath!==`firmware/${target[0]}-full.bin`||
-         board.appUrl!==`https://github.com/tbc0309/xTouch-CN/releases/download/${data.version}/${target[0]}.bin`||
-         !/^[a-f0-9]{64}$/.test(board.fullSha256))throw Error();
-      ids.add(board.id);
+    const response=await fetch(selectedChannel.index,{cache:'no-cache',signal:controller.signal});
+    if(!response.ok)throw Error('Firmware catalog unavailable');
+    const data=await response.json();
+    if(request!==firmwareRequest)return;
+    if(selectedChannel.id==='test' && /^\d+\.\d+\.\d+-test$/.test(data.version) && data.releaseTag===data.version && data.prerelease===true && Array.isArray(data.boards) && !data.boards.length){
+      $("version").textContent=`${t('version')} v${data.version} · ${t('testChannel')}`;
+      $("installer-status").textContent=t('testRebuilding');return;
     }
-    if(!boardCatalog.length)throw Error();
-    $("board").replaceChildren(...boardCatalog.map(board=>{const option=text("option",boardName(board));option.value=board.id;return option;}));
+    const catalog=validateFirmwareCatalog(data,targets,selectedChannel);
+    if(request!==firmwareRequest)return;
+    boardCatalog=catalog;
+    $("board").replaceChildren(...catalog.map(board=>{const option=text('option',boardName(board));option.value=board.id;return option;}));
     const savedBoard=rememberedBoard();
-    if(boardCatalog.some(board=>board.id===savedBoard))$("board").value=savedBoard;
+    if(catalog.some(board=>board.id===savedBoard))$("board").value=savedBoard;
     $("board").disabled=false;selectBoard();
-
   } catch {
-    $("version").textContent = "Releases";
-    $("load-installer").disabled = true;
-    $("installer-status").textContent = t("unavailable");
-  } finally {
-    clearTimeout(timer);
-  }
+    if(request!==firmwareRequest)return;
+    $("installer-status").textContent=t(selectedChannel.id==='test'?'testUnavailable':'unavailable');
+  } finally {clearTimeout(timer);}
 }
 $("load-installer").addEventListener("click", async () => {
   if (!window.isSecureContext || !("serial" in navigator)) {
@@ -190,6 +200,7 @@ $("load-installer").addEventListener("click", async () => {
   if (!metadata) return;
   $("load-installer").disabled = true;
   $("board").disabled = true;
+  $("test-channel").disabled = true;
   $("installer-status").textContent = t("loading");
   let timer;
   try {
@@ -216,7 +227,13 @@ $("load-installer").addEventListener("click", async () => {
   } finally {
     clearTimeout(timer);
     $("board").disabled = false;
+    $("test-channel").disabled = false;
   }
 });
+new MutationObserver(()=>{
+ const active=!!document.querySelector('ewt-install-dialog');
+ $("test-channel").disabled=active;
+ $("board").disabled=active||!metadata;
+}).observe(document.body,{childList:true});
 applyLanguage();
 initFirmware();

@@ -36,7 +36,7 @@ static void confirm_dry(void) {
 }
 static void action(lv_event_t *e) {
     pending = (struct ui_dry_request){printer, unit, draftTemp, draftHours,
-                                      lv_event_get_target(e) == stop};
+                                      lv_event_get_target_obj(e) == stop};
     if (!ui_ams_dry_allowed(&pending))
         return;
     char text[100];
@@ -58,6 +58,7 @@ static void refresh(lv_event_t *e) {
     xtouch_ams_unit_label(unit, name, sizeof(name));
     snprintf(text, sizeof(text), "%s · %s", xtouch_ams_kind_name(unit), name);
     lv_label_set_text(title, text);
+    ui_detail_page_title(dialog,title);
     const char *states[] = {"Off",      "Checking", "Drying", "Cooling",
                             "Stopping", "Error",    "Error",  "Test"};
     const char *zh[] = {"已停止", "检查中", "烘干中", "冷却中", "停止中", "故障", "故障", "测试"};
@@ -136,40 +137,35 @@ void ui_ams_details_show(unsigned selected) {
         return;
     lv_obj_add_event_cb(dialog, deleted, LV_EVENT_DELETE, NULL);
     title = label(dialog, "", 0, 0);
-    lv_obj_set_width(title, 245);
-    lv_label_set_long_mode(title, LV_LABEL_LONG_SCROLL_CIRCULAR);
+    ui_detail_page_title(dialog,title);
     readings = label(dialog, "", 4, 38);
     lv_obj_set_style_text_line_space(readings, 8, 0);
     lv_obj_t *parameterHeading =
         label(dialog, xtouch_local("温度 / 小时", "Temperature / hours"), 4, 119);
     temperature = lv_btn_create(dialog);
-    lv_obj_set_pos(temperature, 4, 142);
-    lv_obj_set_size(temperature, 130, 32);
     duration = lv_btn_create(dialog);
-    lv_obj_set_pos(duration, 154, 142);
-    lv_obj_set_size(duration, 130, 32);
     ui_action_style(temperature,UI_ACTION_SECONDARY);
     ui_action_style(duration,UI_ACTION_SECONDARY);
     char value[24];
     snprintf(value, sizeof(value), "%u℃", draftTemp);
-    lv_obj_center(label(temperature, value, 0, 0));
+    label(temperature, value, 0, 0);
     snprintf(value, sizeof(value), "%uh", draftHours);
-    lv_obj_center(label(duration, value, 0, 0));
+    label(duration, value, 0, 0);
     lv_obj_add_event_cb(temperature, edit_parameter, LV_EVENT_CLICKED, (void *)0);
     lv_obj_add_event_cb(duration, edit_parameter, LV_EVENT_CLICKED, (void *)1);
     start = lv_btn_create(dialog);
-    lv_obj_set_size(start, 130, 32);
-    lv_obj_set_pos(start, 4, 184);
-    lv_obj_center(label(start, xtouch_local("开始烘干", "Start drying"), 0, 0));
+    label(start, xtouch_local("开始烘干", "Start drying"), 0, 0);
     lv_obj_add_event_cb(start, action, LV_EVENT_CLICKED, NULL);
     stop = lv_btn_create(dialog);
-    lv_obj_set_size(stop, 130, 32);
-    lv_obj_set_pos(stop, 154, 184);
-    lv_obj_center(label(stop, xtouch_local("停止烘干", "Stop drying"), 0, 0));
+    label(stop, xtouch_local("停止烘干", "Stop drying"), 0, 0);
     lv_obj_add_event_cb(stop, action, LV_EVENT_CLICKED, NULL);
     ui_action_style(start,UI_ACTION_COMPLETE);
     ui_action_style(stop,UI_ACTION_DESTRUCTIVE);
     for(unsigned i=0;i<2;++i){lv_obj_t *button=i?stop:start;lv_obj_set_style_bg_color(button,lv_color_hex(0x555555),LV_STATE_DISABLED);lv_obj_set_style_text_color(button,lv_color_hex(0x888888),LV_STATE_DISABLED);}
+    ui_detail_page_block(dialog,readings,38,0);
+    ui_detail_page_block(dialog,parameterHeading,119,0);
+    ui_detail_page_split(dialog,temperature,duration,142,32,1,1);
+    ui_detail_page_split(dialog,start,stop,184,32,1,1);
     if (bambuStatus.ams_kind[unit] != 3 && bambuStatus.ams_kind[unit] != 4) {
         lv_obj_t *controls[] = {parameterHeading, temperature, duration, start, stop};
         for (unsigned i = 0; i < 5; i++)
@@ -179,4 +175,5 @@ void ui_ams_details_show(unsigned selected) {
     lv_msg_subsribe_obj(XTOUCH_ON_MQTT, dialog, NULL);
     lv_obj_add_event_cb(dialog, refresh, LV_EVENT_MSG_RECEIVED, NULL);
     refresh(NULL);
+    ui_layout_captions_tree(dialog);
 }

@@ -1,5 +1,6 @@
 #ifndef _XLCD_BBLP
 #define _XLCD_BBLP
+#include "features/config.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,7 +28,7 @@ bool xtouch_bblp_network_chamber() {
 }
 bool xtouch_bblp_chamber_display() {
     return xtouch_bblp_network_chamber() ||
-           (xtouch_bblp_is_p1Series() && xTouchConfig.xTouchChamberSensorEnabled);
+           (XTOUCH_FEATURE_EXTERNAL_CHAMBER && xtouch_bblp_is_p1Series() && xTouchConfig.xTouchChamberSensorEnabled);
 }
 bool ui_printer_model_chamber_heater(const char *value);
 bool xtouch_bblp_chamber_heater() {

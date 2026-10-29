@@ -1,5 +1,5 @@
-#include <Arduino.h>
-#include <Wire.h>
+#include "platform/idf/runtime.h"
+#include "platform/idf/i2c.h"
 #include <driver/rtc_io.h>
 #include <esp_sleep.h>
 #include "ulp_lp_core.h"
@@ -18,10 +18,10 @@ bool board_touch_woke(){return wokeByTouch;}
 bool board_touch_wake_prepare(){
     uint8_t address=0;
     for(uint8_t candidate:{uint8_t(0x5d),uint8_t(0x14)}){
-        Wire.beginTransmission(candidate);if(!Wire.endTransmission()){address=candidate;break;}
+        if(xtouch_i2c.probe(candidate)==ESP_OK){address=candidate;break;}
     }
     if(!address)return false;
-    Wire.end();
+    if(xtouch_i2c.end()!=ESP_OK)return false;
     bool ok=rtc_gpio_init(GPIO_NUM_7)==ESP_OK&&rtc_gpio_init(GPIO_NUM_8)==ESP_OK;
     if(ok)ok=ulp_lp_core_load_binary(touchBinaryStart,touchBinaryEnd-touchBinaryStart)==ESP_OK;
     if(ok){
@@ -37,7 +37,7 @@ bool board_touch_wake_prepare(){
     if(ok){Serial.println("[POWER] LP touch ready, poll=200 ms");return true;}
     ulp_lp_core_stop();esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ULP);
     rtc_gpio_deinit(GPIO_NUM_7);rtc_gpio_deinit(GPIO_NUM_8);
-    Wire.begin(7,8,100000);Wire.setTimeOut(20);
+    xtouch_i2c.begin(7,8,100000);
     Serial.println("[POWER] LP touch setup failed; keep network standby");
     return false;
 }

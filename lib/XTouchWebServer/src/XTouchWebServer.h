@@ -26,7 +26,7 @@
 
 #include <functional>
 #include <memory>
-#include <WiFi.h>
+#include "platform/idf/socket.h"
 #include "HTTP_Method.h"
 #include "Uri.h"
 
@@ -108,6 +108,8 @@ public:
   void onFileUpload(THandlerFunction ufn); //handle file uploads
   // Reject protected uploads immediately after headers, before reading the body.
   void setUploadGuard(bool (*guard)()) { _uploadGuard = guard; }
+  // Admit a routed request after headers and before allocating its JSON body.
+  void setBodyGuard(bool (*guard)()) { _bodyGuard = guard; }
 
   String uri() { return _currentUri; }
   HTTPMethod method() { return _currentMethod; }
@@ -171,7 +173,7 @@ protected:
   void _handleRequest();
   void _finalizeResponse();
   bool _parseRequest(WiFiClient& client);
-  void _parseArguments(String data);
+  bool _parseArguments(String data);
   static String _responseCodeToString(int code);
   bool _parseForm(WiFiClient& client, String boundary, uint32_t len);
   bool _parseFormUploadAborted();
@@ -196,6 +198,7 @@ protected:
 
   WiFiClient  _currentClient;
   bool (*_uploadGuard)() = nullptr;
+  bool (*_bodyGuard)() = nullptr;
   HTTPMethod  _currentMethod;
   String      _currentUri;
   uint8_t     _currentVersion;

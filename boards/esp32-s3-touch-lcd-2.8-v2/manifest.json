@@ -1,12 +1,14 @@
 {
+  "laboratoryBuild": false,
   "flashBytes": 16777216,
   "applicationSlotBytes": 6291456,
   "chip": "esp32s3",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "application": "esp32-s3-touch-lcd-2.8-v2.bin",
   "fullImage": "esp32-s3-touch-lcd-2.8-v2-full.bin",
-  "applicationBytes": 2847104,
+  "applicationBytes": 3356800,
   "applicationOffset": 131072,
-  "sha256": "68c8ffd92de0e5cc0c7ff9917b8dc061ed23a1833c6981e2296cbe683c231255",
-  "fullSha256": "e94f90982b8b5d4a79ec61f11b5918a76960d8e74ef28ce6530597c889eadb51"
+  "sha256": "67738603e7be1a6a28133e20d1239f7d8f6b1c1513b653b3bae214ed770ce194",
+  "fullSha256": "74d37aacb02026fb973359b2a8ea0c841e967d3117c06f198105d4fc41d3e842",
+  "project": "xtouch_waveshare"
 }

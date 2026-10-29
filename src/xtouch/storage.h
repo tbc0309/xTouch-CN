@@ -1,5 +1,5 @@
 #pragma once
-#include <Arduino.h>
+#include "platform/idf/runtime.h"
 #include <ArduinoJson.h>
 
 // All persistent UI configuration goes through this API, never directly to SD.

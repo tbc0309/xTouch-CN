@@ -5,9 +5,9 @@
 #endif
 #include "printers.h"
 #include "profile_schema.h"
-#include <SPIFFS.h>
+#include "platform/idf/filesystem.h"
 #include "xtouch/card_fs.h"
-#include <MD5Builder.h>
+#include "platform/idf/digest.h"
 #include <esp_partition.h>
 #include <cmath>
 #include <time.h>
@@ -20,7 +20,7 @@ const char *paths[] = {"/xtouch.json", "/xtouch/settings.json", "/xtouch/touch.j
 #endif
 };
 size_t capacityFor(const char *path) {
-    if (!strcmp(path, paths[0])) return 8192;
+    if (!strcmp(path, paths[0])) return 4096;
     if (!strcmp(path, paths[1])) return 2048;
     return 1024;
 }
@@ -82,7 +82,7 @@ void read(fs::FS &fs, const char *path, Record &record, bool internal, const cha
     // Grow only the file being parsed, never to the size of an unrelated backup.
     bool config=!strcmp(logicalPath?logicalPath:path,paths[0]);
     while(error==DeserializationError::NoMemory && config && record.data.capacity()<XTouchSchema::MaxConfigCapacity){
-        size_t next=min(XTouchSchema::MaxConfigCapacity,max((size_t)8192,record.data.capacity()*2));
+        size_t next=min(XTouchSchema::MaxConfigCapacity,max((size_t)4096,record.data.capacity()+record.data.capacity()/2));
         record.data.clear();record.data.shrinkToFit();record.data=DynamicJsonDocument(next);
         if(record.data.capacity()<next)break;
         file.seek(0);error=deserializeJson(record.data,file);

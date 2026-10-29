@@ -150,7 +150,7 @@ void ui_temperatureComponent_show_keypad_and_back(int type, int index, int backT
 void ui_event_comp_temperatureComponent_temperatureComponentBed(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_temperatureComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -161,7 +161,7 @@ void ui_event_comp_temperatureComponent_temperatureComponentBed(lv_event_t *e)
 void ui_event_comp_temperatureComponent_temperatureComponentNozzle(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_temperatureComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -173,7 +173,7 @@ void ui_event_comp_temperatureComponent_temperatureComponentNozzle(lv_event_t *e
 void ui_event_comp_temperatureComponent_temperatureComponentPartFan(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_temperatureComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -184,7 +184,7 @@ void ui_event_comp_temperatureComponent_temperatureComponentPartFan(lv_event_t *
 void ui_event_comp_temperatureComponent_temperatureComponentAuxFan(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_temperatureComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -195,7 +195,7 @@ void ui_event_comp_temperatureComponent_temperatureComponentAuxFan(lv_event_t *e
 void ui_event_comp_temperatureComponent_temperatureComponentChamberFan(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_temperatureComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -207,7 +207,7 @@ void ui_event_comp_temperatureComponent_temperatureComponentChamberFan(lv_event_
 void ui_event_comp_temperatureComponent_numpadKey(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
 
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -244,7 +244,7 @@ static void legacy_heat_confirm(void){
 void ui_event_comp_temperatureComponent_numpadKeyOk(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_temperatureComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -293,7 +293,7 @@ void ui_event_comp_temperatureComponent_numpadKeyOk(lv_event_t *e)
 void ui_temperatureComponent_onXtouchTemp(lv_event_t *e)
 {
 
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_msg_t *m = lv_event_get_msg(e);
 
     struct XTOUCH_MESSAGE_DATA *message = (struct XTOUCH_MESSAGE_DATA *)m->payload;
@@ -309,7 +309,7 @@ void ui_temperatureComponent_onXtouchTemp(lv_event_t *e)
 void ui_temperatureComponent_onXtouchTempTarget(lv_event_t *e)
 {
 
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_msg_t *m = lv_event_get_msg(e);
 
     struct XTOUCH_MESSAGE_DATA *message = (struct XTOUCH_MESSAGE_DATA *)m->payload;
@@ -333,7 +333,7 @@ void ui_temperatureComponent_onXtouchTempTarget(lv_event_t *e)
 
 void ui_temperatureComponent_onXtouchPartFanSpeed(lv_event_t *e)
 {
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_msg_t *m = lv_event_get_msg(e);
 
     struct XTOUCH_MESSAGE_DATA *message = (struct XTOUCH_MESSAGE_DATA *)m->payload;
@@ -349,7 +349,7 @@ void ui_temperatureComponent_onXtouchPartFanSpeed(lv_event_t *e)
 
 void ui_temperatureComponent_onXtouchAuxFanSpeed(lv_event_t *e)
 {
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_msg_t *m = lv_event_get_msg(e);
 
     struct XTOUCH_MESSAGE_DATA *message = (struct XTOUCH_MESSAGE_DATA *)m->payload;
@@ -365,7 +365,7 @@ void ui_temperatureComponent_onXtouchAuxFanSpeed(lv_event_t *e)
 
 void ui_temperatureComponent_onXtouchChamberFanSpeed(lv_event_t *e)
 {
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_msg_t *m = lv_event_get_msg(e);
 
     struct XTOUCH_MESSAGE_DATA *message = (struct XTOUCH_MESSAGE_DATA *)m->payload;

@@ -37,7 +37,7 @@ lv_obj_t *ui_settingsWOPSwitch;
 lv_obj_t *ui_settingsTFTFlipSwitch;
 lv_obj_t *ui_settings_auxFanSwitch;
 lv_obj_t *ui_settings_chamberFanSwitch;
-lv_obj_t *ui_settings_chamberSensorSwitch;
+lv_obj_t *ui_settings_environmentSelect;
 lv_obj_t *ui_settings_otaSwitch;
 lv_obj_t *ui_confirmComponent; // layertop
 lv_obj_t *ui_hmsComponent;     // layertop
@@ -68,7 +68,7 @@ lv_obj_t *ui____initial_actions0;
 void ui_event_sidebarHomeButton(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     if (event_code == LV_EVENT_CLICKED)
     {
         onSidebarHome(e);
@@ -77,7 +77,7 @@ void ui_event_sidebarHomeButton(lv_event_t *e)
 void ui_event_sidebarTempButton(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     if (event_code == LV_EVENT_CLICKED)
     {
         onSidebarTemp(e);
@@ -86,7 +86,7 @@ void ui_event_sidebarTempButton(lv_event_t *e)
 void ui_event_sidebarControlButton(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     if (event_code == LV_EVENT_CLICKED)
     {
         onSidebarControl(e);
@@ -95,7 +95,7 @@ void ui_event_sidebarControlButton(lv_event_t *e)
 void ui_event_sidebarSettingsButton(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     if (event_code == LV_EVENT_CLICKED)
     {
         onSidebarSettings(e);
@@ -104,7 +104,7 @@ void ui_event_sidebarSettingsButton(lv_event_t *e)
 void ui_event_sidebarSettingsButton1(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     if (event_code == LV_EVENT_CLICKED)
     {
         onSidebarSettings(e);
@@ -113,7 +113,7 @@ void ui_event_sidebarSettingsButton1(lv_event_t *e)
 void ui_event____initial_actions0(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     if (event_code == LV_EVENT_SCREEN_LOAD_START)
     {
         initialActions(e);

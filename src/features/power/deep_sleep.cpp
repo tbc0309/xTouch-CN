@@ -3,8 +3,8 @@
 #include "features/sound/events.h"
 #include "xtouch/power.h"
 #include "xtouch/types.h"
-#include <Arduino.h>
-#include <WiFi.h>
+#include "platform/idf/runtime.h"
+#include "platform/idf/wifi.h"
 #include <esp_sleep.h>
 #include <driver/gpio.h>
 #include "../../../boards/common/power_hooks.h"
@@ -27,13 +27,13 @@ void xtouch_deep_sleep_poll(bool safeIdle){
  if(!eligible){eligibleAt=0;manualPending=false;return;}
  if(!eligibleAt&&!manualPending){eligibleAt=millis();return;}
  if(!manualPending&&uint32_t(millis()-eligibleAt)<uint32_t(xTouchConfig.xTouchDeepSleepAfter)*60000u)return;
- int pin=xtouch_deep_sleep_touch_pin();
+ int pin=XTOUCH_DEEP_WAKE_PIN;
  if(pin>=0&&digitalRead(pin)==LOW)return; // Never sleep on an asserted wake source.
- // Deep sleep has no periodic main-core wake; only the board touch source remains.
+ // Deep sleep has no periodic main-core wake; retain the board's wake source.
  esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
  if(!board_touch_wake_prepare()){eligibleAt=millis();manualPending=false;return;}
  xtouch_sound_suspend(true);
- Serial.printf("[POWER] deep sleep, touchGPIO=%d\n",pin);
+ Serial.printf("[POWER] deep sleep, wakeGPIO=%d\n",pin);
  Serial.flush();
  // Close the TLS/MQTT socket while the network interface is still alive.
  xtouch_portal_release_transport();

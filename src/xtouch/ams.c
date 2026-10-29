@@ -1,4 +1,4 @@
-#include <Arduino.h>
+#include "platform/idf/runtime.h"
 #include "types.h"
 
 void xtouch_ams_parse_tray_now(const char *tray_now)

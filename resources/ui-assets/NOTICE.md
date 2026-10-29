@@ -1,6 +1,6 @@
 # 共用界面图形资源
 
-CYD、S3 小屏保留 `legacy/` 的原版 xTouch 字模；P4 大屏使用 `candidates/mdi/` 的调整版。主板仅选择资源尺寸与图标族，共用页面不复制实现。
+CYD、S3 小屏保留 `legacy/` 的原版 xTouch 字模；P4 与 ES3C35P 默认使用大屏 MDI 资源。主板仅选择资源尺寸与图标族，共用页面不复制实现。
 
 ## 图标
 
@@ -16,7 +16,7 @@ CYD、S3 小屏保留 `legacy/` 的原版 xTouch 字模；P4 大屏使用 `candi
 
 ## 打印机图
 
-唯一输入集合为 `resources/printer-images/`，来源、分辨率及 SHA-256 见其中 `source.json`。`scripts/generate_printer_images.py` 输出 112px 小屏或 224px 大屏的行压缩 RGB565 图。缩放使用抗锯齿，255 色调色板；小屏与大屏均保留透明轮廓，解码可使用扫描线缓冲；S3/P4 设备选择页使用有上限的 PSRAM 图片缓存，关闭后释放，不加载全套图片到 RAM。
+唯一输入集合为 `resources/printer-images/`，来源、分辨率及 SHA-256 见其中 `source.json`。`scripts/generate_printer_images.py` 输出 112px 小屏或 224px 大屏的行压缩 RGB565 图。缩放使用抗锯齿，255 色调色板；小屏与大屏均保留透明轮廓，解码可使用扫描线缓冲；有 PSRAM 的主板设备选择页使用有上限的 PSRAM 图片缓存，关闭后释放，不加载全套图片到 RAM。
 
 生成字体时须保留 SVG 轮廓实际左侧留白（hmtx 的 left side bearing），不能统一设为零，否则 FreeType 栅格化会产生水平偏移。界面按可见轮廓对齐，保持字形画布、字形留白和按钮内容区域各自的坐标一致。
 
@@ -24,4 +24,4 @@ CYD、S3 小屏保留 `legacy/` 的原版 xTouch 字模；P4 大屏使用 `candi
 
 P4 大屏喷嘴与加热板沿用 MDI 原轮廓，仅调整三条热浪的位置与弯折（`source-icons/nozzle-heat-below.svg`、`source-icons/bed-heat-above.svg`）。`scripts/generate_toolhead_icons.py` 只更新大屏原生图标字形，小屏资源保持原样。
 
-P4 打印头总成使用自绘单色 `source-icons/printhead-module.svg`，参考 Bambu Studio 总成模块结构。上述三枚图标按 MDI 字体 900/1024 可见轮廓范围统一归一化、居中，以原生像素生成；不改变小屏字形。
+P4 打印头总成使用自绘单色 `source-icons/printhead-module.svg`，采用总成模块结构。上述三枚图标按 MDI 字体 900/1024 可见轮廓范围统一归一化、居中，以原生像素生成；不改变小屏字形。

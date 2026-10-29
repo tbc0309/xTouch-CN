@@ -1,12 +1,19 @@
 #ifndef _XLCD_FIRMWARE
 #define _XLCD_FIRMWARE
 
-#include <Arduino.h>
-#include <Update.h>
-#include <SPIFFS.h>
+#include "platform/idf/runtime.h"
+#include "features/diagnostics/stack_margin.h"
+#include "platform/idf/ota.h"
+#include "platform/idf/filesystem.h"
 #include "xtouch/card_fs.h"
 #include "firmware_target.h"
 #include <stdio.h>
+static void xtouch_firmware_reportOtaStack(XTouchStackMargin::Path path)
+{
+    const unsigned minimum = XTouchStackMargin::counter(path).minimum.load();
+    if (minimum != UINT_MAX && uxTaskGetStackHighWaterMark(nullptr) >= 2048)
+        ConsoleInfo.printf("[OTA] stack-min %s=%u bytes\n", XTouchStackMargin::name(path), minimum);
+}
 // #include <semver.h>
 
 struct SemVer
@@ -73,9 +80,18 @@ static bool xtouch_firmware_manifest_valid(JsonDocument &doc)
 
 void xtouch_firmware_onProgress(size_t current, size_t total)
 {
-    if (!total) return;
-    lv_label_set_text_fmt(introScreenCaption, XTOUCH_TEXT_UPDATING_D, int(current * 100 / total));
+    XTouchStackMargin::sample(XTouchStackMargin::Path::OtaSd);
+    // The shared intro caption stays stable while downloading and writing.
+    (void)current;
+    (void)total;
     lv_timer_handler();
+}
+
+static void xtouch_firmware_showUpdating(void)
+{
+    lv_label_set_text(introScreenCaption, xtouch_local("OTA 更新中…", "OTA updating…"));
+    // Paint before blocking network operations or flash erase can begin.
+    lv_refr_now(NULL);
 }
 
 void xtouch_firmware_checkOnlineFirmwareUpdate(bool manual = false)
@@ -106,14 +122,15 @@ void xtouch_firmware_checkOnlineFirmwareUpdate(bool manual = false)
     }
     // Two bounded attempts; a failed update must never prevent normal startup.
     for (unsigned attempt = 0; attempt < 2; attempt++) {
-        auto progress = [](int progress) {
-            lv_label_set_text_fmt(introScreenCaption, XTOUCH_TEXT_DOWNLOADING_UPDATE_D, progress);
+        xtouch_firmware_showUpdating();
+        auto progress = [](int) {
             lv_timer_handler();
         };
         bool success;
         if (xtouch_storage_sd_available()) success = downloadFileToFS(SD, doc["url"], xtouch_paths_firmware_ota_fw,
             progress, NULL, doc["md5"], doc["size"]);
         else success = downloadFirmwareToFlash(doc["url"], doc["md5"], doc["size"], progress);
+          xtouch_firmware_reportOtaStack(XTouchStackMargin::Path::OtaHttps);
         if(success && xtouch_storage_sd_available()) {
             File record=SD.open(xtouch_paths_firmware_ota_json,FILE_WRITE);
             size_t expected=measureJson(doc);
@@ -156,6 +173,8 @@ void xtouch_firmware_checkFirmwareUpdate(void)
     }
     bool installed = false;
     if (valid) {
+        XTouchStackMargin::Scope stack(XTouchStackMargin::Path::OtaSd);
+        xtouch_firmware_showUpdating();
         Update.onProgress(xtouch_firmware_onProgress);
         if (Update.begin(firmware.size(), U_FLASH)) {
             if (manifestPresent) Update.setMD5(doc["md5"]);
@@ -165,6 +184,7 @@ void xtouch_firmware_checkFirmwareUpdate(void)
         }
     }
     firmware.close();
+    xtouch_firmware_reportOtaStack(XTouchStackMargin::Path::OtaSd);
     Update.onProgress(nullptr);
     if(SD.exists(xtouch_paths_firmware_ota_json))SD.remove(xtouch_paths_firmware_ota_json);
     SD.remove(xtouch_paths_firmware_ota_fw);

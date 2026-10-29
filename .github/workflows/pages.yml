@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['web/**', 'scripts/build_web.py', 'scripts/build_error_search.py', 'docs/data/error-codes.json', 'boards/**/ota.json', 'boards/**/manifest.json', 'version.json', '.github/workflows/pages.yml']
+    paths: ['web/**', 'scripts/build_web.py', 'scripts/build_test_web.py', 'scripts/fetch_test_release.py', 'scripts/build_error_search.py', 'docs/data/error-codes.json', 'boards/**/ota.json', 'boards/**/manifest.json', 'version.json', '.github/workflows/pages.yml']
   release:
     types: [published]
 permissions:
@@ -26,8 +26,29 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: gh workflow run pages.yml --ref main
-  deploy:
+  release_available:
     if: github.event_name != 'release'
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.release.outputs.ready }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(python -c "import json;print(json.load(open('version.json'))['version'])")
+          ready=false
+          if hidden=$(gh release view "$version" --repo "$GITHUB_REPOSITORY" --json isDraft,isPrerelease --jq '.isDraft or .isPrerelease' 2>/dev/null) && [ "$hidden" = false ]; then
+            ready=true
+          fi
+          echo "ready=$ready" >> "$GITHUB_OUTPUT"
+          echo "Published release available: $ready"
+  deploy:
+    needs: release_available
+    if: github.event_name != 'release' && needs.release_available.outputs.ready == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -58,22 +79,29 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           python - <<'PY'
-          import json, os, pathlib, shutil, subprocess
+          import json, os, pathlib, shutil, subprocess, sys
+          sys.path.insert(0,'boards')
+          from board_catalog import BOARDS
           version=json.load(open('version.json'))['version']
           names={asset['name'] for asset in json.load(open('release-assets.json'))['assets']}
           command=['python','scripts/build_web.py','--firmware-dir','release-images','--output','_site']
-          for stem in ('esp32-s3-touch-lcd-2.8-v2','esp32-p4-wifi6-touch-lcd-4.3'):
+          for key,target in BOARDS.items():
+              if key=='cyd': continue
+              stem=target['stem']
               expected={stem+'.bin',stem+'-full.bin'}
-              if not names.intersection(expected): continue
               if not expected.issubset(names): raise SystemExit('Incomplete release target: '+stem)
               folder=pathlib.Path('release-images')/stem
               folder.mkdir()
               for name in sorted(expected):
                   subprocess.run(['gh','release','download',version,'--repo',os.environ['GITHUB_REPOSITORY'],'--pattern',name,'--dir',str(folder)],check=True)
-              shutil.copy2(pathlib.Path('boards')/stem/'manifest.json', folder/'manifest.json')
+              shutil.copy2(pathlib.Path('boards')/target['directory']/'manifest.json', folder/'manifest.json')
               command+=['--board-firmware-dir',str(folder)]
           subprocess.run(command,check=True)
           PY
+      - name: Add verified prerelease installer channel
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/fetch_test_release.py --output _site --download-dir test-release-images
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

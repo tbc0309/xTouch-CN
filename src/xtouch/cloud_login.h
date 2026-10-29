@@ -1,5 +1,6 @@
 #pragma once
-#include <Arduino.h>
+#include "cloud_memory.h"
+#include "platform/idf/runtime.h"
 #include <ArduinoJson.h>
 #include "cloud_auth.h"
 #include "cloud_endpoints.h"
@@ -20,9 +21,11 @@ template<class Request, class Uid> int execute(DynamicJsonDocument &input, Dynam
     String uid;bool found=uidFromToken(token,uid);data.clear();data.shrinkToFit();wipe(reply);
     if(!found){code=request(String(XTouchCloudEndpoints::get(region.c_str())->api)+"/v1/user-service/my/profile",token,"",reply);DynamicJsonDocument profile(4096);
       if(code==200&&!deserializeJson(profile,reply)){uid=profile["uidStr"].as<String>();if(uid=="null"||uid.isEmpty())uid=profile["uid"].as<String>();found=uid!="null"&&!uid.isEmpty()&&uid.length()<40;}}
+    XTouchCloudMemory::output(out);
     if(found){out["token"]=token;out["userId"]=uid.startsWith("u_")?uid:"u_"+uid;out["ok"]=true;if(remembered.length())out["passwordEnc"]=remembered;}
    }
    if(!out["ok"].as<bool>()) {
+    if(!out.capacity())XTouchCloudMemory::output(out);
     const char *key=XTouchCloudAuth::field(data.as<JsonVariantConst>(),"tfaKey");
     if(strlen(key)<=512&&*key)out["tfaKey"]=key;
     out["error"]=XTouchCloudAuth::challenge(data.as<JsonVariantConst>());
@@ -33,7 +36,7 @@ template<class Request, class Uid> int execute(DynamicJsonDocument &input, Dynam
   DynamicJsonDocument codeBody(512);codeBody[phone?"phone":"email"]=input["account"];codeBody["type"]="codeLogin";serializeJson(codeBody,body);
   input.clear();input.shrinkToFit();
   String url=String(XTouchCloudEndpoints::get(region.c_str())->api)+(phone?"/v1/user-service/user/sendsmscode":"/v1/user-service/user/sendemail/code");
-  code=request(url,"",body,reply);wipe(body);DynamicJsonDocument response(1024);
+  code=request(url,"",body,reply);wipe(body);XTouchCloudMemory::output(out);DynamicJsonDocument response(1024);
   if(code>=200&&code<300&&(reply.isEmpty()||(!deserializeJson(response,reply)&&!response["error"].is<const char *>()&&(!response.containsKey("success")||response["success"].as<bool>())&&(!response.containsKey("code")||response["code"].as<int>()==0))))out["ok"]=true;
  }
  return code;

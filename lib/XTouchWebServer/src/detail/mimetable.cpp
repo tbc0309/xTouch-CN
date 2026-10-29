@@ -1,5 +1,5 @@
 #include "mimetable.h"
-#include "pgmspace.h"
+#include "platform/idf/text.h"
 
 namespace mime
 {

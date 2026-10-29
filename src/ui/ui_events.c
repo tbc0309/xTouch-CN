@@ -23,7 +23,7 @@ void onHomeControllerPlayPauseConfirm()
 void onHomeControllerPlayPause(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
 
     switch (bambuStatus.print_status)
     {
@@ -112,13 +112,6 @@ void onSettingsAuxFan(lv_event_t *e)
 void onSettingsChamberFan(lv_event_t *e)
 {
     xTouchConfig.xTouchChamberFanEnabled = !xTouchConfig.xTouchChamberFanEnabled;
-    lv_msg_send(XTOUCH_SETTINGS_SAVE, NULL);
-}
-
-void onSettingsChamberSensor(lv_event_t *e)
-{
-    xTouchConfig.xTouchChamberSensorEnabled = !xTouchConfig.xTouchChamberSensorEnabled;
-    lv_msg_send(XTOUCH_SETTINGS_CHAMBER_TEMP, NULL);
     lv_msg_send(XTOUCH_SETTINGS_SAVE, NULL);
 }
 

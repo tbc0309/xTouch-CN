@@ -1,34 +1,18 @@
 #include "ble_provisioning.h"
-#include <Arduino.h>
-#if CONFIG_IDF_TARGET_ESP32S3
-// The SDK transport bypasses Arduino BLE classes; reserve controller memory
-// before initArduino() would otherwise release it permanently.
-#include <esp32-hal-alloc-ble-mem.h>
-#endif
+#include "platform/idf/runtime.h"
 #include <esp_event.h>
 #include <esp_wifi.h>
 #include <esp_random.h>
 #include <esp_heap_caps.h>
 #include <esp_log.h>
-#if CONFIG_IDF_TARGET_ESP32P4
-#include <esp_hosted.h>
-#include "hosted_bt_config.h"
-#endif
 #include <network_provisioning/manager.h>
 #include <network_provisioning/scheme_ble.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <cstring>
 
-#ifndef XTOUCH_P4_C6_PREINITIALIZED_BT
-#define XTOUCH_P4_C6_PREINITIALIZED_BT 0
-#endif
 
-#if CONFIG_IDF_TARGET_ESP32P4
-#define XTOUCH_BLE_MODEL "P4"
-#else
 #define XTOUCH_BLE_MODEL "S3"
-#endif
 
 namespace {
 portMUX_TYPE lock = portMUX_INITIALIZER_UNLOCKED;
@@ -42,14 +26,16 @@ int request=0;
 uint32_t startAt=0;
 bool ended=false,stopRequested=false,deinitialized=false,success=false;
 bool available=false;
+bool failedAttempt=false;
+unsigned credentialRevision=0;
 wifi_sta_config_t received={};
 
 void events(void *,esp_event_base_t base,int32_t id,void *data) {
     if(base!=NETWORK_PROV_EVENT)return;
     portENTER_CRITICAL(&lock);
-    if(id==NETWORK_PROV_WIFI_CRED_RECV && data)memcpy(&received,data,sizeof(received));
+    if(id==NETWORK_PROV_WIFI_CRED_RECV && data){memcpy(&received,data,sizeof(received));++credentialRevision;}
     if(id==NETWORK_PROV_WIFI_CRED_SUCCESS)success=true;
-    if(id==NETWORK_PROV_WIFI_CRED_FAIL){++state.failures;stopRequested=true;}
+    if(id==NETWORK_PROV_WIFI_CRED_FAIL){++state.failures;failedAttempt=true;}
     if(id==NETWORK_PROV_END)ended=true;
     if(id==NETWORK_PROV_DEINIT)deinitialized=true;
     portEXIT_CRITICAL(&lock);
@@ -57,17 +43,15 @@ void events(void *,esp_event_base_t base,int32_t id,void *data) {
 
 void worker(void *) {
     bool initialized=false,stopping=false,deinitIssued=false;
-#if CONFIG_IDF_TARGET_ESP32P4
-    bool controllerInitialized=false,controllerEnabled=false;
-#endif
-    uint32_t deadline=0;
+    uint32_t deadline=0,retryAt=0;
+    unsigned failedCandidates=0,seenCredentialRevision=0;
     for(;;) {
-        int action; bool done,serviceEnded,deinitDone;
+        int action; bool done,serviceEnded,deinitDone,failed;unsigned revision;
         portENTER_CRITICAL(&lock);
         action=request;
         if(action==1 && int32_t(millis()-startAt)<0)action=0;
         else request=0;
-        done=stopRequested;serviceEnded=ended;deinitDone=deinitialized;
+        done=stopRequested;serviceEnded=ended;deinitDone=deinitialized;failed=failedAttempt;failedAttempt=false;revision=credentialRevision;
         portEXIT_CRITICAL(&lock);
         if(action==2 && !initialized){
             portENTER_CRITICAL(&lock);state.starting=false;state.finished=true;memset(state.pop,0,sizeof(state.pop));portEXIT_CRITICAL(&lock);
@@ -78,11 +62,6 @@ void worker(void *) {
             config.scheme=network_prov_scheme_ble;
             config.network_prov_wifi_conn_cfg.wifi_conn_attempts=3;
             esp_err_t err=ESP_OK;
-#if CONFIG_IDF_TARGET_ESP32P4 && !XTOUCH_P4_C6_PREINITIALIZED_BT
-            auto btConfig=xtouch_hosted_bt_config(true);
-            err=esp_hosted_bt_host_stack_setup(&btConfig);
-            controllerInitialized=controllerEnabled=err==ESP_OK;
-#endif
             if(err==ESP_OK){err=network_prov_mgr_init(config);initialized=err==ESP_OK;}
             // Keep the Wi-Fi provisioning UUID used by the official mobile examples;
             // the newer network_provisioning component has a different default UUID.
@@ -92,7 +71,7 @@ void worker(void *) {
             };
             if(err==ESP_OK)err=network_prov_scheme_ble_set_service_uuid(provisioningUuid);
             portENTER_CRITICAL(&lock);
-            ended=stopRequested=deinitialized=false;success=false;memset(&received,0,sizeof(received));
+            ended=stopRequested=deinitialized=failedAttempt=false;success=false;failedCandidates=0;credentialRevision=seenCredentialRevision=0;retryAt=0;memset(&received,0,sizeof(received));
             portEXIT_CRITICAL(&lock);
             if(initialized && err==ESP_OK)err=network_prov_mgr_start_provisioning(NETWORK_PROV_SECURITY_1,state.pop,state.name,nullptr);
             portENTER_CRITICAL(&lock);
@@ -104,23 +83,41 @@ void worker(void *) {
         }
         bool active;
         portENTER_CRITICAL(&lock);active=state.active;portEXIT_CRITICAL(&lock);
+        // Keep the failure visible long enough for the client to read it.
+        // A session accepts at most three credential candidates.
+        if(failed){++failedCandidates;retryAt=millis()+10000;}
+        if(revision!=seenCredentialRevision){
+            seenCredentialRevision=revision;
+            if(failedCandidates>=3)done=true;
+            else retryAt=0;
+        }
+        if(initialized&&active&&retryAt&&int32_t(millis()-retryAt)>=0){
+            retryAt=0;
+            if(failedCandidates>=3)done=true;
+            else {
+                network_prov_wifi_sta_state_t wifiState;
+                // ATTEMPT_FAILED is an intermediate retry; DISCONNECTED is the
+                // terminal failure for which the manager accepts a state reset.
+                if(network_prov_mgr_get_wifi_state(&wifiState)==ESP_OK&&wifiState==NETWORK_PROV_WIFI_STA_DISCONNECTED){
+                    esp_err_t reset=network_prov_mgr_reset_wifi_sm_state_on_failure();
+                    if(reset!=ESP_OK){portENTER_CRITICAL(&lock);state.error=reset;portEXIT_CRITICAL(&lock);done=true;}
+                }
+            }
+        }
         if(initialized && !stopping && (action==2 || done || serviceEnded || (active && int32_t(millis()-deadline)>=0))) {
             stopping=true;
             if(active) {
-                // Arduino WiFiGeneric owns deinit after NETWORK_PROV_END on S3.
-                // Stop first; deinitializing concurrently with it deletes the same mutex twice.
+                // Stop first; deinitialize once after NETWORK_PROV_END.
                 if(!serviceEnded)network_prov_mgr_stop_provisioning();
             } else {
                 // Initialization succeeded but the service never started: no END callback follows.
                 network_prov_mgr_deinit();deinitIssued=true;
             }
         }
-#if CONFIG_ESP_HOSTED_ENABLED
-        // Hosted Wi-Fi does not install Arduino's automatic provisioning cleanup.
+        // The native manager owns teardown after its END event.
         if(initialized && stopping && serviceEnded && !deinitIssued) {
             network_prov_mgr_deinit();deinitIssued=true;
         }
-#endif
         if(initialized && stopping && deinitDone) {
             initialized=stopping=deinitIssued=false;
             esp_wifi_set_storage(WIFI_STORAGE_RAM);
@@ -136,11 +133,6 @@ void worker(void *) {
             Serial.printf("[BLE] BLE stopped; credentials verified=%d\n",success);
         } else if(done && !initialized) {
             portENTER_CRITICAL(&lock);state.finished=true;state.starting=false;ended=stopRequested=deinitialized=false;portEXIT_CRITICAL(&lock);
-        }
-        if(!initialized && !board_ble_busy()) {
-#if CONFIG_IDF_TARGET_ESP32P4
-            if(controllerInitialized){esp_hosted_bt_host_stack_teardown();controllerInitialized=false;controllerEnabled=false;}
-#endif
         }
         const uint32_t now=millis();
         portENTER_CRITICAL(&lock);
@@ -163,7 +155,7 @@ void board_ble_begin() {
 bool board_ble_request(bool start) {
     uint32_t random=esp_random();
     portENTER_CRITICAL(&lock);
-    const bool allowed=available&&!state.finished && (!start || (!state.active&&!state.starting));
+    const bool allowed=available&&!state.finished && (start?(!state.active&&!state.starting):(state.active||state.starting));
     if(allowed){
         request=start?1:2;
         if(start){

@@ -1,5 +1,5 @@
 #pragma once
-#include <Arduino.h>
+#include "platform/idf/runtime.h"
 // Device-local random key. Never exported to configuration or SD backups.
 bool xtouch_vault_begin();
 bool xtouch_vault_rotate();

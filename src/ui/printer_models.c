@@ -1,6 +1,24 @@
 #include "printer_models.h"
 #include <string.h>
 #include <ctype.h>
+#if XTOUCH_SINGLE_PRINTER_LOGO
+extern const lv_img_dsc_t printer_image_bambu_logo;
+#define printer_image_BL_P001 printer_image_bambu_logo
+#define printer_image_BL_P002 printer_image_bambu_logo
+#define printer_image_C11 printer_image_bambu_logo
+#define printer_image_C12 printer_image_bambu_logo
+#define printer_image_C13 printer_image_bambu_logo
+#define printer_image_N1 printer_image_bambu_logo
+#define printer_image_N2S printer_image_bambu_logo
+#define printer_image_N6 printer_image_bambu_logo
+#define printer_image_N7 printer_image_bambu_logo
+#define printer_image_N9 printer_image_bambu_logo
+#define printer_image_O1C printer_image_bambu_logo
+#define printer_image_O1C2 printer_image_bambu_logo
+#define printer_image_O1D printer_image_bambu_logo
+#define printer_image_O1E printer_image_bambu_logo
+#define printer_image_O1S printer_image_bambu_logo
+#else
 extern const lv_img_dsc_t printer_image_BL_P001;
 extern const lv_img_dsc_t printer_image_BL_P002;
 extern const lv_img_dsc_t printer_image_C11;
@@ -16,6 +34,7 @@ extern const lv_img_dsc_t printer_image_O1C2;
 extern const lv_img_dsc_t printer_image_O1D;
 extern const lv_img_dsc_t printer_image_O1E;
 extern const lv_img_dsc_t printer_image_O1S;
+#endif
 typedef struct { const char *code; const char *name; const lv_img_dsc_t *image; bool heater; } PrinterModel;
 static const PrinterModel models[] = {
 {"BL-P001", "Bambu Lab X1 Carbon", &printer_image_BL_P001, false},
@@ -59,7 +78,11 @@ const lv_img_dsc_t *ui_printer_model_image(const char *value) {
  ui_printer_image_decoder_init();
  const char *code=ui_printer_model_code(value);
  for (unsigned i=0;i<sizeof(models)/sizeof(models[0]);++i) if (!strcmp(code,models[i].code)) return models[i].image;
+#if XTOUCH_SINGLE_PRINTER_LOGO
+ return &printer_image_bambu_logo;
+#else
  return NULL;
+#endif
 }
 bool ui_printer_model_chamber_heater(const char *value) {
  const char *code=ui_printer_model_code(value);

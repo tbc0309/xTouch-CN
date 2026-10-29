@@ -4,27 +4,31 @@ import hashlib
 import json
 import shutil
 import sys
-import struct
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(root/'boards'))
-from partition_layout import read_layout
+from partition_layout import read_layout, installer_segments
+from board_catalog import BOARDS, BY_STEM, browser_module
+from package import validate_identity
 parser = argparse.ArgumentParser()
 parser.add_argument('--firmware-dir', required=True, type=Path)
 parser.add_argument('--output', default='_site', type=Path)
 parser.add_argument('--ota-manifest', type=Path,
                     help='Local candidate manifest; defaults to the boards/esp32-2432s028r/ota.json')
 parser.add_argument('--board-firmware-dir', action='append', default=[], type=Path,
-                    help='Optional S3/P4 artifacts directory produced by boards/package.py')
+                    help='Additional supported-board artifacts directory produced by boards/package.py')
+parser.add_argument('--allow-partial',action='store_true',help='Development preview only: allow omitted board packages')
 args = parser.parse_args()
 manifest = json.loads((args.ota_manifest or root / 'boards/esp32-2432s028r/ota.json').read_text('utf-8'))
 version = json.loads((root / 'version.json').read_text('utf-8'))['version']
 if manifest['version'] != version:
     raise SystemExit('Source version and OTA manifest differ')
 app = (args.firmware_dir / 'xtouch-2.8.bin').read_bytes()
+validate_identity(app,'xtouch-2.8','esp32','xtouch_cyd')
 full = (args.firmware_dir / 'xtouch-2.8-full.bin').read_bytes()
-if len(app) != manifest['size'] or hashlib.md5(app).hexdigest() != manifest['md5']:
+if (len(app) != manifest['size'] or hashlib.md5(app).hexdigest() != manifest['md5']
+    or app[48:80].split(b'\0',1)[0] != version.encode('ascii')):
     raise SystemExit('Application size or MD5 mismatch')
 if full[0x10000:0x10000 + len(app)] != app or len(full) >= 0x3d0000:
     raise SystemExit('Full image does not match the application or overlaps configuration')
@@ -65,7 +69,17 @@ footer_name = 'page-footer-' + hashlib.sha256(footer).hexdigest()[:12] + '.js'
 config_page = language_import((source / 'config-page.js').read_text('utf-8')).replace('./config-generator.js', './' + generator_name).replace('./page-footer.js', './' + footer_name)
 config_page_name = 'config-page-' + hashlib.sha256(config_page.encode()).hexdigest()[:12] + '.js'
 (output / config_page_name).write_text(config_page, 'utf-8')
-app_source = language_import((source / 'app.js').read_text('utf-8')).replace('./vendor/install-button.js', './vendor/' + installer_name).replace('./page-footer.js', './' + footer_name)
+catalog = browser_module().encode('utf-8')
+catalog_name = 'board-targets-' + hashlib.sha256(catalog).hexdigest()[:12] + '.js'
+(output / catalog_name).write_bytes(catalog)
+extra_modules={}
+for module in ('installer-channel.js','test-board-targets.js'):
+    content=(source/module).read_bytes()
+    hashed_name=Path(module).stem+'-'+hashlib.sha256(content).hexdigest()[:12]+'.js'
+    (output/hashed_name).write_bytes(content)
+    extra_modules[module]=hashed_name
+app_source = language_import((source / 'app.js').read_text('utf-8')).replace('./vendor/install-button.js', './vendor/' + installer_name).replace('./page-footer.js', './' + footer_name).replace('./board-targets.js','./'+catalog_name)
+for module,hashed_name in extra_modules.items():app_source=app_source.replace('./'+module,'./'+hashed_name)
 app_name = 'app-' + hashlib.sha256(app_source.encode()).hexdigest()[:12] + '.js'
 (output / app_name).write_text(app_source, 'utf-8')
 css_source = (source / 'style.css').read_text('utf-8')
@@ -100,14 +114,8 @@ shutil.copytree(source / 'flasher',output / 'licenses/esp-flasher-stub',
 def installer_parts(stem, image):
     # A merged image contains FF padding over NVS. Flashing that padding would
     # erase device-bound credential keys even with "Erase device" unchecked.
-    entries=[struct.unpack('<HBBII16sI',image[pos:pos+32]) for pos in range(0x8000,0x9000,32)]
-    nvs=[entry for entry in entries if entry[0]==0x50aa and entry[1:3]==(1,2)]
-    if len(nvs)!=1:raise SystemExit('Expected one NVS partition: '+stem)
-    start=nvs[0][3]; end=start+nvs[0][4]
-    if start<0x9000 or end>=len(image) or start%4096 or end%4096:
-        raise SystemExit('Invalid NVS boundaries: '+stem)
     parts=[]
-    for index,(offset,data) in enumerate(((0,image[:start]),(end,image[end:]))):
+    for index,(offset,data) in enumerate(installer_segments(image)):
         path=f'firmware/{stem}-install-{index}.bin'
         (output/path).write_bytes(data)
         parts.append({'path':path,'offset':offset})
@@ -116,23 +124,23 @@ shutil.copy2(args.firmware_dir / 'xtouch-2.8-full.bin', output / 'firmware/xtouc
 cyd_metadata = {'version': version, 'fullPath': 'firmware/xtouch-2.8-full.bin',
             'fullSha256': hashlib.sha256(full).hexdigest(), 'size':len(full), 'appUrl':manifest['url']}
 metadata = {'version':version,'boards':[{'id':'cyd','name':'CYD · ESP32-2432S028R','manifest':'manifest.json',**cyd_metadata}]}
-board_targets = {'esp32s3':('s3','esp32-s3-touch-lcd-2.8-v2','ESP32-S3','ESP32-S3-Touch-LCD-2.8 V2',9,0),
-                 'esp32p4':('p4','esp32-p4-wifi6-touch-lcd-4.3','ESP32-P4','ESP32-P4-WIFI6-Touch-LCD-4.3',18,0x2000)}
 seen = set()
 for folder in args.board_firmware_dir:
     record = json.loads((folder / 'manifest.json').read_text('utf-8'))
-    target = board_targets.get(record.get('chip'))
-    if target is None:
+    application=record.get('application','')
+    target=BY_STEM.get(application[:-4]) if application.endswith('.bin') else None
+    if target is None or target['id']=='cyd' or target['chip']!=record.get('chip'):
         raise SystemExit('Unknown board firmware target')
-    key, stem, family, title, chip_id, boot_offset = target
+    key,stem,family,title,chip_id,boot_offset=(target[k] for k in ('id','stem','family','name','chip_id','boot_offset'))
     if key in seen or record.get('version') != version:
         raise SystemExit('Duplicate board or mismatched board version')
     seen.add(key)
     board_app = (folder / (stem + '.bin')).read_bytes()
     board_full = (folder / (stem + '-full.bin')).read_bytes()
+    validate_identity(board_app,stem,record['chip'],record.get('project'))
     layout=read_layout(board_full[0x8000:0x9000])
     slot=layout['ota_0']['size']
-    expected_flash=16*1048576 if key=='s3' else 32*1048576
+    expected_flash=target['flash']
     if layout['spiffs']['offset']+layout['spiffs']['size']!=expected_flash:
         raise SystemExit('Incorrect Flash partition capacity: '+key)
     if (record.get('application') != stem+'.bin' or record.get('fullImage') != stem+'-full.bin'
@@ -153,9 +161,10 @@ for folder in args.board_firmware_dir:
                       'parts':installer_parts(stem,board_full)}]}
     manifest_path = 'manifest-'+key+'.json'
     (output/manifest_path).write_text(json.dumps(board_manifest,indent=2)+'\n','utf-8')
-    metadata['boards'].append({'id':key,'name':'Waveshare · '+title,'version':version,'manifest':manifest_path,
+    metadata['boards'].append({'id':key,'name':title,'version':version,'manifest':manifest_path,
                               'fullPath':board_path,'fullSha256':record['fullSha256'],
                               'size':len(board_full),'appUrl':f'https://github.com/tbc0309/xTouch-CN/releases/download/{version}/{stem}.bin'})
+if not args.allow_partial and seen!=set(BOARDS)-{'cyd'}:raise SystemExit('Missing supported board packages: '+', '.join(sorted(set(BOARDS)-{'cyd'}-seen)))
 web_manifest = {'name':'xTouch-CN','version':version,'new_install_prompt_erase':True,
                 'new_install_improv_wait_time':0,'builds':[{'chipFamily':'ESP32','improv':False,
                 'parts':installer_parts('xtouch-2.8',full)}]}

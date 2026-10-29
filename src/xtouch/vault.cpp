@@ -1,23 +1,20 @@
 #include "vault.h"
-#include <Preferences.h>
+#include <nvs.h>
 #include <memory>
 #include <esp_system.h>
-#include <esp_idf_version.h>
-#if ESP_IDF_VERSION_MAJOR >= 6
 #include <psa/crypto.h>
-#else
-#include <mbedtls/gcm.h>
-#endif
 #include <mbedtls/base64.h>
 namespace {
 uint8_t key[32];bool ready=false;
 bool initialize(bool rotate){
- Preferences nvs;if(!nvs.begin("xtouch-vault",false))return false;
- bool valid=!rotate&&nvs.getBytesLength("key")==sizeof(key)&&nvs.getBytes("key",key,sizeof(key))==sizeof(key);
- if(!valid){esp_fill_random(key,sizeof(key));valid=nvs.putBytes("key",key,sizeof(key))==sizeof(key);}
- nvs.end();ready=valid;return valid;
+ nvs_handle_t handle=0;if(nvs_open("xtouch-vault",NVS_READWRITE,&handle)!=ESP_OK)return false;
+ uint8_t candidate[sizeof(key)]{};size_t length=sizeof(candidate);
+ bool valid=!rotate&&nvs_get_blob(handle,"key",candidate,&length)==ESP_OK&&length==sizeof(candidate);
+ if(!valid){esp_fill_random(candidate,sizeof(candidate));valid=nvs_set_blob(handle,"key",candidate,sizeof(candidate))==ESP_OK&&nvs_commit(handle)==ESP_OK;}
+ nvs_close(handle);
+ if(valid){memcpy(key,candidate,sizeof(key));ready=true;}
+ memset(candidate,0,sizeof(candidate));return valid;
 }
-#if ESP_IDF_VERSION_MAJOR >= 6
 int aead(bool encrypt,const uint8_t *key,const uint8_t *nonce,const String &context,const uint8_t *input,size_t n,uint8_t *output,uint8_t *tag){
  psa_key_attributes_t attributes=PSA_KEY_ATTRIBUTES_INIT;mbedtls_svc_key_id_t id=0;
  psa_set_key_type(&attributes,PSA_KEY_TYPE_AES);psa_set_key_bits(&attributes,256);psa_set_key_usage_flags(&attributes,PSA_KEY_USAGE_ENCRYPT|PSA_KEY_USAGE_DECRYPT);psa_set_key_algorithm(&attributes,PSA_ALG_GCM);
@@ -27,7 +24,6 @@ int aead(bool encrypt,const uint8_t *key,const uint8_t *nonce,const String &cont
  if(!rc&&!encrypt){memcpy(combined.get(),input,n);memcpy(combined.get()+n,tag,16);rc=psa_aead_decrypt(id,PSA_ALG_GCM,nonce,12,(const uint8_t*)context.c_str(),context.length(),combined.get(),n+16,output,n,&length);if(!rc&&length!=n)rc=-1;}
  if(id)psa_destroy_key(id);memset(combined.get(),0,n+16);return rc;
 }
-#endif
 String aad(const String &binding){return String((uint32_t)(ESP.getEfuseMac()>>32),HEX)+String((uint32_t)ESP.getEfuseMac(),HEX)+":"+binding;}
 }
 bool xtouch_vault_begin(){return ready||initialize(false);}
@@ -35,14 +31,7 @@ bool xtouch_vault_rotate(){return initialize(true);}
 String xtouch_vault_seal(const String &plain,const String &binding){
  if(!xtouch_vault_begin()||plain.isEmpty()||plain.length()>2048)return "";
  std::unique_ptr<uint8_t[]> buffer(new(std::nothrow) uint8_t[plain.length()+28]());if(!buffer)return "";uint8_t *bytes=buffer.get();esp_fill_random(bytes,12);String context=aad(binding);
-#if ESP_IDF_VERSION_MAJOR >= 6
  int rc=aead(true,key,bytes,context,(const uint8_t*)plain.c_str(),plain.length(),bytes+28,bytes+12);
-#else
- mbedtls_gcm_context gcm;mbedtls_gcm_init(&gcm);
- int rc=mbedtls_gcm_setkey(&gcm,MBEDTLS_CIPHER_ID_AES,key,256);
- if(!rc)rc=mbedtls_gcm_crypt_and_tag(&gcm,MBEDTLS_GCM_ENCRYPT,plain.length(),bytes,12,(const uint8_t*)context.c_str(),context.length(),(const uint8_t*)plain.c_str(),bytes+28,16,bytes+12);
- mbedtls_gcm_free(&gcm);
-#endif
  if(rc)return "";
  size_t capacity=4*((plain.length()+30)/3)+1;std::unique_ptr<unsigned char[]> encoded(new(std::nothrow) unsigned char[capacity]);if(!encoded)return "";size_t n=0;rc=mbedtls_base64_encode(encoded.get(),capacity,&n,bytes,plain.length()+28);memset(bytes,0,plain.length()+28);
  return rc?String():String("v1:")+String((char*)encoded.get(),n);
@@ -53,14 +42,7 @@ bool xtouch_vault_open(const String &sealed,const String &binding,String &plain)
  std::unique_ptr<uint8_t[]> buffer(new(std::nothrow) uint8_t[capacity]),output(new(std::nothrow) uint8_t[capacity-27]());if(!buffer||!output)return false;uint8_t *bytes=buffer.get(),*decoded=output.get();size_t n=0;
  if(mbedtls_base64_decode(bytes,capacity,&n,(const unsigned char*)sealed.c_str()+3,sealed.length()-3)||n<=28)return false;
  String context=aad(binding);
-#if ESP_IDF_VERSION_MAJOR >= 6
  int rc=aead(false,key,bytes,context,bytes+28,n-28,decoded,bytes+12);
-#else
- mbedtls_gcm_context gcm;mbedtls_gcm_init(&gcm);
- int rc=mbedtls_gcm_setkey(&gcm,MBEDTLS_CIPHER_ID_AES,key,256);
- if(!rc)rc=mbedtls_gcm_auth_decrypt(&gcm,n-28,bytes,12,(const uint8_t*)context.c_str(),context.length(),bytes+12,16,bytes+28,decoded);
- mbedtls_gcm_free(&gcm);
-#endif
  if(!rc)plain=String((char*)decoded,n-28);memset(decoded,0,capacity-27);memset(bytes,0,capacity);return !rc;
 }
 

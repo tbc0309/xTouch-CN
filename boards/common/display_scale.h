@@ -1,4 +1,5 @@
 #pragma once
+#include "ui/lvgl_compat.h"
 #include "../../src/ui/design_scale.h"
 #define p4_x ui_design_x
 #define p4_y ui_design_y

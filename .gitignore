@@ -9,6 +9,7 @@ web/manifest.json
 _site/
 release-images/
 LOCAL-REVIEW.zh-CN.md
+/AGENTS.md
 *.ttf
 *.otf
 python3.cmd
@@ -21,8 +22,7 @@ boards/.camera-data/
 
 # Generated previews and local hardware records
 *.ppm
-boards/docs/*
-!boards/docs/README.md
+boards/docs/
 
 # Local-only helpers and generated test records
 local-tools/
@@ -33,8 +33,10 @@ boards/build*/
 # Private development tools and notes
 tools/thumbnail_lab
 boards/tests
-boards/docs/README.md
 boards/ADAPTATION.md
 boards/SHARED-UI.md
-scripts/check_thumbnail_upstream.py
-resources/thumbnail-upstream.json
+/docs/DEVELOPMENT-RULES*.md
+/docs/DOCUMENTATION-RULES*.md
+
+# Local regression suites
+/tests/

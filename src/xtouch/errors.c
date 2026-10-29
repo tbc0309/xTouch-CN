@@ -12,7 +12,7 @@
 #include <string.h>
 
 #if XTOUCH_ERROR_DETAILS
-static const char *find_description(uint64_t code, bool chinese,
+static const char *find_description(uint64_t code,
                                     const xtouch_error_description *rows, size_t count) {
     size_t lo = 0, hi = count;
     while (lo < hi) {
@@ -24,25 +24,25 @@ static const char *find_description(uint64_t code, bool chinese,
     }
     if (lo == count || rows[lo].code != code)
         return NULL;
-    return chinese ? rows[lo].zh : rows[lo].en;
+    return rows[lo].en;
 }
 #endif
 
-const char *xtouch_errors_getHMSErrorDescription(uint64_t code, bool chinese) {
+const char *xtouch_errors_getHMSErrorDescription(uint64_t code) {
 #if XTOUCH_ERROR_DETAILS
-    return find_description(code, chinese, hms_descriptions,
+    return find_description(code, hms_descriptions,
                             sizeof(hms_descriptions) / sizeof(*hms_descriptions));
 #else
-    (void)code; (void)chinese; return NULL;
+    (void)code; return NULL;
 #endif
 }
 
-const char *xtouch_errors_getDeviceErrorDescription(uint32_t code, bool chinese) {
+const char *xtouch_errors_getDeviceErrorDescription(uint32_t code) {
 #if XTOUCH_ERROR_DETAILS
-    return find_description(code, chinese, device_descriptions,
+    return find_description(code, device_descriptions,
                             sizeof(device_descriptions) / sizeof(*device_descriptions));
 #else
-    (void)code; (void)chinese; return NULL;
+    (void)code; return NULL;
 #endif
 }
 
@@ -121,16 +121,13 @@ const char *xtouch_errors_getDeviceError(const char *key) {
 #ifdef XTOUCH_ERROR_SELFTEST
 bool xtouch_errors_selftest(void) {
     uint64_t value;
-    const char *hms_english=xtouch_errors_getHMSErrorDescription(UINT64_C(0x0500050000010007), false);
-    const char *hms_chinese=xtouch_errors_getHMSErrorDescription(UINT64_C(0x0500050000010007), true);
-    const char *device_english=xtouch_errors_getDeviceErrorDescription(UINT32_C(0x07018004), false);
-    const char *device_chinese=xtouch_errors_getDeviceErrorDescription(UINT32_C(0x07018004), true);
+    const char *hms_english=xtouch_errors_getHMSErrorDescription(UINT64_C(0x0500050000010007));
+    const char *device_english=xtouch_errors_getDeviceErrorDescription(UINT32_C(0x07018004));
 #if XTOUCH_ERROR_DETAILS
-    bool descriptions_ok=hms_english&&hms_chinese&&strcmp(hms_english,hms_chinese)&&
-                         device_english&&device_chinese&&strcmp(device_english,device_chinese)&&
-                         !xtouch_errors_getDeviceErrorDescription(UINT32_C(0xFFFFFFFF),false);
+    bool descriptions_ok=hms_english&&device_english&&
+                         !xtouch_errors_getDeviceErrorDescription(UINT32_C(0xFFFFFFFF));
 #else
-    bool descriptions_ok=!hms_english&&!hms_chinese&&!device_english&&!device_chinese;
+    bool descriptions_ok=!hms_english&&!device_english;
 #endif
     return !strcmp(xtouch_errors_getHMSError("050005000001000f"), "HMS 0500-0500-0001-000F") &&
            !strcmp(xtouch_errors_getDeviceError("07018004"), "0x07018004") &&

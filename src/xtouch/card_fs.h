@@ -1,7 +1,3 @@
 #pragma once
-#ifdef XTOUCH_WAVESHARE
-#include <SD_MMC.h>
+#include "platform/idf/filesystem.h"
 #define SD SD_MMC
-#else
-#include <SD.h>
-#endif

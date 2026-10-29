@@ -1,8 +1,8 @@
-// Optional Xiaomi BLE thermometer panel. Credentials are saved independently.
+// Optional Bluetooth thermometer panel. Credentials are saved independently.
 let environmentCard=null,environmentKnown=null,environmentBusy=false;
 function environmentProductLabel(value){
  const names={KS2BB:t("领普温湿度传感器","Linptech Temperature and Humidity Sensor"),LYWSD03MMC:t("小米米家蓝牙温湿度计 2","Xiaomi Mijia Bluetooth Thermometer 2"),MJWSD05MMC:t("米家智能温湿度计 3","Mijia Smart Thermometer 3"),MJWSD06MMC:t("米家智能温湿度计 3 mini","Mijia Smart Thermometer 3 mini"),LYWSD02MMC:t("小米米家电子温湿度计 Pro","Xiaomi Mijia Digital Thermometer Pro"),XMWSDJ04MMC:t("小米电子温湿度计","Xiaomi Digital Thermometer"),LYWSDCGQ:t("米家蓝牙温湿度计","Mijia Bluetooth Thermometer"),LYWSD02:t("小米米家电子温湿度计 Pro","Xiaomi Mijia Digital Thermometer Pro"),CGG1:t("青萍蓝牙温湿度计","Qingping Bluetooth Thermometer"),CGDK2:t("青萍蓝牙温湿度计 Lite","Qingping Bluetooth Thermometer Lite"),CGDK3:t("青萍温湿度计 Lite","Qingping Thermometer Lite"),CGD1:t("青萍蓝牙闹钟","Qingping Bluetooth Alarm Clock"),"MHO-C303":t("秒秒测时钟温湿度计","MiaoMiaoce Thermometer Clock"),"MHO-C401":t("秒秒测蓝牙温湿度计","MiaoMiaoce Bluetooth Thermometer"),CGC1:t("青萍蓝牙小钟","Qingping Bluetooth Clock"),MBS17:t("目博士温湿度计 MBS-17","Miaoboshi Thermometer MBS-17"),ESM787:t("炎米智能温湿度计","Yanmi Smart Thermometer"),CGG3:t("青萍温湿度计","Qingping Thermometer"),MJWSD07MMC:t("米家智能温湿度计 3 Pro","Mijia Smart Thermometer 3 Pro")};
- const name=names[value.model]||value.manufacturer||'Xiaomi BLE';
+ const name=names[value.model]||value.manufacturer||t('蓝牙温湿度计','Bluetooth thermometer');
  return ['zh','zh-TW','ja'].includes(lang)?`${name}（${value.model}）`:`${name} (${value.model})`;
 }
 function environmentDraft(){return !!environmentCard&&(fieldDirty($('environmentMac'))||!!$('environmentKey').value||(['environmentMac','environmentKey'].some(id=>$(id).dataset.locked==='0')&&environmentKnown?.configured));}
@@ -15,6 +15,14 @@ function updateEnvironmentPanel(value,failures=0){
  if(!environmentCard){
   const section=document.createElement('section');section.id='environmentSensor';
   section.innerHTML='<div class="sectionHead"><h2 id="environmentTitle"></h2><div class="sectionTools"><span id="environmentStatus" class="badge" role="status" aria-live="polite"></span><button id="environmentClear" class="danger"></button></div></div><div class="grid"><label><span>MAC</span><input data-environment id="environmentMac" maxlength="17" required pattern="[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}" autocomplete="off" spellcheck="false"></label><div class="passwordField"><span>BLE Key</span><label class="checkbox"><input data-environment id="environmentEncrypt" type="checkbox"><span id="environmentEncryptText"></span></label><input data-environment id="environmentKey" type="password" maxlength="32" pattern="[0-9A-Fa-f]{32}" autocomplete="new-password" spellcheck="false"></div><label><span id="environmentDisplayText"></span><select data-environment id="environmentDisplay"><option value="off"></option><option value="alternate"></option><option value="sensor"></option></select></label><label><span class="settingValue"><span id="environmentIntervalText"></span><output id="environmentIntervalValue" for="environmentInterval">5</output></span><input data-environment class="settingRange" id="environmentInterval" type="range" min="1" max="30" step="1" value="5"></label></div><p class="muted"><span id="environmentAge"></span><span id="environmentModel" class="danger"></span></p><p id="environmentHint" class="muted"></p><div class="actions formActions"><button id="environmentSave" class="primary"></button></div>';
+  const keyGuide=document.createElement('span');keyGuide.className='inlineNote';
+  keyGuide.append(' (',t('获取教程','Guide'),': ');
+  for(const [code,file] of [['CN','THERMOMETERS.md'],['EN','THERMOMETERS.en.md']]){
+   if(code==='EN')keyGuide.append(' / ');
+   const link=document.createElement('a');link.href=`https://github.com/tbc0309/xTouch-CN/blob/main/docs/${file}#ble-key`;
+   link.target='_blank';link.rel='noopener noreferrer';link.className='tokenHelp';link.textContent=code;keyGuide.append(link);
+  }
+  keyGuide.append(')');section.querySelector('.passwordField > span').append(keyGuide);
   $('settings').append(section);environmentCard=section;fieldHeadingObserver.observe($('environmentKey').parentElement);
   for(const name of ['environmentMac','environmentKey']){trackField($(name),$(name).value);for(const ev of ['input','locked'])$(name).addEventListener(ev,environmentButtons);}
   $('environmentSave').onclick=()=>environmentSave(false);
@@ -36,7 +44,7 @@ function updateEnvironmentPanel(value,failures=0){
  $('environmentSave').textContent=t('保存绑定','Save binding');$('environmentClear').textContent=t('清除绑定','Clear binding');
  $('environmentKey').placeholder=value.keySaved?t('已保存；仅同一 MAC 留空保留','Saved; blank keeps key only for the same MAC'):t('仅加密广播需要','For encrypted broadcasts');
  const status=$('environmentStatus');status.classList.toggle('ok',value.fresh);
- status.textContent=value.available?`${value.fresh?'':'~ '}${value.temperature.toFixed(1)}°C · ${value.humidity.toFixed(0)}%`:!value.configured?t('尚未绑定','Not bound'):value.keyUnavailable?t('密钥不可用，请重新绑定','Key unavailable; bind again'):value.keyRequired?t('需要 BLE Key','BLE Key required'):failures?t('密钥校验失败','Key authentication failed'):t('等待传感器数据','Waiting for sensor data');
+ status.textContent=value.available?`${value.fresh?'':'~ '}${value.temperature.toFixed(1)}℃ · ${value.humidity.toFixed(0)}%`:!value.configured?t('尚未绑定','Not bound'):value.keyUnavailable?t('密钥不可用，请重新绑定','Key unavailable; bind again'):value.keyRequired?t('需要 BLE Key','BLE Key required'):failures?t('密钥校验失败','Key authentication failed'):t('等待传感器数据','Waiting for sensor data');
  environmentButtons();
 }
 function environmentButtons(){

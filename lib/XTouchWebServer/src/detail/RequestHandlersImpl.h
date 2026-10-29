@@ -3,7 +3,7 @@
 
 #include "RequestHandler.h"
 #include "mimetable.h"
-#include "WString.h"
+#include "platform/idf/text.h"
 #include "Uri.h"
 
 using namespace mime;

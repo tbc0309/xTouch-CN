@@ -1,30 +1,28 @@
 #include "features/config.h"
 #if XTOUCH_FEATURE_XIAOMI_BLE
+#include "home_view.hpp"
 #include "environment.h"
+#include "display_preferences.h"
 #include "xiaomi_ble.h"
 #include "home_environment.h"
-#include "ui/layout_shared.h"
 #include "xtouch/storage.h"
 #include "xtouch/vault.h"
 #include "xtouch/types.h"
 #include <cstring>
-#include <new>
-#ifdef lv_txt_get_size
-#undef lv_txt_get_size
-#endif
-LV_FONT_DECLARE(ui_font_text_14);
+#include "esp_log.h"
 namespace {
 constexpr const char *path=xtouch_environment_config_path;
-constexpr uint32_t freshMs=600000;
+constexpr uint32_t freshMs=HomeEnvironment::freshMs;
 portMUX_TYPE configGuard=portMUX_INITIALIZER_UNLOCKED;
 bool configured=false,keyReady=false,homeVisible=false,encrypted=false;
 uint8_t displayMode=1,intervalSeconds=5;
+int pendingDisplay=-1;
 char selectedMac[18]={};
 uint8_t mode(JsonVariantConst doc){const char *v=doc["display"]|"";return !strcmp(v,"off")?0:!strcmp(v,"sensor")?2:1;}
 const char *modeName(uint8_t value){return value==0?"off":value==2?"sensor":"alternate";}
 bool validKey(const char *key){if(!key||strlen(key)!=32)return false;for(const char *p=key;*p;++p)if(!isxdigit((unsigned char)*p))return false;return true;}
 bool openKey(JsonVariantConst doc,const char *mac,String &key){if(!doc.containsKey("key")&&!doc.containsKey("keyEnc")){key="";return true;}if(doc.containsKey("key")){key=doc["key"]|"";return validKey(key.c_str());}return xtouch_vault_open(doc["keyEnc"]|"",String("environment:")+mac,key)&&validKey(key.c_str());}
-void options(JsonVariantConst doc){portENTER_CRITICAL(&configGuard);displayMode=mode(doc);intervalSeconds=doc["interval"]|5;encrypted=doc.containsKey("keyEnc");portEXIT_CRITICAL(&configGuard);}
+void options(JsonVariantConst doc){portENTER_CRITICAL(&configGuard);displayMode=mode(doc);intervalSeconds=doc["interval"]|5;encrypted=doc.containsKey("keyEnc");pendingDisplay=-1;portEXIT_CRITICAL(&configGuard);}
 bool canonical(const char *s,char *out){
  if(!s||strlen(s)!=17)return false;
  for(unsigned i=0;i<17;++i){if(i%3==2){if(s[i]!=':')return false;out[i]=':';}else{if(!isxdigit((unsigned char)s[i]))return false;out[i]=toupper((unsigned char)s[i]);}}
@@ -37,22 +35,10 @@ void apply(JsonVariantConst doc){
  key="";
  portENTER_CRITICAL(&configGuard);configured=present;keyReady=ready;memcpy(selectedMac,mac,sizeof(mac));portEXIT_CRITICAL(&configGuard);options(doc);
 }
-struct Home {lv_obj_t *strip,*slot,*label,*clock;uint32_t born;bool showing=false;};
-void update(lv_timer_t *timer){
- auto *h=static_cast<Home*>(timer->user_data);bool ready;uint8_t mode,seconds;
- portENTER_CRITICAL(&configGuard);ready=configured;mode=displayMode;seconds=intervalSeconds;portEXIT_CRITICAL(&configGuard);
- float t=0,rh=0;uint32_t age=0;bool available=ready&&mode&&xtouch_xiaomi_ble_measurement(t,rh,age);
- bool hasAms=bambuStatus.ams_exist_bits!=0;
- bool visible=available&&(mode==2||!hasAms||((lv_tick_get()-h->born)/(uint32_t(seconds)*1000))%2==1);
- if(visible){lv_obj_set_style_text_font(h->label,lv_obj_get_style_text_font(h->clock,0),0);char text[40];snprintf(text,sizeof(text),"%s%.1f\xC2\xB0" "C %.0f%%",age>freshMs?"~":"",double(t),double(rh));if(strcmp(lv_label_get_text(h->label),text))lv_label_set_text(h->label,text);lv_point_t size;lv_txt_get_size(&size,text,lv_obj_get_style_text_font(h->clock,0),lv_obj_get_style_text_letter_space(h->clock,0),0,LV_COORD_MAX,LV_TEXT_FLAG_EXPAND);lv_obj_set_width(h->slot,size.x);lv_obj_add_flag(h->strip,LV_OBJ_FLAG_HIDDEN);lv_obj_clear_flag(h->slot,LV_OBJ_FLAG_HIDDEN);}
- else{lv_obj_add_flag(h->slot,LV_OBJ_FLAG_HIDDEN);if(h->showing)lv_obj_clear_flag(h->strip,LV_OBJ_FLAG_HIDDEN);}
- ui_layout_status_text(h->label);
- h->showing=visible;portENTER_CRITICAL(&configGuard);homeVisible=visible;portEXIT_CRITICAL(&configGuard);
-}
-void removed(lv_event_t *e){auto *timer=static_cast<lv_timer_t*>(lv_event_get_user_data(e));delete static_cast<Home*>(timer->user_data);lv_timer_del(timer);}
 }
 bool xtouch_environment_valid(JsonVariantConst doc){
- if(!doc.is<JsonObjectConst>())return false;if(doc.size()==0)return true;
+ if(!doc.is<JsonObjectConst>())return false;
+ if(doc.size()==0)return true;
  char mac[18];if(!canonical(doc["mac"]|"",mac))return false;
  bool plain=doc.containsKey("key"),sealed=doc.containsKey("keyEnc");if(plain&&sealed)return false;
  if(plain&&!validKey(doc["key"]|""))return false;
@@ -62,6 +48,22 @@ bool xtouch_environment_valid(JsonVariantConst doc){
  return !doc.containsKey("home");
 }
 void xtouch_environment_begin(){auto doc=xtouch_storage_read(path,0);if(xtouch_environment_valid(doc.as<JsonVariantConst>()))apply(doc.as<JsonVariantConst>());}
+extern "C" bool xtouch_environment_display_get(uint8_t *value){
+ portENTER_CRITICAL(&configGuard);bool present=configured;if(value)*value=pendingDisplay>=0?pendingDisplay:displayMode;portEXIT_CRITICAL(&configGuard);return present;
+}
+extern "C" bool xtouch_environment_display_request(uint8_t value){
+ portENTER_CRITICAL(&configGuard);bool accepted=configured&&value<=2;if(accepted)pendingDisplay=value;portEXIT_CRITICAL(&configGuard);return accepted;
+}
+extern "C" void xtouch_environment_display_poll(){
+ portENTER_CRITICAL(&configGuard);int requested=pendingDisplay;pendingDisplay=-1;portEXIT_CRITICAL(&configGuard);
+ if(requested<0)return;
+ /* Preserve MAC, key/encryption and interval. Never perform storage writes in
+  * an LVGL event, and never manufacture a binding from a display preference. */
+ auto doc=xtouch_storage_read(path,0);
+ if(!doc["mac"].is<const char*>())return;
+ doc["display"]=modeName(requested);
+ if(doc.overflowed()||!xtouch_environment_store(doc.as<JsonVariantConst>()))ESP_LOGE("environment","Display preference save failed");
+}
 bool xtouch_environment_store(JsonVariantConst doc){
  if(!xtouch_environment_valid(doc))return false;
  if(doc.size()==0){if(!xtouch_storage_delete(path))return false;apply(doc);return true;}
@@ -100,10 +102,14 @@ void xtouch_environment_status(JsonObject out){
  if(has){out["temperature"]=t;out["humidity"]=rh;out["ageMs"]=age;out["temperatureAgeMs"]=ta;out["humidityAgeMs"]=ha;out["lastSeenAgeMs"]=seen;}
 }
 extern "C" void ui_home_environment_bind(lv_obj_t *strip,lv_obj_t *clockGap){
- auto *h=new(std::nothrow) Home;if(!h)return;
- h->strip=strip;h->clock=lv_obj_get_child(clockGap,0);h->born=lv_tick_get();
- h->slot=lv_obj_create(lv_obj_get_parent(strip));lv_obj_remove_style_all(h->slot);lv_obj_set_size(h->slot,0,lv_pct(100));lv_obj_clear_flag(h->slot,LV_OBJ_FLAG_CLICKABLE|LV_OBJ_FLAG_SCROLLABLE);lv_obj_add_flag(h->slot,LV_OBJ_FLAG_HIDDEN);lv_obj_set_flex_grow(h->slot,0);
- h->label=lv_label_create(h->slot);lv_label_set_text(h->label,"");lv_obj_add_flag(h->label,LV_OBJ_FLAG_IGNORE_LAYOUT);lv_obj_clear_flag(h->label,LV_OBJ_FLAG_CLICKABLE);lv_obj_set_style_text_font(h->label,lv_obj_get_style_text_font(h->clock,0),0);lv_obj_set_style_text_letter_space(h->label,lv_obj_get_style_text_letter_space(h->clock,0),0);lv_obj_set_style_text_color(h->label,lv_color_hex(UI_COLOR_BLUE),0);lv_obj_align(h->label,LV_ALIGN_CENTER,0,0);
- auto *timer=lv_timer_create(update,1000,h);if(!timer){lv_obj_del(h->slot);delete h;return;}lv_obj_add_event_cb(strip,removed,LV_EVENT_DELETE,timer);update(timer);
+ HomeEnvironment::bind(strip,clockGap,{
+  [](){
+   HomeEnvironment::Options options;
+   portENTER_CRITICAL(&configGuard);options.configured=configured;options.mode=displayMode;options.interval=intervalSeconds;portEXIT_CRITICAL(&configGuard);
+   options.hasAms=bambuStatus.ams_exist_bits!=0;return options;
+  },
+  [](float &temperature,float &humidity,uint32_t &age){return xtouch_xiaomi_ble_measurement(temperature,humidity,age);},
+  [](bool visible){portENTER_CRITICAL(&configGuard);homeVisible=visible;portEXIT_CRITICAL(&configGuard);}
+ });
 }
 #endif

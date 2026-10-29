@@ -3,10 +3,8 @@
 #include "xiaomi_ble.h"
 #include "environment.h"
 #include "mibeacon.h"
-#include <Arduino.h>
-#if CONFIG_IDF_TARGET_ESP32S3
-#include <esp32-hal-alloc-ble-mem.h>
-#elif CONFIG_IDF_TARGET_ESP32P4
+#include "platform/idf/runtime.h"
+#if CONFIG_IDF_TARGET_ESP32P4
 #include <esp_hosted.h>
 #include "hosted_bt_config.h"
 #endif
@@ -16,9 +14,6 @@
 #include <host/ble_gap.h>
 #include <host/util/util.h>
 #include <psa/crypto.h>
-#ifndef XTOUCH_P4_C6_PREINITIALIZED_BT
-#define XTOUCH_P4_C6_PREINITIALIZED_BT 0
-#endif
 
 namespace {
 portMUX_TYPE guard=portMUX_INITIALIZER_UNLOCKED;
@@ -81,7 +76,7 @@ namespace {
 void initialize(){
  bool passed=test();int e=0;
 #if CONFIG_IDF_TARGET_ESP32P4
- auto config=xtouch_hosted_bt_config(!XTOUCH_P4_C6_PREINITIALIZED_BT);
+ auto config=xtouch_hosted_bt_config(false);
  e=esp_hosted_bt_host_stack_setup(&config);
  Serial.printf("[XIAOMI-BLE] Hosted 3 NimBLE binding=%d\n",e);
 #endif
@@ -98,7 +93,11 @@ void xtouch_xiaomi_ble_begin(){
 #if CONFIG_IDF_TARGET_ESP32P4
  if(xTaskCreate(initializeTask,"xiaomi-ble",6144,nullptr,2,nullptr)!=pdPASS){portENTER_CRITICAL(&guard);scanError=ESP_ERR_NO_MEM;portEXIT_CRITICAL(&guard);}
 #else
+#if defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && defined(XTOUCH_TEST_DEFER_BLE) && XTOUCH_TEST_DEFER_BLE
+ Serial.println("[XIAOMI-BLE TEST] initialization deferred");
+#else
  initialize();
+#endif
 #endif
 }
 
@@ -106,6 +105,9 @@ void xtouch_xiaomi_ble_status(JsonObject out){
  Device snapshot[8];uint32_t total,bad,ignored,full;bool active,passed;int error;
  portENTER_CRITICAL(&guard);memcpy(snapshot,devices,sizeof(devices));total=packets;bad=invalid;ignored=other;full=overflow;active=scanning;passed=selftest;error=scanError;portEXIT_CRITICAL(&guard);
 
+#if defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && CONFIG_IDF_TARGET_ESP32
+ out["controllerState"]=xtouch_xiaomi_ble_test_controller_state();
+#endif
  out["kind"]="xiaomi-ble";out["selftest"]=passed;out["scanning"]=active;out["scanError"]=error;out["packets"]=total;out["malformed"]=bad;out["other"]=ignored;out["overflow"]=full;
  uint8_t configuredMac[6];portENTER_CRITICAL(&guard);bool hasKey=bound&&keyPresent;uint32_t failed=authFailures;memcpy(configuredMac,bindingMac,6);portEXIT_CRITICAL(&guard);
  out["passive"]=true;out["scanDutyPercent"]=30;out["keyConfigured"]=hasKey;out["authenticationFailures"]=failed;
@@ -132,4 +134,32 @@ const char *xtouch_xiaomi_ble_model(){uint16_t product=0;portENTER_CRITICAL(&gua
 void xtouch_xiaomi_ble_model_status(JsonObject out){uint16_t product=0;portENTER_CRITICAL(&guard);if(bound)for(const auto &v:devices)if(v.used&&!memcmp(v.mac,bindingMac,6)){product=v.reading.product;break;}portEXIT_CRITICAL(&guard);auto m=xiaomi_ble::model(product);out["model"]=m?m->code:"";if(m){out["manufacturer"]=m->maker;out["productId"]=product;}}
 
 bool xtouch_xiaomi_ble_key_required(){bool result=false;portENTER_CRITICAL(&guard);if(bound&&!keyPresent)for(const auto &v:devices)if(v.used&&!memcmp(v.mac,bindingMac,6)&&(v.reading.encrypted||xiaomi_ble::requires_encryption(v.reading.product))){result=true;break;}portEXIT_CRITICAL(&guard);return result;}
+#if defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && CONFIG_IDF_TARGET_ESP32
+#include <esp_bt.h>
+int xtouch_xiaomi_ble_test_controller_state(){return int(esp_bt_controller_get_status());}
+bool xtouch_xiaomi_ble_test_start(){
+ static bool attempted=false;
+ if(attempted||esp_bt_controller_get_status()!=ESP_BT_CONTROLLER_STATUS_IDLE)return false;
+ attempted=true;initialize();
+ return esp_bt_controller_get_status()==ESP_BT_CONTROLLER_STATUS_ENABLED;
+}
+bool xtouch_xiaomi_ble_test_stop(){
+ if(esp_bt_controller_get_status()==ESP_BT_CONTROLLER_STATUS_IDLE)return true;
+ int rc=nimble_port_stop();
+ if(!rc)rc=nimble_port_deinit();
+ portENTER_CRITICAL(&guard);scanning=false;scanError=rc;portEXIT_CRITICAL(&guard);
+ return rc==0&&esp_bt_controller_get_status()==ESP_BT_CONTROLLER_STATUS_IDLE;
+}
+bool xtouch_xiaomi_ble_test_sleep(bool enabled){
+ return (enabled?esp_bt_sleep_enable():esp_bt_sleep_disable())==ESP_OK;
+}
+bool xtouch_xiaomi_ble_test_scan(bool enabled){
+ if(enabled){if(!ble_gap_disc_active())onSync();}
+ else{
+  int e=ble_gap_disc_cancel();if(e&&e!=BLE_HS_EALREADY)return false;
+  portENTER_CRITICAL(&guard);scanning=false;scanError=0;portEXIT_CRITICAL(&guard);
+ }
+ portENTER_CRITICAL(&guard);bool ok=scanning==enabled&&scanError==0;portEXIT_CRITICAL(&guard);return ok;
+}
+#endif
 #endif

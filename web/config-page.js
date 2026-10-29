@@ -4,7 +4,7 @@ import {renderFooter} from './page-footer.js';
 
 const language=document.getElementById('language');
 language.value=websiteLanguage();
-const generator=initConfigGenerator(document.getElementById('configuration'),language.value,'h1');
+const generator=initConfigGenerator(document.getElementById('configuration'),language.value,'h1',new URLSearchParams(location.search).get('board')||'cyd');
 function translate() {
   renderFooter(language.value);
   const english=language.value==='en';

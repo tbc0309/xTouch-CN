@@ -5,22 +5,22 @@
 #include "home_status_font.h"
 #include <string.h>
 // Compare actual font pixels with the actual flexible gap on every display.
-#ifdef lv_txt_get_size
-#undef lv_txt_get_size
+#ifdef lv_text_get_size
+#undef lv_text_get_size
 #endif
 LV_FONT_DECLARE(ui_font_text_14);
 
 static void refresh(lv_timer_t *timer)
 {
-    lv_obj_t *gap = timer->user_data;
+    lv_obj_t *gap = lv_timer_get_user_data(timer);
     lv_obj_t *label = lv_obj_get_child(gap, 0);
     char text[6];
     bool visible = xtouch_clock_text(text, sizeof(text));
     if (visible) {
         if (strcmp(lv_label_get_text(label), text)) lv_label_set_text(label, text);
         lv_point_t size;
-        lv_txt_get_size(&size, text, lv_obj_get_style_text_font(label, 0),
-                        lv_obj_get_style_text_letter_space(label, 0), 0,
+        lv_text_get_size(&size, text, lv_obj_get_style_text_font(label,(lv_part_t)(0)),
+                        lv_obj_get_style_text_letter_space(label,(lv_part_t)(0)), 0,
                         LV_COORD_MAX, LV_TEXT_FLAG_EXPAND);
         // No layout participation: showing the clock never squeezes the AMS.
         visible = lv_obj_get_content_width(gap) >= size.x + 2;
@@ -36,7 +36,7 @@ static void resized(lv_event_t *event) { refresh(lv_event_get_user_data(event));
 static void deleted(lv_event_t *event) { lv_timer_del(lv_event_get_user_data(event)); }
 static void tick(lv_timer_t *timer)
 {
-    lv_obj_update_layout(timer->user_data);
+    lv_obj_update_layout(lv_timer_get_user_data(timer));
     refresh(timer);
 }
 void ui_home_clock_bind(lv_obj_t *gap)

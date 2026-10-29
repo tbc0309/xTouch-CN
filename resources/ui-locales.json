@@ -588,5 +588,85 @@
     "Bluetooth / QR",
     "Bluetooth 設定 / QR",
     "Bluetooth 설정 / QR"
+  ],
+  "Network setup": [
+    "选择配网方式",
+    "選擇配網方式",
+    "Network setup",
+    "Configuration réseau",
+    "Netzwerkeinrichtung",
+    "Настройка сети",
+    "接続方法の選択",
+    "네트워크 설정"
+  ],
+  "Choose a connection method": [
+    "选择一种连接方式",
+    "選擇一種連接方式",
+    "Choose a connection method",
+    "Choisir un mode de connexion",
+    "Verbindungsmethode wählen",
+    "Выберите способ подключения",
+    "接続方法を選択",
+    "연결 방법 선택"
+  ],
+  "Phone or computer browser": [
+    "手机或电脑浏览器",
+    "手機或電腦瀏覽器",
+    "Phone or computer browser",
+    "Navigateur du téléphone ou du PC",
+    "Browser auf Handy oder Computer",
+    "Браузер телефона или компьютера",
+    "スマートフォンまたはPCのブラウザー",
+    "휴대폰 또는 PC 브라우저"
+  ],
+  "Hide\nAlternate\nSensor only": [
+    "关闭显示\n交替显示\n仅温湿度",
+    "關閉顯示\n交替顯示\n僅溫濕度",
+    "Hide\nAlternate\nSensor only",
+    "Masquer\nAlterner\nCapteur seul",
+    "Ausblenden\nAbwechselnd\nNur Sensor",
+    "Скрыть\nЧередовать\nТолько датчик",
+    "非表示\n交互表示\nセンサーのみ",
+    "표시 안 함\n번갈아 표시\n센서만"
+  ],
+  "Back to connection methods": [
+    "返回配网方式选择",
+    "返回配網方式選擇",
+    "Back to connection methods",
+    "Retour aux modes de connexion",
+    "Zurück zur Verbindungsauswahl",
+    "К выбору подключения",
+    "接続方法に戻る",
+    "연결 방법 선택으로 돌아가기"
+  ],
+  "Thermometer": [
+    "温湿度计",
+    "溫濕度計",
+    "Thermometer",
+    "Thermomètre",
+    "Thermometer",
+    "Термогигрометр",
+    "温湿度計",
+    "온습도계"
+  ],
+  "Save failed. Please retry.": [
+    "保存失败，请重试",
+    "儲存失敗，請重試",
+    "Save failed. Please retry.",
+    "Échec de l’enregistrement. Réessayez.",
+    "Speichern fehlgeschlagen. Bitte erneut versuchen.",
+    "Не удалось сохранить. Повторите попытку.",
+    "保存できませんでした。再試行してください。",
+    "저장하지 못했습니다. 다시 시도하세요."
+  ],
+  "OTA updating…": [
+    "OTA 更新中…",
+    "OTA 更新中…",
+    "OTA updating…",
+    "Mise à jour OTA…",
+    "OTA-Aktualisierung…",
+    "Обновление OTA…",
+    "OTA 更新中…",
+    "OTA 업데이트 중…"
   ]
 }

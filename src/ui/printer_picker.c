@@ -5,6 +5,7 @@
 #include "printer_models.h"
 #include "source_icons.h"
 #include "settings_gesture.h"
+#include "chrome_metrics.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -18,7 +19,7 @@
 #undef lv_obj_set_style_width
 #undef lv_obj_set_style_radius
 #undef lv_indev_get_point
-#undef lv_txt_get_size
+#undef lv_text_get_size
 #undef lv_draw_rect
 #undef lv_draw_img
 #undef lv_draw_label
@@ -32,12 +33,12 @@ static uint32_t name_epoch;
 static lv_timer_t *name_timer;
 static struct {
     lv_area_t panel,close,toggle;
-    int unit,width,height,row,columns,cell,art_width,art_height,title_height,name_height;
+    int unit,width,height,row,columns,cell,art_width,art_height,title_height,name_height,content_top;
 } layout;
 static void fill_viewport(void);
 /* Use the regular body tier for both the model caption and device name. */
 static const lv_img_dsc_t *source_icon(uint8_t source);
-static const lv_font_t *picker_font(void){return LV_FONT_DEFAULT;}
+static const lv_font_t *picker_font(void){return ui_layout_canvas_font(LV_FONT_DEFAULT,XTOUCH_TEXT_SELECT_DEVICE);}
 static struct {lv_area_t ink;int width,height;} source_metrics[4];
 static void measure_sources(void){
     for(unsigned i=0;i<4;i++){
@@ -58,10 +59,12 @@ static void measure(void){
     int w=lv_disp_get_hor_res(NULL),h=lv_disp_get_ver_res(NULL);
     int u=LV_MAX(1,LV_MIN(w/320,h/240));layout.unit=u;
     layout.panel=(lv_area_t){0,0,w-1,h-1};
-    layout.close=(lv_area_t){w-36*u,6*u,w-6*u-1,36*u-1};
-    layout.toggle=layout.close;layout.toggle.x1-=36*u;layout.toggle.x2-=36*u;
-    layout.width=lv_area_get_width(&layout.panel)-20*u;
-    layout.height=lv_area_get_height(&layout.panel)-48*u;
+    ui_chrome_metrics_t chrome=ui_chrome_metrics(w,h);
+    layout.close=(lv_area_t){w-chrome.edge-chrome.control,chrome.edge,w-chrome.edge-1,chrome.edge+chrome.control-1};
+    layout.toggle=layout.close;layout.toggle.x1-=chrome.control+chrome.edge;layout.toggle.x2-=chrome.control+chrome.edge;
+    layout.content_top=chrome.bar;
+    layout.width=w-2*chrome.edge-4*u;
+    layout.height=h-layout.content_top-chrome.edge;
     layout.title_height=picker_font()->line_height;
     layout.name_height=layout.title_height;
     measure_sources();
@@ -80,23 +83,26 @@ static void measure(void){
             layout.art_height=LV_MAX(layout.art_height,info.h);
         }
     }
-    layout.columns=image_mode()?LV_CLAMP(1,layout.width/LV_MAX(1,layout.art_width+8*u),3):1;
+    /* A picture fitting does not mean its caption fits. Reserve a readable
+     * name window as well, independently of the selected artwork resolution. */
+    // Compact landscapes (320/480) use two cards; wide landscapes use three.
+    // Keep the same cell width for incomplete rows and a single device.
+    layout.columns=image_mode()?(w>=640?3:2):1;
     layout.cell=layout.width/layout.columns;
     layout.row=image_mode()?layout.art_height+layout.title_height+layout.name_height+20*u:40*u;
     if(image_mode()){
-        int visible_rows=LV_MAX(1,layout.height/layout.row);
-        layout.row=LV_MAX(layout.row,layout.height/visible_rows);
+        /* Preserve natural card proportions instead of stretching a single
+         * visible row to the bottom of every display. */
+        int total=(count+layout.columns-1)/layout.columns*layout.row;
+        if(total<layout.height){
+            layout.content_top+=(layout.height-total)/2;
+            layout.height=LV_MAX(1,total);
+        }
     }else layout.height=LV_MIN(layout.height,LV_MAX(1,count)*layout.row);
 }
 static void text_font(lv_draw_ctx_t *ctx,lv_area_t area,const char *value,uint32_t color,bool center,const lv_font_t *font){
-    lv_area_t clip;if(!_lv_area_intersect(&clip,&area,ctx->clip_area))return;
-    lv_area_t ink=ui_layout_ink(font,value);
     lv_draw_label_dsc_t d;lv_draw_label_dsc_init(&d);d.font=font;d.color=lv_color_hex(color);
-    d.flag=LV_TEXT_FLAG_EXPAND;
-    area.x1+=(center?(lv_area_get_width(&area)-(ink.x2-ink.x1+1))/2:0)-ink.x1;
-    area.y1+=(lv_area_get_height(&area)-(ink.y2-ink.y1+1))/2-ink.y1;
-    const lv_area_t *previous=ctx->clip_area;ctx->clip_area=&clip;
-    lv_draw_label(ctx,&d,&area,value,NULL);ctx->clip_area=previous;
+    ui_layout_draw_native_text(ctx,&d,area,value,center);
 }
 static void text(lv_draw_ctx_t *ctx,lv_area_t area,const char *value,uint32_t color,bool center){
     text_font(ctx,area,value,color,center,picker_font());
@@ -117,68 +123,76 @@ static void draw_name(lv_draw_ctx_t *ctx,lv_area_t area,const char *name,uint8_t
     const lv_img_dsc_t *badge=source_icon(source);
     lv_area_t ink=ui_layout_ink(picker_font(),name);
     unsigned index=source<4?source:2;
-    int icon_width=source_metrics[index].width,icon_height=source_metrics[index].height;
+    int zoom=picker_font()->line_height*256/LV_FONT_DEFAULT->line_height;
+    int icon_width=(source_metrics[index].width*zoom+255)/256,icon_height=(source_metrics[index].height*zoom+255)/256;
     // Reserve one shared square cell, independent of the source silhouette.
     // This keeps names aligned when Wi-Fi, cloud, phone and mail badges differ.
-    int icon_cell=source_img_0.header.w;
+    int icon_cell=(source_img_0.header.w*zoom+255)/256;
     int text_width=ink.x2-ink.x1+1,gap=3*layout.unit;
     int available=lv_area_get_width(&area),group=LV_MIN(available,text_width+icon_cell+gap);
     int start=area.x1+(image_mode()?(available-group)/2:0);
-    int x=start+(icon_cell-icon_width)/2-source_metrics[index].ink.x1;
-    int y=area.y1+(lv_area_get_height(&area)-icon_height)/2-source_metrics[index].ink.y1;
+    int x=start+(icon_cell-icon_width)/2-source_metrics[index].ink.x1*zoom/256;
+    int y=area.y1+(lv_area_get_height(&area)-icon_height)/2-source_metrics[index].ink.y1*zoom/256;
     lv_area_t icon_box={x,y,x+badge->header.w-1,y+badge->header.h-1},clip;
     lv_draw_img_dsc_t icon;lv_draw_img_dsc_init(&icon);icon.recolor=lv_color_hex(color);icon.recolor_opa=LV_OPA_COVER;
+    icon.scale_x=icon.scale_y=zoom;icon.pivot.x=icon.pivot.y=0;
     // Align visible alpha bounds with the text ink, rather than the padded image canvas.
-    if(_lv_area_intersect(&clip,&area,ctx->clip_area)){
-        const lv_area_t *previous=ctx->clip_area;ctx->clip_area=&clip;
-        lv_draw_img(ctx,&icon,&icon_box,badge);ctx->clip_area=previous;
+    if(_lv_area_intersect(&clip,&area,&ctx->_clip_area)){
+        lv_area_t previous=ctx->_clip_area;ctx->_clip_area=clip;
+        ui_draw_image(ctx,&icon,&icon_box,badge);ctx->_clip_area=previous;
     }
     lv_area_t window={start+icon_cell+gap,area.y1,start+group-1,area.y2};
-    if(window.x1>window.x2||!_lv_area_intersect(&clip,&window,ctx->clip_area))return;
+    if(window.x1>window.x2||!_lv_area_intersect(&clip,&window,&ctx->_clip_area))return;
     int overflow=text_width-lv_area_get_width(&window);
     if(overflow>0)names_overflow=true;
-    const lv_area_t *previous=ctx->clip_area;ctx->clip_area=&clip;
+    lv_area_t previous=ctx->_clip_area;ctx->_clip_area=clip;
     window.x1-=name_offset(overflow);window.x2=LV_MAX(window.x2,window.x1+text_width-1);
-    text(ctx,window,name,0xFFFFFF,false);ctx->clip_area=previous;
+    text(ctx,window,name,0xFFFFFF,false);ctx->_clip_area=previous;
 }
 static lv_area_t centered_box(lv_area_t button,int width,int height){
     int x=button.x1+(lv_area_get_width(&button)-width)/2;
     int y=button.y1+(lv_area_get_height(&button)-height)/2;
     return (lv_area_t){x,y,x+width-1,y+height-1};
 }
+static int row_inset(unsigned row){
+    (void)row;
+    return 0;
+}
 static void draw(lv_event_t *e){
     lv_draw_ctx_t *ctx=lv_event_get_draw_ctx(e);int u=layout.unit;
+    ui_chrome_metrics_t chrome=ui_chrome_metrics(lv_disp_get_hor_res(NULL),lv_disp_get_ver_res(NULL));
     lv_draw_rect_dsc_t r;lv_draw_rect_dsc_init(&r);r.bg_opa=LV_OPA_COVER;r.radius=0;r.bg_color=lv_color_hex(0x444444);
     lv_draw_rect(ctx,&r,&layout.panel);
     int title_end=(XTOUCH_UI_PICTURE_PICKER?layout.toggle.x1:layout.close.x1)-6*u;
-    text(ctx,(lv_area_t){layout.panel.x1+14*u,layout.panel.y1+6*u,title_end,layout.panel.y1+35*u},XTOUCH_TEXT_SELECT_DEVICE,0xFFFFFF,false);
+    text(ctx,(lv_area_t){layout.panel.x1+chrome.edge,layout.panel.y1,title_end,layout.panel.y1+chrome.bar-1},XTOUCH_TEXT_SELECT_DEVICE,0xFFFFFF,false);
     if(XTOUCH_UI_PICTURE_PICKER){
         lv_area_t a=layout.toggle;r.radius=6*u;r.bg_color=lv_color_hex(0x555555);lv_draw_rect(ctx,&r,&a);
         r.radius=0;r.bg_color=lv_color_white();
-        lv_area_t symbol=centered_box(a,18*u,(image_mode()?14:18)*u);
+        int icon=chrome.icon;
+        lv_area_t symbol=centered_box(a,icon,image_mode()?icon*14/18:icon);
         // List bars carry more ink than bullets; balance their optical center.
-        int left=symbol.x1-(image_mode()?u:0),top=symbol.y1;
+        int left=symbol.x1,top=symbol.y1;
         if(image_mode())for(int i=0;i<3;++i){
-            lv_area_t dot={left,top+i*6*u,left+2*u-1,top+(i*6+2)*u-1};
-            lv_area_t line={left+5*u,dot.y1,left+18*u-1,dot.y2};lv_draw_rect(ctx,&r,&dot);lv_draw_rect(ctx,&r,&line);
+            lv_area_t dot={left,top+i*icon/3,left+LV_MAX(1,icon/9)-1,top+i*icon/3+LV_MAX(1,icon/9)-1};
+            lv_area_t line={left+icon*5/18,dot.y1,left+icon-1,dot.y2};lv_draw_rect(ctx,&r,&dot);lv_draw_rect(ctx,&r,&line);
         }else for(int y=0;y<2;++y)for(int x=0;x<2;++x){
-            lv_area_t tile={left+x*11*u,top+y*11*u,left+(x*11+7)*u-1,top+(y*11+7)*u-1};lv_draw_rect(ctx,&r,&tile);
+            lv_area_t tile={left+x*icon*11/18,top+y*icon*11/18,left+(x*11+7)*icon/18-1,top+(y*11+7)*icon/18-1};lv_draw_rect(ctx,&r,&tile);
         }
     }
     r.radius=6*u;r.bg_color=lv_color_hex(0xAA2A00);lv_draw_rect(ctx,&r,&layout.close);
-    lv_area_t circle=centered_box(layout.close,18*u,18*u);
+    lv_area_t circle=centered_box(layout.close,chrome.icon,chrome.icon);
     r.radius=LV_RADIUS_CIRCLE;r.bg_color=lv_color_white();lv_draw_rect(ctx,&r,&circle);
-    lv_draw_line_dsc_t line;lv_draw_line_dsc_init(&line);line.color=lv_color_hex(0xAA2A00);line.width=2*u;line.round_start=line.round_end=1;
-    lv_point_t a={circle.x1+5*u,circle.y1+5*u},b={circle.x2-5*u,circle.y2-5*u};
-    lv_draw_line(ctx,&line,&a,&b);a.y=circle.y2-5*u;b.y=circle.y1+5*u;lv_draw_line(ctx,&line,&a,&b);
+    lv_draw_line_dsc_t line;lv_draw_line_dsc_init(&line);line.color=lv_color_hex(0xAA2A00);line.width=LV_MAX(1,chrome.icon/9);line.round_start=line.round_end=1;
+    int inset=chrome.icon*5/18;lv_point_t a={circle.x1+inset,circle.y1+inset},b={circle.x2-inset,circle.y2-inset};
+    ui_draw_line(ctx,&line,&a,&b);a.y=circle.y2-inset;b.y=circle.y1+inset;ui_draw_line(ctx,&line,&a,&b);
 }
 
 static void draw_devices(lv_event_t *e){
     lv_draw_ctx_t *ctx=lv_event_get_draw_ctx(e);lv_area_t a;lv_obj_get_coords(content,&a);int u=layout.unit;
-    unsigned first=ctx->clip_area->y1>a.y1?(ctx->clip_area->y1-a.y1)/layout.row*layout.columns:0;
+    unsigned first=ctx->_clip_area.y1>a.y1?(ctx->_clip_area.y1-a.y1)/layout.row*layout.columns:0;
     for(unsigned i=first;i<count;++i){
-        int x=a.x1+(i%layout.columns)*layout.cell,y=a.y1+(i/layout.columns)*layout.row;
-        if(y>ctx->clip_area->y2)break;
+        int x=a.x1+row_inset(i/layout.columns)+(i%layout.columns)*layout.cell,y=a.y1+(i/layout.columns)*layout.row;
+        if(y>ctx->_clip_area.y2)break;
         lv_area_t card={x,y,x+layout.cell-(image_mode()?4*u:1)-1,y+layout.row-(image_mode()?8:6)*u-1};
         bool active=slots[i]==xtouch_printer_active();
         lv_draw_rect_dsc_t r;lv_draw_rect_dsc_init(&r);r.bg_opa=LV_OPA_COVER;r.radius=5*u;
@@ -192,9 +206,9 @@ static void draw_devices(lv_event_t *e){
             if(model&&lv_img_decoder_get_info(model,&h)==LV_RES_OK){
                 int left=(card.x1+card.x2+1-h.w)/2,top=title_y+layout.title_height+2*u;
                 lv_area_t bounds={left,top,left+h.w-1,top+h.h-1},clip;
-                if(_lv_area_intersect(&clip,&card,ctx->clip_area)){
-                    const lv_area_t *previous=ctx->clip_area;ctx->clip_area=&clip;
-                    lv_draw_img_dsc_t d;lv_draw_img_dsc_init(&d);lv_draw_img(ctx,&d,&bounds,model);ctx->clip_area=previous;
+                if(_lv_area_intersect(&clip,&card,&ctx->_clip_area)){
+                    lv_area_t previous=ctx->_clip_area;ctx->_clip_area=clip;
+                    lv_draw_img_dsc_t d;lv_draw_img_dsc_init(&d);ui_draw_image(ctx,&d,&bounds,model);ctx->_clip_area=previous;
                 }
             }else{
                 int top=title_y+layout.title_height+2*u;
@@ -210,10 +224,10 @@ static void draw_devices(lv_event_t *e){
 }
 void ui_printer_picker_close(void){if(overlay&&!closing){closing=true;lv_obj_del_async(overlay);}}
 static void covered_deleted(lv_event_t *e){
-    if(lv_event_get_target(e)==covered_screen)covered_screen=NULL;
+    if(lv_event_get_target_obj(e)==covered_screen)covered_screen=NULL;
 }
 static void deleted(lv_event_t *e){
-    if(lv_event_get_target(e)!=overlay)return;
+    if(lv_event_get_target_obj(e)!=overlay)return;
     if(name_timer){lv_timer_del(name_timer);name_timer=NULL;}
     ui_printer_image_cache_end();
     if(covered_screen){
@@ -234,8 +248,11 @@ static void click(lv_event_t *e){
 static void select_device(lv_event_t *e){
     (void)e;lv_indev_t *input=lv_indev_get_act();if(!input||closing)return;lv_point_t p;lv_indev_get_point(input,&p);lv_area_t a;lv_obj_get_coords(content,&a);
     if(!contains(a,p))return;
-    unsigned col=(p.x-a.x1)/layout.cell,row=(p.y-a.y1)/layout.row;
-    if(col>=(unsigned)layout.columns||(p.x-a.x1)%layout.cell>=layout.cell-(image_mode()?4*layout.unit:1)||(p.y-a.y1)%layout.row>=layout.row-(image_mode()?8:6)*layout.unit)return;
+    unsigned row=(p.y-a.y1)/layout.row;
+    int local_x=p.x-a.x1-row_inset(row);
+    if(local_x<0)return;
+    unsigned col=local_x/layout.cell;
+    if(col>=(unsigned)layout.columns||local_x%layout.cell>=layout.cell-(image_mode()?4*layout.unit:1)||(p.y-a.y1)%layout.row>=layout.row-(image_mode()?8:6)*layout.unit)return;
     unsigned index=row*layout.columns+col;
     if(index<count){xtouch_printer_request(slots[index]);ui_printer_picker_close();}
 }
@@ -257,7 +274,11 @@ static void fill_viewport(void){
 #ifdef XTOUCH_WAVESHARE
     if(image_mode())ui_printer_image_cache_begin(lv_disp_get_hor_res(NULL)>=480?1024U*1024U:256U*1024U);
 #endif
-    measure();lv_obj_set_height(viewport,layout.height);lv_obj_clean(viewport);
+    measure();
+    ui_chrome_metrics_t chrome=ui_chrome_metrics(lv_disp_get_hor_res(NULL),lv_disp_get_ver_res(NULL));
+    int left=chrome.edge;
+    lv_obj_set_pos(viewport,left,layout.content_top);
+    lv_obj_set_size(viewport,layout.width+4*layout.unit,layout.height);lv_obj_clean(viewport);
     name_epoch=lv_tick_get();names_overflow=false;
     int total=(count+layout.columns-1)/layout.columns*layout.row;
     lv_obj_set_scrollbar_mode(viewport,total>layout.height?LV_SCROLLBAR_MODE_ON:LV_SCROLLBAR_MODE_OFF);
@@ -277,7 +298,8 @@ void ui_printer_picker_show(void){
     measure();overlay=lv_obj_create(lv_layer_top());lv_obj_remove_style_all(overlay);lv_obj_set_size(overlay,lv_pct(100),lv_pct(100));
     lv_obj_set_style_bg_color(overlay,lv_color_black(),0);lv_obj_set_style_bg_opa(overlay,LV_OPA_COVER,0);lv_obj_clear_flag(overlay,LV_OBJ_FLAG_SCROLLABLE);lv_obj_add_flag(overlay,LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(overlay,draw,LV_EVENT_DRAW_MAIN_END,NULL);lv_obj_add_event_cb(overlay,click,LV_EVENT_CLICKED,NULL);lv_obj_add_event_cb(overlay,deleted,LV_EVENT_DELETE,NULL);
-    viewport=lv_obj_create(overlay);lv_obj_remove_style_all(viewport);lv_obj_set_pos(viewport,layout.panel.x1+8*layout.unit,layout.panel.y1+40*layout.unit);lv_obj_set_size(viewport,layout.width+4*layout.unit,layout.height);
+    ui_chrome_metrics_t chrome=ui_chrome_metrics(lv_disp_get_hor_res(NULL),lv_disp_get_ver_res(NULL));
+    viewport=lv_obj_create(overlay);lv_obj_remove_style_all(viewport);lv_obj_set_pos(viewport,chrome.edge,layout.content_top);lv_obj_set_size(viewport,layout.width+4*layout.unit,layout.height);
     lv_obj_set_scroll_dir(viewport,LV_DIR_VER);lv_obj_clear_flag(viewport,LV_OBJ_FLAG_SCROLL_ELASTIC|LV_OBJ_FLAG_SCROLL_CHAIN);
     lv_obj_set_style_width(viewport,3*layout.unit,LV_PART_SCROLLBAR);lv_obj_set_style_bg_color(viewport,lv_color_hex(0xAAAAAA),LV_PART_SCROLLBAR);lv_obj_set_style_bg_opa(viewport,LV_OPA_COVER,LV_PART_SCROLLBAR);lv_obj_set_style_radius(viewport,LV_RADIUS_CIRCLE,LV_PART_SCROLLBAR);
     selection_guard=ui_scroll_guard_create(viewport);

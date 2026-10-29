@@ -19,7 +19,7 @@
     if (XTOUCH_DEBUG_ERROR) \
     Serial
 
-#include <Arduino.h>
+#include "platform/idf/runtime.h"
 #include <ArduinoJson.h>
 
 void xtouch_debug_json(const JsonDocument &doc)

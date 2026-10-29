@@ -22,6 +22,7 @@ def main():
     parser.add_argument('--weight',type=int,default=600)
     parser.add_argument('--error-details-only',action='store_true',help='Refresh optional full error-description subsets only')
     parser.add_argument('--titles-only',action='store_true',help='Refresh QR headings and regenerate native subsets')
+    parser.add_argument('--body-only',action='store_true',help='Refresh body text subsets and their native sizes')
     parser.add_argument('--fallback-font',type=Path,action='append',required=True)
     args=parser.parse_args()
     font=TTFont(args.font)
@@ -39,9 +40,10 @@ def main():
     targets += [ROOT/'resources/ui-assets/fonts/small/ui_font_error_14.c',large/'ui_font_text_14.c']
     targets += [large/(name+'.c') for name in ['ui_font_text_24','ui_font_text_28','ui_font_portal_title_22','ui_font_camera_14']]
     rows=json.loads((ROOT/'resources/ui-locales.json').read_text('utf-8'))
-    heading_keys=['Scan to join Wi-Fi','Scan to manage','Scan to join Bluetooth']
+    heading_keys=['Scan to join Wi-Fi','Scan to manage','Scan to join Bluetooth','Network setup']
     heading_codes={ord(ch) for key in heading_keys for value in rows[key] for ch in value if ord(ch)>=32}
     if args.titles_only:targets=[target for target in targets if target.name=='ui_font_portal_title_22.c']
+    if args.body_only:targets=[target for target in targets if target.name=='ui_font_text_14.c']
     if args.error_details_only:targets=[large/'ui_font_text_14.c',ROOT/'resources/ui-assets/fonts/small/ui_font_error_14.c']
     npx=shutil.which('npx.cmd') or shutil.which('npx')
     if not npx:parser.error('Node.js/npx is required')

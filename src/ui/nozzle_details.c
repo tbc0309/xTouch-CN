@@ -217,23 +217,21 @@ void ui_nozzle_actions_show(void) {
     menuFlags = 255;
     actionCount = 0;
     lv_obj_add_event_cb(dialog, deleted, LV_EVENT_DELETE, NULL);
-    label(dialog, xtouch_local("喷头控制", "Nozzle control"), 2, 0);
+    ui_detail_page_title(dialog,label(dialog, xtouch_local("喷头控制", "Nozzle control"), 2, 0));
     readings = label(dialog, "", 4, 33);
     lv_obj_set_style_text_line_space(readings, 6, 0);
     indexChoice = lv_dropdown_create(dialog);
-    lv_obj_set_pos(indexChoice, 4, 132);
-    lv_obj_set_size(indexChoice, 280, 34);
     lv_dropdown_set_options(indexChoice, bambuStatus.nozzle_count == 2 ? "T0\nT1" : "T0");
     if (bambuStatus.active_nozzle < bambuStatus.nozzle_count)
         lv_dropdown_set_selected(indexChoice, bambuStatus.active_nozzle);
     actionChoice = lv_dropdown_create(dialog);
-    lv_obj_set_pos(actionChoice, 4, 180);
-    lv_obj_set_size(actionChoice, 185, 34);
     update_menu();
     applyButton = lv_btn_create(dialog);
-    lv_obj_set_size(applyButton, 84, 34);
-    lv_obj_set_pos(applyButton, 200, 180);
-    lv_obj_center(label(applyButton, xtouch_local("确认", "Confirm"), 0, 0));
+    label(applyButton, xtouch_local("确认", "Confirm"), 0, 0);
+    ui_detail_page_block(dialog,readings,33,0);
+    ui_detail_page_block(dialog,indexChoice,132,34);
+    ui_detail_page_split(dialog,actionChoice,applyButton,180,34,2,1);
+    ui_layout_dropdown(indexChoice);ui_layout_dropdown(actionChoice);
     lv_obj_add_event_cb(applyButton, apply, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(indexChoice, refresh, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_event_cb(actionChoice, action_changed, LV_EVENT_VALUE_CHANGED, NULL);
@@ -242,4 +240,5 @@ void ui_nozzle_actions_show(void) {
     lv_msg_subsribe_obj(XTOUCH_ON_MQTT, dialog, NULL);
     lv_obj_add_event_cb(dialog, refresh, LV_EVENT_MSG_RECEIVED, NULL);
     refresh(NULL);
+    ui_layout_captions_tree(dialog);
 }

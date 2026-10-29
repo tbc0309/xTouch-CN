@@ -21,7 +21,7 @@ assert not missing, f'Missing UI font glyphs: {missing}'
 assert 'lv_font_get_glyph_dsc_fmt_txt' in font
 assert '.fallback = &ui_font_symbols_14' in font
 config = (root / 'resources/lv_conf.h').read_text('utf-8')
-assert '#define LV_FONT_DEFAULT &ui_font_text_14' in config
+assert re.search(r'^#define\s+LV_FONT_DEFAULT\s+\(?&ui_font_text_14\)?\s*$',config,re.M)
 assert 'LV_FONT_DECLARE(ui_font_text_14)' in config
 assert 'LV_FONT_DECLARE(ui_font_text_28)' in config
 translations = []
@@ -72,7 +72,7 @@ for name,rows in catalogs.items():
 print('PASS: static portal labels, API-error arrays and numeric limits')
 
 # QR headings must be covered by the title subset itself, not a smaller fallback.
-heading_keys=('Scan to join Wi-Fi','Scan to manage','Scan to join Bluetooth')
+heading_keys=('Scan to join Wi-Fi','Scan to manage','Scan to join Bluetooth','Network setup')
 for profile in ('src/ui/fonts','resources/ui-assets/fonts/large'):
     title=(root/profile/'ui_font_portal_title_22.c').read_text('utf-8')
     title_codes={int(cp,16) for cp in re.findall(r'/\* U\+([0-9A-Fa-f]+)',title)}
@@ -86,7 +86,7 @@ status_font=(root/'src/ui/home_status_font.h').read_text('utf-8')
 assert 'OPPO Sans 600' in status_font
 for size in (14,28):
     assert f'ui_font_home_status_{size}' in status_font
-assert status_font.count('/* U+00B0')==2
+assert status_font.count('/* U+2103')==2
 assert status_font.count('/* U+0025')==2
 assert status_font.count('/* U+002D')==2
 print('PASS: OPPO Sans home status units at 14/28 pixels')

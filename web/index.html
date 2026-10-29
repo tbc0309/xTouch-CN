@@ -59,8 +59,12 @@
         id="flash-panel"
       >
         <div class="flash-grid">
-          <section class="card">
-            <span class="tag" data-i18n="usbTag"></span>
+          <section class="card" id="usb-install-card">
+            <div class="installer-heading">
+              <span class="tag" data-i18n="usbTag"></span>
+              <label class="test-channel-toggle" for="test-channel"><input type="checkbox" id="test-channel" aria-describedby="test-channel-note"><span data-i18n="testChannel">测试版</span></label>
+            </div>
+            <p id="test-channel-note" class="test-channel-note" hidden data-i18n="testWarning"></p>
             <h3 data-i18n="usbTitle"></h3>
             <label for="board" data-i18n="boardSelect">选择主板</label>
             <select id="board" disabled><option value="cyd">CYD · ESP32-2432S028R</option></select>

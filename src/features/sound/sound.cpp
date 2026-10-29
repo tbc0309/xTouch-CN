@@ -8,7 +8,7 @@
 #else
 #include "cyd_output.h"
 #endif
-#include <Arduino.h>
+#include "platform/idf/runtime.h"
 #include <cmath>
 #include <algorithm>
 #include <atomic>
@@ -20,11 +20,9 @@ static std::atomic<unsigned> played{0},dropped{0},volume{20};
 static std::atomic<int> error{0};
 #ifdef XTOUCH_WAVESHARE
 static constexpr unsigned audioRate=16000;
-#else
-static constexpr unsigned audioRate=24000;
 #endif
 static bool playTone(float frequency,unsigned duration){
-#if !defined(XTOUCH_WAVESHARE) && !XTOUCH_CYD_AUDIO_I2S
+#if !defined(XTOUCH_WAVESHARE)
  return board_audio_tone(frequency,duration,volume.load(std::memory_order_relaxed),[]{return sleeping.load();});
 #else
  const float amplitude=float(xtouch_sound_peak(volume.load(std::memory_order_relaxed)));
@@ -36,7 +34,7 @@ static bool playTone(float frequency,unsigned duration){
 #endif
 }
 static bool silence(unsigned duration){
-#if !defined(XTOUCH_WAVESHARE) && !XTOUCH_CYD_AUDIO_I2S
+#if !defined(XTOUCH_WAVESHARE)
  uint32_t started=millis();while(millis()-started<duration&&!sleeping)vTaskDelay(1);
 #else
  int16_t zeros[256]={};for(unsigned n=0;n<duration*audioRate/1000&&!sleeping;n+=128)if(!board_audio_write(zeros,256))return false;
@@ -60,7 +58,7 @@ static void worker(void*){
   else if(ok&&event==XTOUCH_SOUND_ERROR)ok=playTone(660,100)&&silence(70)&&playTone(660,100)&&silence(70)&&playTone(660,100);
   else if(ok)ok=playTone(1200,80)&&silence(50)&&playTone(1600,100);
   // Drain queued samples with silence before muting the board output.
-#if defined(XTOUCH_WAVESHARE) || XTOUCH_CYD_AUDIO_I2S
+#if defined(XTOUCH_WAVESHARE)
   bool drained=silence(40);
 #else
   bool drained=true;
@@ -72,16 +70,12 @@ static void enqueue(XTouchSoundEvent event){if(!pending||sleeping)return;if(even
 static bool startWorker(){
  if(pending)return true;
  pending=xQueueCreate(1,sizeof(XTouchSoundEvent));if(!pending){error=-3;return false;}
-#if defined(XTOUCH_WAVESHARE) || !XTOUCH_CYD_AUDIO_I2S
- const auto created=xTaskCreate(worker,"ui-sound",4096,nullptr,1,nullptr);
-#else
- const auto created=xTaskCreatePinnedToCore(worker,"ui-sound",4096,nullptr,3,nullptr,ARDUINO_RUNNING_CORE);
-#endif
+const auto created=xTaskCreate(worker,"ui-sound",4096,nullptr,1,nullptr);
  if(created!=pdPASS){vQueueDelete(pending);pending=nullptr;error=-4;return false;}
  xtouch_sound_bind(enqueue);return true;
 }
 void xtouch_sound_begin(){
-#if !defined(XTOUCH_WAVESHARE) && XTOUCH_CYD_AUDIO_I2S
+#ifndef XTOUCH_WAVESHARE
  board_audio_prepare_idle();
 #endif
  volume.store(xTouchConfig.xTouchSoundVolume,std::memory_order_relaxed);

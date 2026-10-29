@@ -1,27 +1,43 @@
 #include "indicator.h"
+#include "board_output.h"
 #include "features/config.h"
-#include <Arduino.h>
-bool xtouch_indicator_available(){
+#include "platform/idf/runtime.h"
+namespace {
+bool ready = false;
+uint32_t last = UINT32_MAX;
+} // namespace
+bool xtouch_indicator_available() {
+    return ready;
+}
+uint32_t xtouch_indicator_color() {
+    return last == UINT32_MAX ? 0 : last;
+}
+void xtouch_indicator_begin() {
 #if XTOUCH_FEATURE_INDICATOR && XTOUCH_HAS_RGB_LED
- return true;
+    ready = xtouch_board_indicator_begin();
+    last = UINT32_MAX;
 #else
- // S3/P4 power/charge LEDs are hardware-wired, not general GPIO status LEDs.
- return false;
+    ready = false;
 #endif
 }
-void xtouch_indicator_begin(){
+void xtouch_indicator_poll(bool connected, bool warning, bool sleeping, bool enabled) {
 #if XTOUCH_FEATURE_INDICATOR && XTOUCH_HAS_RGB_LED
- for(int pin:{4,16,17}){pinMode(pin,OUTPUT);digitalWrite(pin,HIGH);}
-#endif
-}
-void xtouch_indicator_poll(bool connected,bool warning,bool sleeping,bool enabled){
-#if XTOUCH_FEATURE_INDICATOR && XTOUCH_HAS_RGB_LED
- // Active-low RGB: quiet green online, slow blue reconnect, amber fault.
- bool on=enabled&&!sleeping;bool blink=(millis()%1600)<400;
- unsigned mask=(!(on&&warning&&blink))|((!(on&&(connected||warning)))<<1)|((!(on&&!connected&&!warning&&blink))<<2);
- static unsigned last=255;if(last==mask)return;last=mask;
- digitalWrite(4,mask&1);digitalWrite(16,(mask>>1)&1);digitalWrite(17,(mask>>2)&1);
+    if (!ready)
+        return;
+    bool on = enabled && !sleeping, blink = (millis() % 1600) < 400;
+    uint8_t red = on && warning && blink ? 255 : 0, green = on && (connected || warning) ? 255 : 0,
+            blue = on && !connected && !warning && blink ? 255 : 0;
+    uint32_t rgb = (uint32_t(red) << 16) | (uint32_t(green) << 8) | blue;
+    if (last == rgb)
+        return;
+    if (xtouch_board_indicator_rgb(red, green, blue))
+        last = rgb;
+    else
+        ready = false;
 #else
- (void)connected;(void)warning;(void)sleeping;(void)enabled;
+    (void)connected;
+    (void)warning;
+    (void)sleeping;
+    (void)enabled;
 #endif
 }

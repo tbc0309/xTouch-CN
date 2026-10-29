@@ -1,5 +1,11 @@
 # Third Party LICENSES
 
+The native firmware links ESP-IDF, standalone ArduinoJson, LVGL, JPEGDEC and optional PNGdec/Espressif components. It does not link the Arduino framework, PubSubClient, TFT_eSPI, DallasTemperature or the Arduino OneWire library. Historical notices below are retained for original/derived code and assets; they are not a current dependency list. Exact build versions are pinned in `boards/dependencies.json` and component manifests.
+
+## Image decoders
+
+PNGdec and JPEGDEC are Copyright 2020 BitBank Software, Inc., Apache-2.0. The full PNGdec notice is retained in [lib/PNGdec/LICENSE](lib/PNGdec/LICENSE). JPEGDEC is pinned to [86282979224c8a32fd51e091ed5a35b0c699a52b](https://github.com/bitbank2/JPEGDEC/blob/86282979224c8a32fd51e091ed5a35b0c699a52b/LICENSE); its full notice is fetched with that source dependency.
+
 ## ArduinoJson
 
 ```
@@ -352,3 +358,9 @@ OPPO Sans (Chinese and Western characters, three weights) is free for personal a
 The firmware uses an OPPO Sans 4.0 subset at weight 600. Japanese kana and Korean characters absent from the supplied font use Noto Sans CJK fallback glyphs. The original TTF is not included. The free-use notice does not relicense the fonts under the project software license.
 
 Official notice: [OPPO / ColorOS](https://www.coloros.com/article/A00000050/). Supplementary font licenses: [Noto Sans CJK](docs/licenses/NotoSansCJK-OFL.txt).
+
+## ES3C35P panel initialization
+
+The ST77922 hardware command table is adapted from [xiaozhi-esp32](https://github.com/78/xiaozhi-esp32/tree/38bc4f443b96da306a4f7c77375042e46d588e64/main/boards/lcdwiki-es3c35p), pinned to commit `38bc4f443b96da306a4f7c77375042e46d588e64`. Its full MIT notice is retained in [LICENSE.hardware-init](boards/lcdwiki-es3c35p/LICENSE.hardware-init). This attribution covers the hardware initialization table, not a dependency on the reference application.
+
+The native ES3C35P port additionally uses Espressif esp_lcd_st77922 2.1.1, esp_codec_dev 1.5.9 and led_strip 3.1.1. Their upstream licenses remain in the IDF-managed components; exact versions are pinned in the board component manifest.

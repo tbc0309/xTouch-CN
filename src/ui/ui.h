@@ -1,7 +1,7 @@
 #include "palette.h"
 #ifndef _V3CONTROLCOMP_UI_H
 #define _V3CONTROLCOMP_UI_H
-#include <Arduino.h>
+#include "platform/idf/runtime.h"
 #include "xtouch/errors.h"
 
 #ifdef __cplusplus
@@ -14,14 +14,14 @@ extern "C"
 
 #if defined __has_include
 #if __has_include("lvgl.h")
-#include "lvgl.h"
+#include "ui/lvgl_compat.h"
 #elif __has_include("lvgl/lvgl.h")
 #include "lvgl/lvgl.h"
 #else
-#include "lvgl.h"
+#include "ui/lvgl_compat.h"
 #endif
 #else
-#include "lvgl.h"
+#include "ui/lvgl_compat.h"
 #endif
 
 #include "i18n/strings.h"
@@ -68,7 +68,7 @@ extern "C"
   extern lv_obj_t *ui_settingsTFTFlipSwitch;
   extern lv_obj_t *ui_settings_auxFanSwitch;
   extern lv_obj_t *ui_settings_chamberFanSwitch;
-  extern lv_obj_t *ui_settings_chamberSensorSwitch;
+  extern lv_obj_t *ui_settings_environmentSelect;
   extern lv_obj_t *ui_settings_otaSwitch;
   extern lv_obj_t *ui_confirmComponent; // layertop
   extern lv_obj_t *ui_hmsComponent;     // layertop

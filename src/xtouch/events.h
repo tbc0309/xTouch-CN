@@ -58,6 +58,7 @@ void xtouch_events_onResetTouch(lv_msg_t *m)
     xtouch_resetTouchConfig();
 }
 
+#if XTOUCH_FEATURE_EXTERNAL_CHAMBER
 void xtouch_events_onChamberTempSwitch(lv_msg_t *m)
 {
     if (xTouchConfig.xTouchChamberSensorEnabled)
@@ -70,6 +71,7 @@ void xtouch_events_onChamberTempSwitch(lv_msg_t *m)
     }
 }
 
+#endif
 void xtouch_events_onAudio(lv_msg_t *){xtouch_sound_begin();}
 
 void xtouch_setupGlobalEvents()
@@ -81,7 +83,9 @@ void xtouch_setupGlobalEvents()
     lv_msg_subscribe(XTOUCH_SETTINGS_TFTOFF_SET, xtouch_message_callback<xtouch_events_onTFTTimerSet>, NULL);
     lv_msg_subscribe(XTOUCH_SETTINGS_TFT_INVERT, xtouch_message_callback<xtouch_events_onTFTInvert>, NULL);
     lv_msg_subscribe(XTOUCH_SETTINGS_SAVE, xtouch_message_callback<xtouch_events_onSettingsSave>, NULL);
+#if XTOUCH_FEATURE_EXTERNAL_CHAMBER
     lv_msg_subscribe(XTOUCH_SETTINGS_CHAMBER_TEMP, xtouch_message_callback<xtouch_events_onChamberTempSwitch>, NULL);
+#endif
     lv_msg_subscribe(XTOUCH_SETTINGS_TFT_FLIP, xtouch_message_callback<xtouch_events_onTFTFlip>, NULL);
 }
 

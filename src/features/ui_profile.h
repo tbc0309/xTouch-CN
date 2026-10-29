@@ -23,8 +23,12 @@
 #ifndef XTOUCH_UI_LVGL_BYTES
 #if defined(XTOUCH_WAVESHARE)
 #define XTOUCH_UI_LVGL_BYTES (256U * 1024U)
+#elif defined(XTOUCH_SINGLE_PRINTER_LOGO) && XTOUCH_SINGLE_PRINTER_LOGO
+// The compact bilingual profile has no image picker or camera surfaces.
+// Keep the measured UI budget bounded, leaving internal RAM for DMA and TLS.
+#define XTOUCH_UI_LVGL_BYTES (48U * 1024U)
 #else
-#define XTOUCH_UI_LVGL_BYTES (40U * 1024U)
+#define XTOUCH_UI_LVGL_BYTES (48U * 1024U)
 #endif
 #endif
 
@@ -39,4 +43,13 @@
 /* The picker draws rows directly, without a widget or framebuffer per device. */
 #ifndef XTOUCH_UI_PICTURE_PICKER
 #define XTOUCH_UI_PICTURE_PICKER 1
+#endif
+
+/* The bilingual compact profile only uses large close/enter/setup symbols. */
+#ifndef XTOUCH_UI_COMPACT_SYMBOLS
+#if defined(XTOUCH_SINGLE_PRINTER_LOGO) && XTOUCH_SINGLE_PRINTER_LOGO && defined(XTOUCH_LANGUAGES_ZH_EN) && XTOUCH_LANGUAGES_ZH_EN
+#define XTOUCH_UI_COMPACT_SYMBOLS 1
+#else
+#define XTOUCH_UI_COMPACT_SYMBOLS 0
+#endif
 #endif

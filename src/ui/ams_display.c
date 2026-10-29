@@ -43,7 +43,7 @@ static unsigned strip_unit(lv_obj_t *strip)
     return 0;
 }
 static void draw_strip_material(lv_event_t *e){
- lv_obj_t *obj=lv_event_get_target(e),*strip=lv_obj_get_parent(obj);unsigned offset=(unsigned)(uintptr_t)lv_event_get_user_data(e);
+ lv_obj_t *obj=lv_event_get_target_obj(e),*strip=lv_obj_get_parent(obj);unsigned offset=(unsigned)(uintptr_t)lv_event_get_user_data(e);
  unsigned slot=strip_unit(strip)*4+offset;
  ui_layout_material_object(e,lv_color_hex(ui_ams_slot_color(slot)),bambuStatus.ams_remain_percent[slot],bambuStatus.ams&&(bambuStatus.ams_remain_valid&(1ULL<<slot)));
 }
@@ -74,10 +74,10 @@ static void refresh_strip(lv_obj_t *strip)
     ui_layout_status_text(lv_obj_get_child(strip,0));ui_layout_status_text(lv_obj_get_child(strip,5));
     lv_obj_set_width(strip, LV_SIZE_CONTENT);
 }
-static void strip_message(lv_event_t *e){refresh_strip(lv_event_get_target(e));}
+static void strip_message(lv_event_t *e){refresh_strip(lv_event_get_target_obj(e));}
 static void cycle_strip(lv_event_t *e)
 {
-    lv_obj_t *strip=lv_event_get_target(e);unsigned current=strip_unit(strip);
+    lv_obj_t *strip=lv_event_get_target_obj(e);unsigned current=strip_unit(strip);
     for(unsigned step=1;step<=XTOUCH_MAX_AMS_UNITS;++step){unsigned next=(current+step)%XTOUCH_MAX_AMS_UNITS;
         if(bambuStatus.ams_exist_bits&(1UL<<next)){lv_obj_set_user_data(strip,(void *)(uintptr_t)next);break;}}
     refresh_strip(strip);
@@ -132,8 +132,42 @@ bool ui_ams_select_unit(unsigned unit)
 
 unsigned ui_ams_selected_unit(void){return panel_base()/4;}
 bool ui_ams_drying_available(void){if(ui_filament_selected()>=253)return false;unsigned unit=ui_ams_selected_unit();return (bambuStatus.ams_exist_bits&(1U<<unit))&&(bambuStatus.ams_kind[unit]==3||bambuStatus.ams_kind[unit]==4);}
-enum { AMS_HEADER_WIDTH=176, AMS_TAB_MIN_WIDTH=50 };
-static int header_width(void){return bambuStatus.external_present?AMS_HEADER_WIDTH:264;}
+/* AMS shares the remaining width; external sources keep a compact hit target. */
+enum { AMS_PANEL_WIDTH=264, AMS_HEADER_GAP=4 };
+static unsigned external_sources(unsigned sources[2]){
+    if(!bambuStatus.external_present)return 0;
+    unsigned count=0;
+    if(bambuStatus.nozzle_count==2&&bambuStatus.external_multi_protocol)
+        for(unsigned n=0;n<2;++n)if(bambuStatus.external_materials&(1U<<n))sources[count++]=n;
+    if(!count)sources[count++]=0;
+    return count;
+}
+static unsigned header_ams_count(void){
+    unsigned count=0;for(unsigned n=0;n<XTOUCH_MAX_AMS_UNITS;++n)count+=(bambuStatus.ams_exist_bits>>n)&1U;return count;
+}
+static unsigned header_visible_ams(void){
+    unsigned sources[2],external=external_sources(sources),count=header_ams_count();
+    unsigned minimum=lv_disp_get_hor_res(NULL)>=800?3:2;
+    return count?LV_MIN(count,minimum):(external?0:1);
+}
+static const lv_font_t *header_font(const char *text){
+    const lv_font_t *font=ui_native_font_select(LV_FONT_DEFAULT,ui_layout_base_zoom()*7/8,text);
+    return font?font:ui_layout_canvas_font(LV_FONT_DEFAULT,text);
+}
+static int external_width(void){
+    /* Match the 22-unit header height with room for the localized caption. */
+    const char *caption=bambuStatus.nozzle_count==2&&bambuStatus.external_multi_protocol?"EXT0":XTOUCH_TEXT_FILAMENT_EXTERNAL;
+    lv_point_t text;lv_txt_get_size(&text,caption,header_font(caption),0,0,LV_COORD_MAX,LV_TEXT_FLAG_EXPAND);
+    return LV_MAX(32,text.x+6);
+}
+static int header_width(void){
+    unsigned sources[2],external=external_sources(sources);
+    if(!header_visible_ams())return 0;
+    return AMS_PANEL_WIDTH-external*(external_width()+AMS_HEADER_GAP);
+}
+static int header_card_start(unsigned index){return index*(header_width()+AMS_HEADER_GAP)/header_visible_ams();}
+static int header_card_end(unsigned index){return (index+1)*(header_width()+AMS_HEADER_GAP)/header_visible_ams()-AMS_HEADER_GAP-1;}
+static int external_start(unsigned index){unsigned sources[2],count=external_sources(sources);return AMS_PANEL_WIDTH-count*(external_width()+AMS_HEADER_GAP)+AMS_HEADER_GAP+index*(external_width()+AMS_HEADER_GAP);}
 static unsigned panel_units(unsigned units[XTOUCH_MAX_AMS_UNITS])
 {
     unsigned count=0;
@@ -142,29 +176,34 @@ static unsigned panel_units(unsigned units[XTOUCH_MAX_AMS_UNITS])
 }
 static int header_content_width(unsigned count)
 {
-    int width=header_width();
-    return count>4 && (int)count*AMS_TAB_MIN_WIDTH>width ? (int)count*AMS_TAB_MIN_WIDTH : width;
+    return count>header_visible_ams()?header_card_start(count-1)+header_width():header_width();
 }
 /* A single opening nudge is an animation of scrolling, not a feeder selection.
    LVGL owns its lifetime; deleting the page removes animations for the viewport. */
 static void hint_scroll(void *object,int32_t value) {lv_obj_scroll_to_x(object,value,LV_ANIM_OFF);}
 static void stop_hint(lv_event_t *e) {lv_anim_del(lv_event_get_user_data(e),hint_scroll);}
-static void header_hint(lv_obj_t *viewport,unsigned count)
+static void header_hint(lv_obj_t *viewport,unsigned count,unsigned selected)
 {
+    if(count<=header_visible_ams()){
+        lv_anim_del(viewport,hint_scroll);lv_obj_scroll_to_x(viewport,0,LV_ANIM_OFF);
+        lv_obj_clear_flag(viewport,LV_OBJ_FLAG_USER_1);return;
+    }
     if(header_content_width(count)<=header_width() || lv_obj_has_flag(viewport,LV_OBJ_FLAG_USER_1))return;
     lv_obj_add_flag(viewport,LV_OBJ_FLAG_USER_1);
+    int start=header_card_start(selected);
+    lv_obj_update_layout(viewport);
+    lv_obj_scroll_to_x(viewport,start,LV_ANIM_OFF);
     lv_anim_t animation;lv_anim_init(&animation);
     lv_anim_set_var(&animation,viewport);lv_anim_set_exec_cb(&animation,hint_scroll);
-    lv_anim_set_values(&animation,0,AMS_TAB_MIN_WIDTH);
-    lv_anim_set_delay(&animation,400);lv_anim_set_time(&animation,230);
-    lv_anim_set_playback_delay(&animation,80);lv_anim_set_playback_time(&animation,250);
+    lv_anim_set_values(&animation,start,selected?LV_MAX(0,start-header_card_start(1)):header_card_start(1));
+    lv_anim_set_delay(&animation,600);lv_anim_set_time(&animation,400);
+    lv_anim_set_playback_delay(&animation,160);lv_anim_set_playback_time(&animation,400);
     lv_anim_set_early_apply(&animation,false);lv_anim_set_path_cb(&animation,lv_anim_path_ease_in_out);
     lv_anim_start(&animation);
 }
 static void header_readings(lv_obj_t *content,unsigned count,const unsigned *units)
 {
     while(lv_obj_get_child_cnt(content)>count)lv_obj_del(lv_obj_get_child(content,-1));
-    int width=header_content_width(count);
     for(unsigned i=0;i<count;++i){
         unsigned id=units[i];lv_obj_t *row=lv_obj_get_child(content,i),*name,*values;
         if(!row){
@@ -173,40 +212,35 @@ static void header_readings(lv_obj_t *content,unsigned count,const unsigned *uni
             name=lv_label_create(row);values=lv_label_create(row);
             lv_obj_set_style_text_color(name,lv_color_white(),0);
             lv_obj_set_style_text_color(values,lv_color_hex(UI_COLOR_BLUE),0);
-            lv_label_set_long_mode(values,LV_LABEL_LONG_SCROLL_CIRCULAR);
             lv_obj_set_style_anim_speed(values,22,0);
         }else{name=lv_obj_get_child(row,0);values=lv_obj_get_child(row,1);}
-        int x=(int)i*width/(int)count,w=(int)(i+1)*width/(int)count-x-3;
-        lv_obj_set_pos(row,x+4,0);lv_obj_set_size(row,w-8,22);
+        int x=header_card_start(i),w=header_card_end(i)-x+1;
+        lv_obj_set_pos(row,x+1,0);lv_obj_set_size(row,w-2,22);
         char title[8],text[48]="";xtouch_ams_unit_label(id,title,sizeof(title));
         if(strcmp(lv_label_get_text(name),title))lv_label_set_text(name,title);
-        lv_point_t size;lv_txt_get_size(&size,title,lv_obj_get_style_text_font(name,0),0,0,LV_COORD_MAX,LV_TEXT_FLAG_EXPAND);
-        int used=size.x+4;lv_obj_set_pos(name,0,2);lv_obj_set_width(name,LV_SIZE_CONTENT);
         if(bambuStatus.ams_temperature_valid&(1U<<id))snprintf(text,sizeof(text),"%.1f℃",bambuStatus.ams_temperature_deci[id]/10.0);
         if(bambuStatus.ams_humidity_valid&(1U<<id)){size_t n=strlen(text);snprintf(text+n,sizeof(text)-n,"%s%u%%",n?"  ":"",bambuStatus.ams_humidity_percent[id]);}
-        int available=w-8-used;char minimum[24]="";
+        char minimum[24]="";
         if(bambuStatus.ams_temperature_valid&(1U<<id))snprintf(minimum,sizeof(minimum),"%.1f℃",bambuStatus.ams_temperature_deci[id]/10.0);
         else if(bambuStatus.ams_humidity_valid&(1U<<id))snprintf(minimum,sizeof(minimum),"%u%%",bambuStatus.ams_humidity_percent[id]);
-        lv_point_t required;lv_txt_get_size(&required,minimum,lv_obj_get_style_text_font(values,0),0,0,LV_COORD_MAX,LV_TEXT_FLAG_EXPAND);
-        bool fits=*minimum&&available>=required.x;
-        if(fits)lv_obj_clear_flag(values,LV_OBJ_FLAG_HIDDEN);else{lv_obj_add_flag(values,LV_OBJ_FLAG_HIDDEN);text[0]=0;}
-        lv_point_t full;lv_txt_get_size(&full,text,lv_obj_get_style_text_font(values,0),0,0,LV_COORD_MAX,LV_TEXT_FLAG_EXPAND);
-        int valuesWidth=fits?(full.x<available?full.x:available):0;
-        int groupWidth=size.x+(fits?4+valuesWidth:0);
-        int left=(w-8-groupWidth)/2;if(left<0)left=0;
-        lv_obj_set_pos(name,left,2);
-        lv_obj_set_pos(values,left+used,2);lv_obj_set_width(values,valuesWidth>0?valuesWidth:1);
         if(strcmp(lv_label_get_text(values),text))lv_label_set_text(values,text);
+        /* One fixed compact body tier for every header, never shrink per value. */
+        unsigned headerZoom=ui_layout_base_zoom()*7/8;
+        ui_text_scale(name,LV_FONT_DEFAULT,headerZoom);ui_text_scale(values,LV_FONT_DEFAULT,headerZoom);
+        ui_layout_caption_value(name,values,minimum,LV_MAX(3,lv_obj_get_style_text_font(values,(lv_part_t)0)->line_height/6));
     }
 }
 static void header_sync(lv_obj_t *panel)
 {
     unsigned units[XTOUCH_MAX_AMS_UNITS], count=panel_units(units);
     lv_obj_t *viewport=lv_obj_get_child(panel,0);
-    lv_obj_set_width(viewport,header_width());
+    if(header_width())lv_obj_clear_flag(viewport,LV_OBJ_FLAG_HIDDEN);else lv_obj_add_flag(viewport,LV_OBJ_FLAG_HIDDEN);
+    lv_obj_set_width(viewport,LV_MAX(1,header_width()));
     lv_obj_set_width(lv_obj_get_child(viewport,0),header_content_width(count));
     header_readings(lv_obj_get_child(viewport,0),count,units);
-    header_hint(viewport,count);
+    unsigned selected=0;
+    for(unsigned i=0;i<count;++i)if(units[i]==panel_base()/4){selected=i;break;}
+    header_hint(viewport,count,selected);
     lv_obj_invalidate(viewport);
 }
 
@@ -215,11 +249,16 @@ static void panel_click(lv_event_t *e)
     lv_indev_t *input = lv_indev_get_act();
     if (!input) return;
     lv_point_t point; lv_indev_get_point(input, &point);
-    lv_obj_t *o = lv_event_get_target(e); lv_area_t area; lv_obj_get_content_coords(o, &area);
+    lv_obj_t *o = lv_event_get_target_obj(e); lv_area_t area; lv_obj_get_content_coords(o, &area);
     if (point.x < area.x1 || point.x > area.x2 || point.y < area.y1 || point.y > area.y2) return;
     if (point.y <= area.y1+22) {
-        if(point.x>=area.x1+176 && bambuStatus.external_present)ui_filament_select(bambuStatus.nozzle_count==2&&bambuStatus.external_multi_protocol&&point.x>=area.x1+220?253:254);
-        else return; /* The independent AMS scroll viewport handles this area. */
+        unsigned sources[2],count=external_sources(sources);bool found=false;
+        for(unsigned n=0;n<count;++n){
+            if(point.x>=area.x1+external_start(n)&&point.x<area.x1+external_start(n)+external_width()){
+                ui_filament_select(sources[n]?253:254);found=true;break;
+            }
+        }
+        if(!found)return; /* AMS viewport and card gaps do not select external spools. */
     } else if (point.y >= area.y1+26 && ui_filament_selected()!=254) {
         int width=xtouch_ams_slot_count(panel_base()/4)==1?lv_area_get_width(&area):(lv_area_get_width(&area)-12)/4;
         int x=point.x-area.x1, index=x/(width+4);
@@ -234,26 +273,36 @@ static void panel_click(lv_event_t *e)
 
 static void details_event(lv_event_t *e){ui_ams_details_show(panel_base()/4);}
 
-static void panel_message(lv_event_t *e) { lv_obj_t *panel=lv_event_get_target(e); header_sync(panel); lv_obj_invalidate(panel); }
+static void panel_message(lv_event_t *e) { lv_obj_t *panel=lv_event_get_target_obj(e); header_sync(panel); lv_obj_invalidate(panel); }
 
 static void draw_text(lv_draw_ctx_t *ctx, lv_area_t area, const char *text, uint32_t color)
 {
     lv_draw_label_dsc_t d; lv_draw_label_dsc_init(&d);
     d.font = LV_FONT_DEFAULT; d.color = lv_color_hex(color); d.align = LV_TEXT_ALIGN_CENTER;
-    lv_draw_label(ctx, &d, &area, text, NULL);
+    ui_draw_design_label(ctx, &d, &area, text, NULL);
+}
+static void draw_header_text(lv_draw_ctx_t *ctx,lv_area_t area,const char *text,uint32_t color){
+#if defined(XTOUCH_UI_NATIVE_CANVAS) && XTOUCH_UI_NATIVE_CANVAS
+    lv_area_t native=ui_design_area(&area);
+#else
+    lv_area_t native=area;
+#endif
+    lv_draw_label_dsc_t d;lv_draw_label_dsc_init(&d);
+    d.font=header_font(text);d.color=lv_color_hex(color);
+    ui_layout_draw_native_text(ctx,&d,native,text,true);
 }
 
 static void draw_header(lv_event_t *e)
 {
-    lv_obj_t *content=lv_event_get_target(e); lv_area_t a;lv_obj_get_coords(content,&a);
+    lv_obj_t *content=lv_event_get_target_obj(e); lv_area_t a;lv_obj_get_coords(content,&a);
     lv_draw_ctx_t *ctx=lv_event_get_draw_ctx(e);
     unsigned units[XTOUCH_MAX_AMS_UNITS], count=panel_units(units), base=panel_base();
     int selection=ui_filament_selected();
-    if (!count) { draw_text(ctx,a,"AMS --",0xAAAAAA); return; }
+    if (!count) { draw_header_text(ctx,a,"AMS --",0xAAAAAA); return; }
     for(unsigned index=0;index<count;++index) {
         unsigned id=units[index];
-        lv_area_t tab={a.x1+(int)index*lv_area_get_width(&a)/(int)count,a.y1,
-            a.x1+(int)(index+1)*lv_area_get_width(&a)/(int)count-3,a.y1+21};
+        lv_area_t tab={a.x1+header_card_start(index),a.y1,
+            a.x1+header_card_end(index),a.y1+21};
         bool active=selection<253 && base/4==id;
         lv_draw_rect_dsc_t r;lv_draw_rect_dsc_init(&r);
         r.bg_color=lv_color_hex(active ? 0x777777 : 0x555555);r.bg_opa=LV_OPA_COVER;r.radius=4;
@@ -265,82 +314,101 @@ static void header_click(lv_event_t *e)
 {
     lv_indev_t *input=lv_indev_get_act();if(!input)return;
     lv_point_t point;lv_indev_get_point(input,&point);
-    lv_obj_t *content=lv_event_get_target(e);lv_area_t a;lv_obj_get_coords(content,&a);
+    lv_obj_t *content=lv_event_get_target_obj(e);lv_area_t a;lv_obj_get_coords(content,&a);
     unsigned units[XTOUCH_MAX_AMS_UNITS],count=panel_units(units);if(!count)return;
-    unsigned index=(point.x-a.x1)*count/lv_area_get_width(&a);
+    unsigned index=0;
+    while(index<count&&(point.x<a.x1+header_card_start(index)||point.x>a.x1+header_card_end(index)))++index;
     if(index>=count || !ui_ams_select_unit(units[index]))return;
     lv_obj_t *panel=lv_event_get_user_data(e);
     ui_filament_refresh(lv_obj_get_parent(panel));lv_obj_invalidate(panel);
 }
 
+static int material_x(int value){
+#if defined(XTOUCH_UI_NATIVE_CANVAS) && XTOUCH_UI_NATIVE_CANVAS
+    return ui_design_x(value);
+#else
+    return value;
+#endif
+}
+static int material_y(int value){
+#if defined(XTOUCH_UI_NATIVE_CANVAS) && XTOUCH_UI_NATIVE_CANVAS
+    return ui_design_y(value);
+#else
+    return value;
+#endif
+}
 /* Draw four fixed cards without eight extra label/container allocations. */
 static void draw_panel(lv_event_t *e)
 {
-    lv_obj_t *o = lv_event_get_target(e); lv_area_t a;
+    lv_obj_t *o = lv_event_get_target_obj(e); lv_area_t a;
     lv_obj_get_content_coords(o, &a); lv_draw_ctx_t *ctx = lv_event_get_draw_ctx(e);
     unsigned base = panel_base();
     int selection = ui_filament_selected();
     /* External remains stationary, outside the horizontal AMS viewport. */
-    lv_area_t external={a.x1+176,a.y1,a.x2,a.y1+21};
-    lv_draw_rect_dsc_t tab; lv_draw_rect_dsc_init(&tab);
-    tab.bg_color=lv_color_hex(selection>=253 ? 0x777777 : 0x555555);
-    tab.bg_opa=LV_OPA_COVER; tab.radius=4;
-    if(bambuStatus.external_present)lv_draw_rect(ctx,&tab,&external);
-    external.y1+=3;
-    if(!bambuStatus.external_present) { /* No configured external material. */ }
-    else if(bambuStatus.nozzle_count==2&&bambuStatus.external_multi_protocol){
-        for(unsigned n=0;n<2;n++){if(!(bambuStatus.external_materials&(1U<<n)))continue;lv_area_t cell=external;cell.x1=a.x1+176+n*44;cell.x2=cell.x1+42;char caption[8];snprintf(caption,sizeof(caption),"EXT%u",n);draw_text(ctx,cell,caption,selection==(n?253:254)?UI_COLOR_BLUE:UI_COLOR_TEXT_SECONDARY);}
-    }else draw_text(ctx,external,XTOUCH_TEXT_FILAMENT_EXTERNAL,selection>=253?0xFFFFFF:UI_COLOR_TEXT_SECONDARY);
+    unsigned sources[2],external=external_sources(sources);
+    for(unsigned n=0;n<external;++n){
+        bool active=selection==(sources[n]?253:254);
+        lv_area_t area={a.x1+external_start(n),a.y1,a.x1+external_start(n)+external_width()-1,a.y1+21};
+        lv_draw_rect_dsc_t tab;lv_draw_rect_dsc_init(&tab);tab.bg_color=lv_color_hex(active?0x777777:0x555555);
+        tab.bg_opa=LV_OPA_COVER;tab.radius=4;lv_draw_rect(ctx,&tab,&area);
+        char caption[8];snprintf(caption,sizeof(caption),"EXT%u",sources[n]);
+        bool dual=bambuStatus.nozzle_count==2&&bambuStatus.external_multi_protocol;
+        draw_header_text(ctx,area,dual?caption:XTOUCH_TEXT_FILAMENT_EXTERNAL,
+                         active?(dual?UI_COLOR_BLUE:0xFFFFFF):UI_COLOR_TEXT_SECONDARY);
+    }
     if (selection >= 253 || !bambuStatus.ams_exist_bits) {
         draw_text(ctx,(lv_area_t){a.x1,a.y1+31,a.x2,a.y2},
             selection >= 253 ? XTOUCH_TEXT_FILAMENT_EXTERNAL_HELP : XTOUCH_TEXT_FILAMENT_PICK,0xCCCCCC);
         return;
     }
     unsigned slots=xtouch_ams_slot_count(base/4);
-    int width = slots==1?lv_area_get_width(&a):(lv_area_get_width(&a) - 12) / 4;
+    /* Keep borders on the exact native bounds. A design->pixel->design round
+       trip can put the final one-pixel border outside the object's clip. */
+    lv_area_t bounds;ui_layout_native_content(o,&bounds);
+    int gap=material_x(4),total=lv_area_get_width(&bounds);
     for (unsigned i = 0; i < xtouch_ams_slot_count(base/4); ++i) {
         unsigned slot = base + i;
-        lv_area_t card = {a.x1 + (int)i * (width + 4), a.y1 + 26,
-                         a.x1 + (int)i * (width + 4) + width - 1, a.y2};
+        lv_area_t card = {bounds.x1+(int)i*(total+gap)/slots,bounds.y1+material_y(26),
+                         bounds.x1+(int)(i+1)*(total+gap)/slots-gap-1,bounds.y2};
         lv_draw_rect_dsc_t r; lv_draw_rect_dsc_init(&r);
         r.bg_color = lv_color_hex(0x555555); r.bg_opa = LV_OPA_COVER;
-        r.radius = 6; r.border_width = selection == (int)slot ? 3 : 1;
+        r.radius = material_y(6); r.border_width = selection == (int)slot ? material_y(3) : LV_MAX(1,material_y(1));
         r.border_color = lv_color_hex(selection == (int)slot ? UI_COLOR_BLUE : slot_border(slot));
-        lv_draw_rect(ctx, &r, &card);
+        ui_layout_native_rect(ctx, &r, &card);
         // A real color swatch remains legible even when the filament is dark.
-        lv_area_t swatch = {card.x1 + 8, card.y1 + 5, card.x2 - 8, card.y1 + 13};
+        ui_material_content_t content=ui_specs_material_content(card);
+        lv_area_t swatch=content.swatch;
         r.bg_color = lv_color_hex(ui_ams_slot_color(slot)); r.border_width = 1;
-        r.border_color = lv_color_hex(slot_border(slot)); r.radius = 2;
+        r.border_color = lv_color_hex(slot_border(slot)); r.radius = material_y(2);
         bool known=bambuStatus.ams && (bambuStatus.ams_remain_valid&(1ULL<<slot));
-#if defined(XTOUCH_UI_NATIVE_CANVAS) && XTOUCH_UI_NATIVE_CANVAS
-        lv_area_t native=ui_design_area(&swatch);lv_draw_rect_dsc_t nativeStyle=r;
-        nativeStyle.radius=ui_design_y(r.radius);nativeStyle.border_width=ui_design_y(r.border_width);
-        ui_layout_material_fill(ctx,&native,&nativeStyle,r.bg_color,bambuStatus.ams_remain_percent[slot],known,true);
-#else
         ui_layout_material_fill(ctx,&swatch,&r,r.bg_color,bambuStatus.ams_remain_percent[slot],known,true);
-#endif
-        char text[80], remaining[24] = "";
-        if (bambuStatus.ams_remain_valid & (1ULL << slot))
-            snprintf(remaining,sizeof(remaining)," #%06x %u%%#", (unsigned)ui_ams_remaining_color(bambuStatus.ams_remain_percent[slot]), bambuStatus.ams_remain_percent[slot]);
         char source[20];
         if(base/4==XTOUCH_MIXED_AMS_UNIT)snprintf(source,sizeof(source),"L%u",i+1);
         else if(base/4<4)snprintf(source,sizeof(source),"%c%u",'A'+base/4,i+1);
         else snprintf(source,sizeof(source),"HT-%u",base/4-3);
-        snprintf(text,sizeof(text),"#%06X %s#%s\n%s",(unsigned)UI_COLOR_BLUE,source,remaining,bambuStatus.ams&&bambuStatus.ams_tray_material[slot][0]?bambuStatus.ams_tray_material[slot]:"--");
-        lv_area_t caption = {card.x1 + 3, card.y1 + 17, card.x2 - 3, card.y2 - 3};
-        lv_draw_label_dsc_t caption_style; lv_draw_label_dsc_init(&caption_style);
-        caption_style.font = LV_FONT_DEFAULT;
-        caption_style.color = lv_color_white();
-        caption_style.align = LV_TEXT_ALIGN_CENTER;
-        caption_style.flag = LV_TEXT_FLAG_RECOLOR;
-        lv_draw_label(ctx, &caption_style, &caption, text, NULL);
+        const lv_font_t *font=ui_layout_canvas_font(LV_FONT_DEFAULT,"A1 75% PLA");
+        lv_draw_label_dsc_t caption_style;lv_draw_label_dsc_init(&caption_style);
+        caption_style.font=font;caption_style.color=lv_color_white();caption_style.align=LV_TEXT_ALIGN_LEFT;
+        /* Independent, ink-centered rows share the free space below the swatch.
+         * Recolor markers must not participate in glyph measurements. */
+        char percent[12]="";if(bambuStatus.ams_remain_valid&(1ULL<<slot))snprintf(percent,sizeof(percent),"%u%%",bambuStatus.ams_remain_percent[slot]);
+        lv_area_t row=content.captions[0];lv_point_t left,right;
+        ui_layout_native_measure(&left,source,font);
+        ui_layout_native_measure(&right,percent,font);
+        int gap=*percent?LV_MAX(2,ui_specs_get().gap/2):0,start=row.x1+(lv_area_get_width(&row)-left.x-gap-right.x)/2;
+        lv_area_t part=row;part.x1=start;part.x2=start+left.x-1;caption_style.color=lv_color_hex(UI_COLOR_BLUE);
+        ui_layout_draw_native_text(ctx,&caption_style,part,source,true);
+        if(*percent){part.x1=start+left.x+gap;part.x2=part.x1+right.x-1;caption_style.color=lv_color_hex(ui_ams_remaining_color(bambuStatus.ams_remain_percent[slot]));ui_layout_draw_native_text(ctx,&caption_style,part,percent,true);}
+        caption_style.color=lv_color_white();
+        const char *material=bambuStatus.ams&&bambuStatus.ams_tray_material[slot][0]?bambuStatus.ams_tray_material[slot]:"--";
+        ui_layout_draw_native_text(ctx,&caption_style,content.captions[1],material,true);
     }
 }
 
 static void position(lv_obj_t *o, int x, int y, int w, int h)
 {
     // Generated flex widgets may have been measured during textarea creation.
-    o->w_layout = 0; o->h_layout = 0;
+
     lv_obj_set_flex_grow(o, 0); lv_obj_set_align(o, LV_ALIGN_TOP_LEFT);
     lv_obj_set_pos(o, x, y); lv_obj_set_size(o, w, h);
 }
@@ -357,11 +425,11 @@ void ui_ams_filament_layout(lv_obj_t *component)
     const unsigned controls[] = {2, 3, 5, 7, 8, 9};
     for (unsigned i = 0; i < 6; ++i) {
         lv_obj_t *control = ui_comp_get_child(component, controls[i]);
-        control->h_layout = 0;
-        lv_obj_set_flex_grow(control, 0);
-        lv_obj_set_height(control, 45);
+
+        ui_specs_fill_remaining(control, true);
         lv_obj_set_style_pad_top(control, controls[i] == 7 || controls[i] == 9 ? 16 : 8, 0);
         lv_obj_set_style_pad_bottom(control, 0, 0);
+        if(controls[i]!=3 && controls[i]!=8)ui_layout_key(control);
     }
     /* Center icon and temperature as one compact horizontal group. */
     lv_obj_t *group = ui_comp_get_child(component, 3);
@@ -375,21 +443,17 @@ void ui_ams_filament_layout(lv_obj_t *component)
     lv_label_set_text(icon, "p");
     lv_obj_set_style_text_font(icon, &ui_font_xlcd, 0);
     lv_obj_move_to_index(icon, 0);
-    // Align visible glyph ink, not unequal font line boxes.
-    lv_font_glyph_dsc_t a, b;
-    if (lv_font_get_glyph_dsc(&ui_font_xlcd, &a, 'p', 0) &&
-        lv_font_get_glyph_dsc(XTOUCH_FONT_NUMERIC, &b, '0', 0)) {
-        int icon_center = ui_font_xlcd.line_height - 2*ui_font_xlcd.base_line - 2*a.ofs_y - a.box_h;
-        int text_center = (XTOUCH_FONT_NUMERIC)->line_height - 2*(XTOUCH_FONT_NUMERIC)->base_line - 2*b.ofs_y - b.box_h;
-        lv_obj_set_style_translate_y(temperature, (icon_center-text_center)/2, 0);
-    }
+    /* Recalculate from the active native font after size/text changes. */
+    lv_obj_add_event_cb(icon,ui_layout_status_text_event,LV_EVENT_SIZE_CHANGED,NULL);
+    lv_obj_add_event_cb(temperature,ui_layout_status_text_event,LV_EVENT_SIZE_CHANGED,NULL);
+    ui_layout_status_text(icon);ui_layout_status_text(temperature);
 
     lv_obj_t *panel = lv_obj_create(component);
     lv_obj_remove_style_all(panel); position(panel, 0, 0, 264, 80);
     lv_obj_clear_flag(panel, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(panel, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_t *viewport=lv_obj_create(panel);
-    lv_obj_remove_style_all(viewport);position(viewport,0,0,AMS_HEADER_WIDTH,24);
+    lv_obj_remove_style_all(viewport);position(viewport,0,0,LV_MAX(1,header_width()),24);
     lv_obj_set_scroll_dir(viewport,LV_DIR_HOR);
     lv_obj_set_scrollbar_mode(viewport,LV_SCROLLBAR_MODE_AUTO);
     lv_obj_set_style_height(viewport,2,LV_PART_SCROLLBAR);
@@ -397,7 +461,7 @@ void ui_ams_filament_layout(lv_obj_t *component)
     lv_obj_set_style_bg_opa(viewport,LV_OPA_50,LV_PART_SCROLLBAR);
     lv_obj_clear_flag(viewport,LV_OBJ_FLAG_SCROLL_ELASTIC|LV_OBJ_FLAG_SCROLL_CHAIN);
     lv_obj_t *content=lv_obj_create(viewport);
-    lv_obj_remove_style_all(content);position(content,0,0,AMS_HEADER_WIDTH,22);
+    lv_obj_remove_style_all(content);position(content,0,0,LV_MAX(1,header_width()),22);
     lv_obj_clear_flag(content,LV_OBJ_FLAG_SCROLLABLE|LV_OBJ_FLAG_SCROLL_CHAIN);
     lv_obj_add_flag(content,LV_OBJ_FLAG_CLICKABLE|LV_OBJ_FLAG_SCROLL_CHAIN_HOR);
     lv_obj_add_event_cb(content,stop_hint,LV_EVENT_PRESSED,viewport);

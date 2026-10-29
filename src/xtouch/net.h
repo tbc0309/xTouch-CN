@@ -1,17 +1,18 @@
 #ifndef _XLCD_NET
 #define _XLCD_NET
 
-#include <WiFi.h>
-#include <WiFiClientSecure.h>
+#include "platform/idf/wifi.h"
 #include "http_client.h"
-#include <MD5Builder.h>
+#include "features/diagnostics/stack_margin.h"
+#include "platform/idf/digest.h"
 #include <time.h>
 #include <atomic>
 #include <esp_sntp.h>
 #include "clock.h"
-#include <Update.h>
+#include "platform/idf/ota.h"
 #include "ota-certs.h"
 #include "ota_endpoint.h"
+#include "firmware_target.h"
 
 static std::atomic<bool> xtouch_clock_synced{false};
 static void xtouch_clock_on_sync(struct timeval *) { xtouch_clock_synced.store(true); }
@@ -55,63 +56,23 @@ static bool xtouch_ota_sync_clock()
     return time(NULL) > 1704067200;
 }
 
-// Boot manifest lookup has one total budget. Do not use WiFi.hostByName here:
-// its built-in DNS wait can block startup for fifteen seconds.
-#include <lwip/dns.h>
-#include <lwip/tcpip.h>
-static ip_addr_t xtouch_manifest_address;
-static volatile bool xtouch_manifest_dns_done=false;
-static void xtouch_manifest_dns_result(const char *,const ip_addr_t *ip,void *)
-{
-    if(ip)xtouch_manifest_address=*ip;
-    xtouch_manifest_dns_done=true;
-}
-static void xtouch_manifest_dns_start(void *)
-{
-    err_t result=dns_gethostbyname("raw.githubusercontent.com",&xtouch_manifest_address,xtouch_manifest_dns_result,NULL);
-    if(result!=ERR_INPROGRESS)xtouch_manifest_dns_done=true;
-}
-class XTouchManifestTLS:public WiFiClientSecure { public: void connectionBudget(int ms){_timeout=ms;} };
-static bool xtouch_ota_fetch_manifest(String &body, bool manual=false)
-{
-    const uint32_t started=millis();
-    struct Timing {uint32_t start;~Timing(){ConsoleInfo.printf("[OTA] manifest check elapsed=%u ms\n",unsigned(millis()-start));}} timing{started};
-    auto remaining=[&]()->bool{return millis()-started<(manual?14500u:6500u);};
+// The native HTTP client handles framing, certificate checks and partial reads.
+static bool xtouch_ota_fetch_manifest(String &body,bool manual=false){
+    const uint32_t started=millis(),budget=manual?14500U:6500U;
     xtouch_start_clock_sync();
-    while(time(NULL)<1704067200 && millis()-started<(manual?6000u:3000u))delay(10);
+    while(time(NULL)<1704067200&&millis()-started<(manual?6000U:3000U))delay(10);
     if(time(NULL)<1704067200)return false;
-    // Static DNS callback storage remains valid even if a late reply arrives.
-    ip_addr_set_zero(&xtouch_manifest_address);xtouch_manifest_dns_done=false;
-    if(tcpip_callback(xtouch_manifest_dns_start,NULL)!=ERR_OK)return false;
-    uint32_t dnsStart=millis();
-    while(!xtouch_manifest_dns_done && millis()-dnsStart<1500)delay(5);
-    if(!xtouch_manifest_dns_done || ip_addr_isany(&xtouch_manifest_address) || !IP_IS_V4(&xtouch_manifest_address))return false;
-    XTouchManifestTLS client;client.setCACert(xtouch_ota_ca);
-    client.setTimeout(1);client.setHandshakeTimeout(2);
-    IPAddress ip(ip_2_ip4(&xtouch_manifest_address)->addr);
-    // The host argument preserves certificate and SNI verification with a resolved IP.
-    client.connectionBudget(1000);
-    if(!client.connect(ip,443,"raw.githubusercontent.com",xtouch_ota_ca,NULL,NULL))return false;
-    if(!remaining()){client.stop();return false;}
-    client.print("GET " XTOUCH_OTA_MANIFEST_PATH " HTTP/1.0\r\nHost: raw.githubusercontent.com\r\nConnection: close\r\n\r\n");
-    String header;header.reserve(1024);body="";body.reserve(1024);bool headers=false,valid=false;int length=-1;
-    while(remaining()){
-        if(client.available()){
-            char ch=(char)client.read();
-            if(!headers){
-                header+=ch;if(header.length()>4096)break;
-                if(header.endsWith("\r\n\r\n")){
-                    valid=header.startsWith("HTTP/1.1 200 ") || header.startsWith("HTTP/1.0 200 ");
-                    String lower=header;lower.toLowerCase();int at=lower.indexOf("content-length:");
-                    if(at>=0)length=lower.substring(at+15).toInt();
-                    if(!valid || lower.indexOf("transfer-encoding:")>=0 || length>16384)break;
-                    headers=true;
-                }
-            }else{body+=ch;if(body.length()>16384)break;if(length>=0 && body.length()==(unsigned)length){client.stop();return true;}}
-        }else if(!client.connected()){bool ok=headers && valid && body.length()>0 && (length<0 || body.length()==(unsigned)length);client.stop();return ok;}
-        else delay(1);
+    XTouchHttpClient http;http.setConnectTimeout(2000);http.setTimeout(1000);
+    if(!http.begin("https://raw.githubusercontent.com" XTOUCH_OTA_MANIFEST_PATH,xtouch_ota_ca)||http.GET()!=200)return false;
+    const int length=http.getSize();if(length>16384)return false;
+    body="";body.reserve(length>0?length:1024);
+    while(millis()-started<budget&&http.available()){
+        body+=char(http.read());
+        if(body.length()>16384){body="";return false;}
     }
-    client.stop();body="";ConsoleInfo.println("[OTA] boot check skipped: timeout or invalid response");return false;
+    const bool ok=http.complete()&&body.length()>0&&(length<0||body.length()==unsigned(length));
+    if(!ok)body="";
+    return ok;
 }
 
 static bool xtouch_ota_open(XTouchHttpClient &http,
@@ -140,17 +101,21 @@ template<class Sink>
 static bool xtouch_ota_transfer(XTouchHttpClient &http, int total, const char *expectedMD5,
                                 Sink sink, void (*onProgress)(int))
 {
+    XTouchStackMargin::sample(XTouchStackMargin::Path::OtaHttps,true);
     MD5Builder md5; md5.begin();
-    uint8_t buffer[1024]; size_t received = 0;
+    NativeHeapBuffer buffer(1024, NativeBufferMemory::PreferInternal);
+    if (!buffer) return false;
+    size_t received = 0;
     int lastProgress = -1; uint32_t lastData = millis();
     while (received < size_t(total) && millis() - lastData < 10000) {
         int available = http.getStreamPtr()->available();
         if (available > 0) {
-            size_t wanted = min(sizeof(buffer), size_t(total) - received);
+            size_t wanted = min(buffer.size(), size_t(total) - received);
             wanted = min(wanted, size_t(available));
-            int count = http.getStreamPtr()->readBytes(buffer, wanted);
-            if (count <= 0 || sink(buffer, count) != size_t(count)) break;
-            md5.add(buffer, count); received += count; lastData = millis();
+            int count = http.getStreamPtr()->readBytes(buffer.data(), wanted);
+            if (count <= 0 || sink(buffer.data(), count) != size_t(count)) break;
+            md5.add(buffer.data(), count); received += count; lastData = millis();
+            XTouchStackMargin::sample(XTouchStackMargin::Path::OtaHttps);
             int progress = received * 100 / total;
             if (onProgress && progress != lastProgress) onProgress(progress);
             lastProgress = progress;
@@ -168,8 +133,9 @@ bool downloadFileToFS(fs::FS &fs, const char *url, const char *fileName,
                        void (*onMD5Check)(int) = NULL,
                        const char *otaMD5 = NULL, size_t expectedSize = 0)
 {
+    XTouchStackMargin::Scope stack(XTouchStackMargin::Path::OtaHttps);
     XTouchHttpClient http; int total;
-    if (!xtouch_ota_open(http, url, otaMD5 ? 1966080 : 16384, expectedSize, total)) return false;
+    if (!xtouch_ota_open(http, url, otaMD5 ? XTOUCH_FIRMWARE_MAX_BYTES : 16384, expectedSize, total)) return false;
     String partial = String(fileName) + ".part";
     if (fs.exists(partial)) fs.remove(partial);
     File file = fs.open(partial, FILE_WRITE);
@@ -190,8 +156,9 @@ bool downloadFileToFS(fs::FS &fs, const char *url, const char *fileName,
 bool downloadFirmwareToFlash(const char *url, const char *md5, size_t size,
                                void (*onProgress)(int))
 {
+    XTouchStackMargin::Scope stack(XTouchStackMargin::Path::OtaHttps);
     XTouchHttpClient http; int total;
-    if (!xtouch_ota_open(http, url, 1966080, size, total)) return false;
+    if (!xtouch_ota_open(http, url, XTOUCH_FIRMWARE_MAX_BYTES, size, total)) return false;
     Update.onProgress(nullptr);
     if (!Update.begin(total, U_FLASH)) { http.end(); return false; }
     Update.setMD5(md5);

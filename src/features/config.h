@@ -1,4 +1,7 @@
 #pragma once
+#ifndef XTOUCH_FEATURE_EXTERNAL_CHAMBER
+#define XTOUCH_FEATURE_EXTERNAL_CHAMBER 0
+#endif
 #ifndef XTOUCH_FEATURE_XIAOMI_BLE
 #define XTOUCH_FEATURE_XIAOMI_BLE 0
 #endif
@@ -11,6 +14,9 @@
 #else
 #define XTOUCH_DEEP_TOUCH_PIN -1
 #endif
+#endif
+#ifndef XTOUCH_DEEP_WAKE_PIN
+#define XTOUCH_DEEP_WAKE_PIN XTOUCH_DEEP_TOUCH_PIN
 #endif
 #ifndef XTOUCH_HAS_DEEP_TOUCH_WAKE
 #ifdef XTOUCH_BOARD_P4
@@ -94,11 +100,6 @@
 #endif
 #endif
 
-// Optional CYD DAC backend; keep the established timer backend by default.
-#ifndef XTOUCH_CYD_AUDIO_I2S
-#define XTOUCH_CYD_AUDIO_I2S 0
-#endif
-
 // Password/code cloud authentication is supported by the native S3/P4 transport.
 #ifndef XTOUCH_FEATURE_CLOUD_LOGIN
 #ifdef XTOUCH_WAVESHARE
@@ -111,4 +112,8 @@
 // Token entry and account sign-in are independent; authenticated sessions share transport.
 #ifndef XTOUCH_FEATURE_CLOUD_TOKEN
 #define XTOUCH_FEATURE_CLOUD_TOKEN 1
+#endif
+
+#ifndef XTOUCH_DEEP_WAKE_BUTTON_NAME
+#define XTOUCH_DEEP_WAKE_BUTTON_NAME ""
 #endif

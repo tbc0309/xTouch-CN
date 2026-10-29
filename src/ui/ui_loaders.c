@@ -11,8 +11,8 @@ void ui_screen_protection_offset(int8_t x,int8_t y){
     lv_obj_t *screen=lv_scr_act();
     for(unsigned i=0;i<lv_obj_get_child_cnt(screen);++i){
         lv_obj_t *child=lv_obj_get_child(screen,i);
-        lv_obj_set_style_translate_x(child,lv_obj_get_style_translate_x(child,0)-protectionX+x,0);
-        lv_obj_set_style_translate_y(child,lv_obj_get_style_translate_y(child,0)-protectionY+y,0);
+        lv_obj_set_style_translate_x(child,lv_obj_get_style_translate_x(child,(lv_part_t)(0))-protectionX+x,0);
+        lv_obj_set_style_translate_y(child,lv_obj_get_style_translate_y(child,(lv_part_t)(0))-protectionY+y,0);
     }
     protectionX=x;protectionY=y;
 }

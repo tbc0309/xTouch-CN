@@ -1,5 +1,5 @@
-# Arduino 3.3.12 still gates its Wi-Fi and Hosted wrappers on the 2.x name.
-# Hosted 3 uses ESP_HOSTED_HOST. Keep aliases while the Arduino wrappers use their previous names.
+# Hosted 3 host configuration still consumes the legacy ESP_HOSTED_ENABLED
+# alias in eh_host_port_master_config.h. This alias is not an Arduino dependency.
 config ESP_HOSTED_ENABLED
     bool
     default y if ESP_HOSTED_HOST

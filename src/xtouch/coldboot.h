@@ -3,9 +3,7 @@
 
 #include <esp_system.h>
 
-// https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/ResetReason
-
-#include <Arduino.h>
+#include "platform/idf/runtime.h"
 #include "config.h"
 
 void xtouch_coldboot_check()

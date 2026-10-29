@@ -1,6 +1,6 @@
 #pragma once
 #include <stdbool.h>
-#include <lvgl.h>
+#include "ui/lvgl_compat.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

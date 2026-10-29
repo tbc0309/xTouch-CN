@@ -1,0 +1,44 @@
+# Human-maintained native drivers and reusable test boundaries. Generated assets are excluded.
+boards/common/es8311_output.cpp
+boards/common/es8311_output.h
+boards/common/geometry.h
+boards/common/portrait_frame.h
+boards/esp32-2432s028r/indicator.cpp
+boards/esp32-2432s028r/display.cpp
+boards/esp32-p4-wifi6-touch-lcd-4.3/audio.cpp
+boards/esp32-p4-wifi6-touch-lcd-4.3/display.cpp
+boards/esp32-s3-touch-lcd-2.8-v2/display.cpp
+boards/lcdwiki-es3c35p/audio.cpp
+boards/lcdwiki-es3c35p/display.cpp
+boards/lcdwiki-es3c35p/indicator.cpp
+boards/lcdwiki-es3c35p/power.h
+src/features/capabilities.cpp
+src/features/diagnostics/mqtt_timing.h
+src/features/indicator/board_output.h
+src/features/indicator/indicator.cpp
+src/features/network/mqtt_status_policy.h
+src/platform/idf/i2c.cpp
+src/platform/idf/i2c.h
+src/features/network/limited_body.h
+boards/common/board.h
+boards/common/board.cpp
+src/features/diagnostics/display_stats.h
+src/features/network/idf_mqtt.h
+src/features/network/mqtt_buffer_policy.h
+# Application-owned native text boundary and its numeric-concatenation regression.
+src/platform/idf/text.h
+
+# Reusable production protocol/auth/source-isolation regressions.
+
+boards/esp32-2432s028r/display_budget.h
+src/platform/idf/ota_health.h
+src/features/config_memory.h
+
+src/xtouch/cloud_memory.h
+
+
+src/features/network/wifi_credentials.h
+src/platform/idf/heap_buffer.h
+src/features/diagnostics/stack_margin.h
+src/features/preview/preview_ftp_cleanup.h
+src/features/camera/frame_exchange.h

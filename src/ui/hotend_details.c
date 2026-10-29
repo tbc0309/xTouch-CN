@@ -63,7 +63,7 @@ void ui_hotend_details_show(void) {
     page = ui_detail_page_begin();
     if (!page)
         return;
-    label(page, xtouch_local("H2C 热端仓", "H2C hotend rack"), 2, 0);
+    ui_detail_page_title(page,label(page, xtouch_local("H2C 热端仓", "H2C hotend rack"), 2, 0));
     summary = label(page, "", 4, 33);
     lv_obj_set_style_text_line_space(summary, 5, 0);
     char options[600] = {0};
@@ -77,19 +77,18 @@ void ui_hotend_details_show(void) {
                              bambuStatus.rack_type[i]);
         }
     choice = lv_dropdown_create(page);
-    lv_obj_set_pos(choice, 4, 90);
-    lv_obj_set_size(choice, 280, 32);
     lv_dropdown_set_options(choice, count ? options : "--");
     operation = lv_dropdown_create(page);
-    lv_obj_set_pos(operation, 4, 132);
-    lv_obj_set_size(operation, 280, 32);
     lv_dropdown_set_options(
         operation,
         xtouch_local("重读当前热端\n重读全部热端\n确认当前热端\n确认全部热端\n热端仓归位\n升起 A\n升起 B", "Read selected\nRead all\nConfirm selected\nConfirm all\nHome rack\nRaise A\nRaise B"));
     submit = lv_btn_create(page);
-    lv_obj_set_pos(submit, 4, 180);
-    lv_obj_set_size(submit, 280, 34);
-    lv_obj_center(label(submit, xtouch_local("确认", "Confirm"), 0, 0));
+    label(submit, xtouch_local("确认", "Confirm"), 0, 0);
+    ui_detail_page_block(page,summary,33,0);
+    ui_detail_page_block(page,choice,90,32);
+    ui_detail_page_block(page,operation,132,32);
+    ui_detail_page_block(page,submit,180,34);
+    ui_layout_dropdown(choice);ui_layout_dropdown(operation);
     lv_obj_add_event_cb(submit, apply, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(choice, refresh, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_event_cb(operation, refresh, LV_EVENT_VALUE_CHANGED, NULL);
@@ -97,4 +96,5 @@ void ui_hotend_details_show(void) {
     lv_msg_subsribe_obj(XTOUCH_ON_MQTT, page, NULL);
     lv_obj_add_event_cb(page, refresh, LV_EVENT_MSG_RECEIVED, NULL);
     refresh(NULL);
+    ui_layout_captions_tree(page);
 }

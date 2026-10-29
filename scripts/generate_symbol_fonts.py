@@ -21,18 +21,22 @@ for size in (14,28):
   for i,code in enumerate(codes):
    if 0xf000<=start+code<=0xf8ff:mapping[start+code]=gid+i
  assert len(mapping)>50
- result=bytearray();glyphs=[{'bitmap_index':0,'adv_w':0,'box_w':0,'box_h':0,'ofs_x':0,'ofs_y':0}]
- for code,gid in sorted(mapping.items()):
-  row=dict(rows[gid]);offset=row['bitmap_index'];length=(row['box_w']*row['box_h']*4+7)//8
-  chunk=raw[offset:offset+length];assert len(chunk)==length
-  row['bitmap_index']=len(result);result.extend(chunk);glyphs.append(row)
- name=f'ui_font_symbols_{size}';tag=f'symbol_{size}';base=min(mapping)
- parts.append(f'static const uint8_t {tag}_bitmap[]={{'+','.join(hex(v) for v in result)+'};\n')
- parts.append(f'static const lv_font_fmt_txt_glyph_dsc_t {tag}_glyphs[]={{'+','.join('{'+','.join('.'+k+'='+str(v) for k,v in row.items())+'}' for row in glyphs)+'};\n')
- parts.append(f'static const uint16_t {tag}_unicode[]={{'+','.join(hex(v-base) for v in sorted(mapping))+'};\n')
- parts.append(f'static const lv_font_fmt_txt_cmap_t {tag}_cmap[]={{'+f'{{.range_start={base},.range_length={max(mapping)-base+1},.glyph_id_start=1,.unicode_list={tag}_unicode,.glyph_id_ofs_list=NULL,.list_length={len(mapping)},.type=LV_FONT_FMT_TXT_CMAP_SPARSE_TINY}}'+'};\n')
- parts.append(f'static lv_font_fmt_txt_glyph_cache_t {tag}_cache;\nstatic lv_font_fmt_txt_dsc_t {tag}_dsc={{.glyph_bitmap={tag}_bitmap,.glyph_dsc={tag}_glyphs,.cmaps={tag}_cmap,.kern_dsc=NULL,.kern_scale=0,.cmap_num=1,.bpp=4,.kern_classes=0,.bitmap_format=0,.cache=&{tag}_cache}};\n')
- height=int(re.search(r'\.line_height = (\d+)',s).group(1));baseline=int(re.search(r'\.base_line = (\d+)',s).group(1))
- parts.append(f'const lv_font_t {name}={{.get_glyph_dsc=lv_font_get_glyph_dsc_fmt_txt,.get_glyph_bitmap=lv_font_get_bitmap_fmt_txt,.line_height={height},.base_line={baseline},.subpx=LV_FONT_SUBPX_NONE,.dsc=&{tag}_dsc,.fallback=NULL}};\n')
- print(size,len(mapping),'unchanged symbol glyphs,',len(result),'bitmap bytes')
+ variations=[mapping] if size==14 else [{code:gid for code,gid in mapping.items() if code in (0xF00D,0xF1EB,0xF293,0xF8A2)},mapping]
+ if size==28:parts.append('#if XTOUCH_UI_COMPACT_SYMBOLS\n')
+ for variant,mapping in enumerate(variations):
+  result=bytearray();glyphs=[{'bitmap_index':0,'adv_w':0,'box_w':0,'box_h':0,'ofs_x':0,'ofs_y':0}]
+  for code,gid in sorted(mapping.items()):
+   row=dict(rows[gid]);offset=row['bitmap_index'];length=(row['box_w']*row['box_h']*4+7)//8
+   chunk=raw[offset:offset+length];assert len(chunk)==length
+   row['bitmap_index']=len(result);result.extend(chunk);glyphs.append(row)
+  name=f'ui_font_symbols_{size}';tag=f'symbol_{size}';base=min(mapping)
+  parts.append(f'static const uint8_t {tag}_bitmap[]={{'+','.join(hex(v) for v in result)+'};\n')
+  parts.append(f'static const lv_font_fmt_txt_glyph_dsc_t {tag}_glyphs[]={{'+','.join('{'+','.join('.'+k+'='+str(v) for k,v in row.items())+'}' for row in glyphs)+'};\n')
+  parts.append(f'static const uint16_t {tag}_unicode[]={{'+','.join(hex(v-base) for v in sorted(mapping))+'};\n')
+  parts.append(f'static const lv_font_fmt_txt_cmap_t {tag}_cmap[]={{'+f'{{.range_start={base},.range_length={max(mapping)-base+1},.glyph_id_start=1,.unicode_list={tag}_unicode,.glyph_id_ofs_list=NULL,.list_length={len(mapping)},.type=LV_FONT_FMT_TXT_CMAP_SPARSE_TINY}}'+'};\n')
+  parts.append(f'static lv_font_fmt_txt_dsc_t {tag}_dsc={{.glyph_bitmap={tag}_bitmap,.glyph_dsc={tag}_glyphs,.cmaps={tag}_cmap,.kern_dsc=NULL,.kern_scale=0,.cmap_num=1,.bpp=4,.kern_classes=0,.bitmap_format=0}};\n')
+  height=int(re.search(r'\.line_height = (\d+)',s).group(1));baseline=int(re.search(r'\.base_line = (\d+)',s).group(1))
+  parts.append(f'const lv_font_t {name}={{.get_glyph_dsc=lv_font_get_glyph_dsc_fmt_txt,.get_glyph_bitmap=lv_font_get_bitmap_fmt_txt,.line_height={height},.base_line={baseline},.subpx=LV_FONT_SUBPX_NONE,.dsc=&{tag}_dsc,.fallback=NULL}};\n')
+  print(size,len(mapping),'unchanged symbol glyphs,',len(result),'bitmap bytes')
+  if size==28:parts.append('#else\n' if variant==0 else '#endif\n')
 (root/'src/ui/symbol_fonts.h').write_text('\n'.join(parts),'utf-8')

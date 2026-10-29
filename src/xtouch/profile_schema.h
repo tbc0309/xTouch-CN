@@ -4,7 +4,13 @@
 #include "profile_route.h"
 
 namespace XTouchSchema {
+#if defined(XTOUCH_BOARD_CYD)
+constexpr size_t MaxAccounts = 10;
+constexpr size_t MaxPrinters = 20;
+#else
 constexpr size_t MaxAccounts = 50;
+constexpr size_t MaxPrinters = 100;
+#endif
 constexpr size_t MaxConfigBytes = 196608;
 constexpr size_t MaxConfigCapacity = 262144;
 inline bool labHost(const char *host) {
@@ -78,7 +84,7 @@ inline bool lanCandidate(JsonVariantConst p) {
 inline bool root(JsonDocument &doc) {
     if (!text(doc["ssid"], 33, true) || !text(doc["pwd"], 65) || !doc["printers"].is<JsonArray>())
         return false;
-    if (doc["printers"].size() > 100 ||
+    if (doc["printers"].size() > MaxPrinters ||
         (doc.containsKey("cloudAccounts") && !doc["cloudAccounts"].is<JsonArray>()) ||
         doc["cloudAccounts"].size() > MaxAccounts)
         return false;

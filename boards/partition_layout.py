@@ -23,6 +23,17 @@ def read_layout(data):
     ordered=sorted(layout.values(), key=lambda p:p['offset'])
     if any(a['offset']+a['size']>b['offset'] for a,b in zip(ordered,ordered[1:])):
         raise ValueError('Overlapping partitions')
-    if layout['ota_0']['offset'] != 0x20000 or layout['ota_0']['size'] != layout['ota_1']['size']:
+    if layout['ota_0']['offset'] not in (0x10000, 0x20000) or layout['ota_0']['size'] != layout['ota_1']['size']:
         raise ValueError('Invalid OTA layout')
     return layout
+
+
+def installer_segments(image):
+    """Return flash ranges that preserve the existing device-bound NVS keys."""
+    layout=read_layout(image[0x8000:0x9000])
+    nvs=[p for p in layout.values() if p['type']==1 and p['subtype']==2]
+    if len(nvs)!=1:raise ValueError('Expected one NVS partition')
+    start=nvs[0]['offset'];end=start+nvs[0]['size']
+    if start<0x9000 or end>=len(image) or start%4096 or end%4096:
+        raise ValueError('Invalid NVS boundaries')
+    return [(0,image[:start]),(end,image[end:])]

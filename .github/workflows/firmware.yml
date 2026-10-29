@@ -1,39 +1,44 @@
 name: Build firmware
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'boards/**'
+      - 'portal/**'
+      - 'web/**'
+      - 'resources/**'
+      - 'scripts/**'
+      - 'docs/**'
+      - 'README*'
+      - 'version.json'
+      - '.github/workflows/firmware.yml'
+      - '.clang-format'
+  push:
+    branches: [main]
+    tags: ['*']
 permissions:
   contents: read
 jobs:
-  esp32:
+  source-checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-      - run: npm ci
-        working-directory: web
-      - run: python -m pip install platformio==6.1.19 -r scripts/requirements.txt
-      - run: python -m platformio run -e esp32dev
-      - run: cp -R ../xtouch-bin firmware-artifacts
-      - uses: actions/upload-artifact@v4
-        with:
-          name: esp32-2432s028r
-          path: firmware-artifacts/
-          if-no-files-found: error
-  waveshare:
+      - run: python -m pip install -r scripts/requirements-dev.txt
+      - run: python scripts/check_format.py
+      - run: python scripts/check_localization.py
+      - run: python scripts/check_documentation.py
+      - run: python boards/prepare.py
+  native-idf:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
-        board: [s3, p4]
+        board: [cyd, s3, p4, es3c35p]
     container: espressif/idf:v6.1
     steps:
       - uses: actions/checkout@v4
@@ -49,10 +54,43 @@ jobs:
         run: |
           . "$IDF_PATH/export.sh"
           python -m pip install -r scripts/requirements.txt
-          python scripts/embed_portal.py
+          python scripts/check_documentation.py
           python boards/build.py "${{ matrix.board }}"
       - uses: actions/upload-artifact@v4
         with:
-          name: waveshare-${{ matrix.board }}
+          name: native-${{ matrix.board }}
           path: boards/build-${{ matrix.board }}/artifacts/
+          if-no-files-found: error
+  installer-build:
+    needs: native-idf
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: native-*
+          path: release-builds
+      - run: npm ci && npm run bundle
+        working-directory: web
+      - name: Build all four installer targets
+        run: >-
+          python scripts/build_web.py
+          --firmware-dir release-builds/native-cyd
+          --ota-manifest release-builds/native-cyd/ota.json
+          --board-firmware-dir release-builds/native-s3
+          --board-firmware-dir release-builds/native-p4
+          --board-firmware-dir release-builds/native-es3c35p
+          --output _site
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-site
+          path: _site/
           if-no-files-found: error

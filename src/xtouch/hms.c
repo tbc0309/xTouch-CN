@@ -45,8 +45,7 @@ unsigned hms_popup_timeout_ms(void){
  if(print&&print!=84033543UL&&((print>>12)&15)!=12)return 0;
  for(unsigned i=0;i<health_count;++i){if(!hms_health_visible(i))continue;++count;if(!authorization_health(health[i])&&((health[i]>>16)&65535)!=3)return 0;}
  if(!print&&!count)return 0;
- if(hms_authorization_advisory_pending())return 4000;
- return count+(print?1:0)>1?3000:2000;
+ return 10000;
 }
 #ifdef XTOUCH_ERROR_SELFTEST
 bool hms_selftest(void){

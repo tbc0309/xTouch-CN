@@ -88,7 +88,6 @@ void ui_numeric_show(const struct ui_numeric_field *fields, unsigned count, unsi
         lv_obj_set_style_bg_color(b, lv_color_hex(0x39A1FD), LV_STATE_CHECKED);
         lv_obj_t *l = lv_label_create(b);
         lv_label_set_text(l, numericNames[i]);
-        lv_obj_center(l);
         lv_obj_add_event_cb(b, numeric_tab, LV_EVENT_CLICKED, (void *)(uintptr_t)i);
     }
     ui_temperatureComponent_input_target = lv_textarea_create(left);
@@ -114,7 +113,6 @@ void ui_numeric_show(const struct ui_numeric_field *fields, unsigned count, unsi
         lv_obj_set_style_bg_color(b,lv_color_hex(UI_COLOR_BLUE_PRESSED),LV_STATE_PRESSED);
         lv_obj_t *l = lv_label_create(b);
         lv_label_set_text(l, xtouch_local("更多", "More"));
-        lv_obj_center(l);
         lv_obj_add_event_cb(b, numeric_more, LV_EVENT_CLICKED, NULL);
     }
     lv_obj_t *keyboard = ui_comp_get_child(
@@ -138,6 +136,7 @@ void ui_numeric_show(const struct ui_numeric_field *fields, unsigned count, unsi
     if(moreButton)ui_layout_numeric_rows(left,ui_temperatureComponent_input_target,moreButton,
         ui_comp_get_child(ui_temperatureComponent,UI_COMP_TEMPERATURECOMPONENT_TEMPERATURECOMPONENTKEYBOARD_NUMPADKEY7),
         ui_comp_get_child(ui_temperatureComponent,UI_COMP_TEMPERATURECOMPONENT_TEMPERATURECOMPONENTKEYBOARD_NUMPADKEY0));
+    ui_layout_captions_tree(left);
 }
 
 bool ui_numeric_active(void) { return numericActive; }

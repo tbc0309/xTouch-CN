@@ -15,9 +15,12 @@ XTouchPrintPreviewStatus xtouch_print_preview_status() { return {}; }
 #include "xtouch/types.h"
 #include "ui/print_preview_view.h"
 #include "ui/settings_gesture.h"
-#include <Arduino.h>
-#include <WiFi.h>
+#include "platform/idf/runtime.h"
+#include "platform/idf/wifi.h"
 #include "preview_transport.h"
+#include "preview_ftp_cleanup.h"
+#include "features/diagnostics/stack_margin.h"
+#include "features/network/task_budget.h"
 #include <PNGdec.h>
 #include "xtouch/http_client.h"
 #include "preview_ca.h"
@@ -45,32 +48,84 @@ void *allocate(size_t n){
  void *p=heap_caps_malloc(n,MALLOC_CAP_SPIRAM|MALLOC_CAP_8BIT);
  return p?p:heap_caps_malloc(n,MALLOC_CAP_8BIT);
 }
+std::atomic<int> ftpTransferReply{0},ftpAbortReply{0},ftpQuitReply{0};
+std::atomic<unsigned> ftpCleanupResult{0};
 struct Ftps {
- PreviewTransport control{cancelled};
- ~Ftps(){if(control.connected()&&!cancelled())control.print("QUIT\r\n");}
+ PreviewTransport control{cancelled},data{cancelled};
+ bool closing=false,closed=false,usableControl=false,dataClosed=false;
+ size_t received=0;
+ uint32_t cleanupStarted=0;
+ XTouchPreviewFtp::Transfer transfer=XTouchPreviewFtp::Transfer::None;
+ bool stopped()const{return closing?uint32_t(millis()-cleanupStarted)>=3000:cancelled();}
+ ~Ftps(){finish();}
+ void beginCleanup(){closing=true;cleanupStarted=millis();control.beginCleanup(3000);data.beginCleanup(3000);}
+ void closeData(){
+  if(dataClosed)return;dataClosed=true;
+  bool wasOpen=data.connected();
+  data.stop(true);
+  received+=data.shutdownDiscardedBytes();
+  if(wasOpen)Serial.printf("[PREVIEW] FTPS data closed notifySent=%u peerNotify=%u discarded=%u tls=%d\n",
+   unsigned(data.closeNotifySent()),unsigned(data.peerCloseNotify()),data.shutdownDiscardedBytes(),data.lastError(nullptr,0));
+ }
+ void closeControl(){control.stop();}
+ bool closePrefix(){
+  dataClosed=true;
+  data.stop(false);control.stop(false);
+  return data.isClosed()&&control.isClosed();
+ }
+ bool usable(){return usableControl&&control.connected()&&!stopped();}
+ bool send(const char *wire){
+  size_t bytes=stopped()?0:control.print(wire);
+  Serial.printf("[PREVIEW] FTPS cleanup tx=%.4s bytes=%u expected=%u tls=%d connected=%u deadline=%u\n",
+   wire,unsigned(bytes),unsigned(strlen(wire)),control.lastError(nullptr,0),unsigned(control.connected()),unsigned(stopped()));
+  return bytes==strlen(wire);
+ }
+ bool requestTransfer(const String &path){
+  transfer=XTouchPreviewFtp::Transfer::Pending;
+  String wire="RETR "+path+"\r\n";
+  return !stopped()&&control.print(wire)==wire.length();
+ }
+ bool finish(){
+  if(closed)return ftpCleanupResult.load()==1||ftpCleanupResult.load()==3;
+  closed=true;
+  Serial.printf("[PREVIEW] FTPS cleanup begin control=%u data=%u tls=%d\n",unsigned(control.connected()),unsigned(data.connected()),control.lastError(nullptr,0));
+  auto result=XTouchPreviewFtp::close(*this,transfer);
+  ftpTransferReply=result.transfer;ftpAbortReply=result.abort;ftpQuitReply=result.quit;
+  ftpCleanupResult=result.confirmed?1:result.released?3:2;
+  Serial.printf("[PREVIEW] FTPS close mode=%s transfer=%d abort=%d quit=%d confirmed=%u released=%u sockets=closed elapsed=%u\n",
+   transfer==XTouchPreviewFtp::Transfer::Pending?"cancel":transfer==XTouchPreviewFtp::Transfer::Complete?"complete":transfer==XTouchPreviewFtp::Transfer::Prefix?"prefix":"idle",
+   result.transfer,result.abort,result.quit,unsigned(result.confirmed),unsigned(result.released),unsigned(millis()-cleanupStarted));
+  return result.confirmed||result.released;
+ }
  bool readLine(String &line){
   line="";uint32_t at=millis();
-  while(!cancelled()&&uint32_t(millis()-at)<4000){
+  while(!stopped()&&uint32_t(millis()-at)<4000){
    while(control.available()) {int c=control.read();if(c=='\n')return true;if(c!='\r'){if(line.length()>=384)return false;line+=(char)c;}}
    if(!control.connected())return false;delay(1);
   }return false;
  }
  int reply(String *text=nullptr){
-  String line;for(unsigned i=0;i<48&&!cancelled();++i){
-   if(!readLine(line))return -1;
-   if(line.length()>=4&&line[0]>='1'&&line[0]<='5'&&line[3]==' '){if(text)*text=line;return line.substring(0,3).toInt();}
+  String line;int multiline=0;
+  for(unsigned i=0;i<48&&!stopped();++i){
+   if(!readLine(line)){if(closing)Serial.printf("[PREVIEW] FTPS cleanup rx=none bytes=%u tls=%d connected=%u deadline=%u\n",unsigned(line.length()),control.lastError(nullptr,0),unsigned(control.connected()),unsigned(stopped()));return -1;}
+   int code=XTouchPreviewFtp::replyLine(line.c_str(),line.length(),multiline);
+   if(code==-2)continue;
+   if(text)*text=line;
+   if(closing)Serial.printf("[PREVIEW] FTPS cleanup rx=%d bytes=%u tls=%d\n",code,unsigned(line.length()),control.lastError(nullptr,0));
+   return code;
   }return -1;
  }
  int command(const String &line,String *text=nullptr){
   if(cancelled()||!control.connected())return -1;
   // Some printer FTP servers parse each TLS record as a complete command.
   // Keep the command and its terminator in one write (including PASS).
-  control.print(line+"\r\n");return reply(text);
+  String wire=line+"\r\n";if(control.print(wire)!=wire.length())return -1;return reply(text);
  }
  bool connect(){
   control.setHandshakeTimeoutMs(4000);control.setIoTimeoutMs(2000);
   if(cancelled()||!control.connect(job.host,job.port,4000)){Serial.printf("[PREVIEW] FTPS stage=tls heap=%u\n",unsigned(ESP.getFreeHeap()));return false;}
   int greeting=reply();if(greeting!=220){Serial.printf("[PREVIEW] FTPS stage=greeting rc=%d\n",greeting);return false;}
+  usableControl=true;
   int rc=command("USER bblp");if(rc==331)rc=command(String("PASS ")+job.code);
   if(rc!=230){Serial.printf("[PREVIEW] FTPS stage=login rc=%d\n",rc);return false;}
   for(const char *cmd:{"PBSZ 0",job.plainData?"PROT C":"PROT P","TYPE I"}){rc=command(cmd);if(rc!=200){Serial.printf("[PREVIEW] FTPS stage=%s rc=%d\n",cmd,rc);return false;}}
@@ -94,18 +149,19 @@ int fetchPng(uint8_t *&png,size_t &pngSize){
  String passive;if(ftp.command("PASV",&passive)!=227)return fail(5);
  int a,b,c,d,p1,p2,at=passive.indexOf('(');
  if(at<0||sscanf(passive.c_str()+at+1,"%d,%d,%d,%d,%d,%d",&a,&b,&c,&d,&p1,&p2)!=6||p1<0||p1>255||p2<0||p2>255||!(p1||p2))return fail(5);
- PreviewTransport data{cancelled};data.setHandshakeTimeoutMs(5000);data.setIoTimeoutMs(2000);
- ftp.control.print("RETR "+file+"\r\n");
+ auto &data=ftp.data;data.setHandshakeTimeoutMs(5000);data.setIoTimeoutMs(2000);
+ if(!ftp.requestTransfer(file))return fail(6);
  if(!data.connect(job.host,p1*256+p2,4000,&ftp.control,job.plainData))return fail(6);
  int reply=ftp.reply();if(reply!=150&&reply!=125)return fail(6);
  uint32_t progress=millis();
  while(pngSize<fileSize&&!cancelled()){
   int available=data.available();
-  if(available>0){uint8_t scratch[512];int n=data.read(scratch,std::min(sizeof(scratch),std::min(size_t(available),size_t(fileSize-pngSize))));if(n>0)memcpy(png+pngSize,scratch,n);if(n<=0)return fail(13);pngSize+=n;progress=millis();}
+  if(available>0){uint8_t scratch[512];int n=data.read(scratch,std::min(sizeof(scratch),std::min(size_t(available),size_t(fileSize-pngSize))));if(n>0)memcpy(png+pngSize,scratch,n);if(n<=0)return fail(13);pngSize+=n;ftp.received+=size_t(n);progress=millis();}
   else {if(!data.connected()||uint32_t(millis()-progress)>3000)return fail(13);delay(1);}
  }
- data.stop();if(cancelled()||pngSize!=fileSize)return fail(13);
- reply=ftp.reply();if(reply!=226&&reply!=250)return fail(13);
+ if(cancelled()||pngSize!=fileSize)return fail(13);
+ ftp.transfer=XTouchPreviewFtp::Transfer::Complete;
+ if(!ftp.finish())return fail(13);
  if(pngSize<8)return fail(19);
  const uint8_t signature[]={137,80,78,71,13,10,26,10};for(unsigned i=0;i<8;++i)if(png[i]!=signature[i])return fail(19);
  return 0;
@@ -132,8 +188,8 @@ int fetchArchive(uint8_t *&png,size_t &pngSize){
  String passive;if(ftp.command("PASV",&passive)!=227)return 5;
  int a,b,c,d,p1,p2,at=passive.indexOf('(');
  if(at<0||sscanf(passive.c_str()+at+1,"%d,%d,%d,%d,%d,%d",&a,&b,&c,&d,&p1,&p2)!=6||p1<0||p1>255||p2<0||p2>255||!(p1||p2))return 5;
- PreviewTransport data{cancelled};data.setHandshakeTimeoutMs(5000);data.setIoTimeoutMs(2000);
- ftp.control.print("RETR "+path+"\r\n");
+ auto &data=ftp.data;data.setHandshakeTimeoutMs(5000);data.setIoTimeoutMs(2000);
+ if(!ftp.requestTransfer(path))return 6;
  if(!data.connect(job.host,p1*256+p2,4000,&ftp.control,job.plainData))return 6;
  int reply=ftp.reply();if(reply!=150&&reply!=125)return 6;
  size_t consumed=0;
@@ -142,14 +198,18 @@ int fetchArchive(uint8_t *&png,size_t &pngSize){
   bytes=std::min(bytes,size_t(fileSize-consumed));uint32_t progress=millis();
   while(!cancelled()){
    int available=data.available();
-   if(available>0)return data.read(dest,std::min(bytes,size_t(available)));
+   if(available>0){int n=data.read(dest,std::min(bytes,size_t(available)));if(n>0)ftp.received+=size_t(n);return n;}
    if(!data.connected()||uint32_t(millis()-progress)>3000)return 0;
    delay(1);
   }return 0;
  };
  int result=XTouchPreviewArchive::extract(raw,cancelled,allocate,job.plate,png,pngSize,consumed);
- data.stop();ftp.control.print("ABOR\r\n");
- Serial.printf("[PREVIEW] archive prefix=%u limit=%u result=%d\n",unsigned(consumed),unsigned(XTouchPreviewArchive::scanLimit),result);
+ size_t prefixBytes=consumed;
+ // Stop as soon as the image is extracted. Never drain the rest of the archive.
+ ftp.transfer=consumed>=fileSize?XTouchPreviewFtp::Transfer::Complete:XTouchPreviewFtp::Transfer::Prefix;
+ bool closedCleanly=ftp.finish();
+ if(!closedCleanly&&!result){free(png);png=nullptr;pngSize=0;result=13;}
+ Serial.printf("[PREVIEW] archive prefix=%u read=%u file=%u limit=%u result=%d\n",unsigned(prefixBytes),unsigned(ftp.received),unsigned(fileSize),unsigned(XTouchPreviewArchive::scanLimit),result);
 
  return result;
 }
@@ -173,7 +233,7 @@ int fetchCloud(uint8_t *&png,size_t &pngSize){
   http.addHeader("Accept","application/json");
   http.addHeader("User-Agent","xTouch-CN/1.0 (+https://github.com/tbc0309/xTouch-CN)");
   http.addHeader("Authorization",String("Bearer ")+job.token);
-  networkStatus=http.GET();if(networkStatus!=200){tlsStatus=networkStatus.load()<0?networkStatus.load():0;http.end();if(networkStatus==404&&route<2)continue;return 26;}
+  networkStatus=http.GET();XTouchStackMargin::sample(XTouchStackMargin::Path::CloudPreview,true);if(networkStatus!=200){tlsStatus=networkStatus.load()<0?networkStatus.load():0;http.end();if(networkStatus==404&&route<2)continue;return 26;}
   // IDF supplies decoded body bytes; keep only the application cap/cancellation.
   class Body : public Stream {
    Stream *source;size_t remaining=262144;
@@ -189,7 +249,8 @@ int fetchCloud(uint8_t *&png,size_t &pngSize){
   StaticJsonDocument<256> filter;
   if(route==1){filter["index"]=true;filter["thumbnail"]["url"]=true;}
   else for(const char *key:{"id","deviceId","plateIndex","cover"})filter[key]=true;
-  StaticJsonDocument<2048> response;
+  DynamicJsonDocument response(2048);
+  if(response.capacity()<2048){http.end();return 12;}
   auto nonspace=[&](){int c;do{c=body.read();}while(c==' '||c=='\r'||c=='\n'||c=='\t');return c;};
   if(route==0){
    auto error=deserializeJson(response,body,DeserializationOption::Filter(filter));
@@ -227,7 +288,7 @@ int fetchCloud(uint8_t *&png,size_t &pngSize){
  XTouchHttpClient http;http.setConnectTimeout(6000);http.setTimeout(2000);
  const char *trust=(host=="bbl-prod-model.oss-cn-shanghai.aliyuncs.com"||host=="bbl-us-public.oss-us-west-1.aliyuncs.com")?xtouch_preview_ca:xtouch_cloud_trust();
  if(!http.begin(cover,trust))return 26;
- networkStatus=http.GET();if(networkStatus!=200){tlsStatus=networkStatus.load()<0?networkStatus.load():0;tlsPhase=0;http.end();return 26;}
+ networkStatus=http.GET();XTouchStackMargin::sample(XTouchStackMargin::Path::CloudPreview,true);if(networkStatus!=200){tlsStatus=networkStatus.load()<0?networkStatus.load():0;tlsPhase=0;http.end();return 26;}
  int length=http.getSize();
  const size_t cap=262144;
  if(length==0||(length>0&&unsigned(length)>cap)){http.end();return 11;}
@@ -258,11 +319,7 @@ int decode(uint8_t *bytes,size_t size){
  if(opened!=PNG_SUCCESS)return 19;
  unsigned w=png->getWidth(),h=png->getHeight();
  if(!w||!h||w>512||h>512||png->isInterlaced()){png->close();return 20;}
-#ifdef XTOUCH_BOARD_P4
- unsigned limit=512;
-#else
- unsigned limit=128;
-#endif
+ constexpr unsigned limit=XTouchPreviewArchive::thumbnailEdge;
  unsigned dw=w,dh=h;if(dw>limit||dh>limit){dw=w>=h?limit:w*limit/h;dh=h>=w?limit:h*limit/w;}
  if(!dw||!dh){png->close();return 20;}
  uint16_t *pixels=(uint16_t*)allocate(dw*dh*2);if(!pixels){png->close();return 21;}
@@ -270,11 +327,19 @@ int decode(uint8_t *bytes,size_t size){
  if(rc!=PNG_SUCCESS||context.next!=dh||cancelled()){free(pixels);return 22;}
  ready={pixels,dw,dh};return 0;
 }
+constexpr unsigned workerStackBytes=XTouchNetworkBudgets::PreviewWorkerStackBytes;
+std::atomic<unsigned> workerStackMin{0};
 void worker(void*){
  Serial.println("[PREVIEW] worker=zip-compatible-v5");
  networkStage=0;networkStatus=0;tlsStatus=0;tlsPhase=0;jsonStatus=0;
+ ftpTransferReply=0;ftpAbortReply=0;ftpQuitReply=0;ftpCleanupResult=0;
+ auto stackPath=job.token[0]?XTouchStackMargin::Path::CloudPreview:XTouchStackMargin::Path::LocalPreview;
+ XTouchStackMargin::sample(stackPath,true);
  started=millis();uint8_t *png=nullptr;size_t size=0;lastResult=job.token[0]?fetchCloud(png,size):fetch(png,size);
  if(!lastResult&&!cancelled()){networkStage=3;lastResult=decode(png,size);}
+ XTouchStackMargin::sample(stackPath,true);
+ workerStackMin=uxTaskGetStackHighWaterMark(nullptr);
+ Serial.printf("[PREVIEW] stack-min=%u budget=%u bytes\n",workerStackMin.load(),workerStackBytes);
  free(png);
  memset(job.code,0,sizeof(job.code));memset(job.token,0,sizeof(job.token));
  Serial.printf("[PREVIEW] result=%d bytes=%u image=%ux%u elapsed=%u heap=%u\n",lastResult,unsigned(size),ready.w,ready.h,unsigned(millis()-started),unsigned(ESP.getFreeHeap()));
@@ -283,7 +348,7 @@ void worker(void*){
 void clearShown(){renderedLines=0;ui_home_preview_set(nullptr);lv_img_cache_invalidate_src(&descriptor);free(shown.pixels);shown={};descriptor={};}
 }
 
-XTouchPrintPreviewStatus xtouch_print_preview_status(){return {running.load(),shown.pixels!=nullptr,shown.w,shown.h,tries,publishedResult,networkStage.load(),networkStatus.load(),tlsStatus.load(),renderedLines.load(),tlsPhase.load(),jsonStatus.load()};}
+XTouchPrintPreviewStatus xtouch_print_preview_status(){return {running.load(),shown.pixels!=nullptr,shown.w,shown.h,tries,publishedResult,networkStage.load(),networkStatus.load(),tlsStatus.load(),renderedLines.load(),tlsPhase.load(),jsonStatus.load(),workerStackBytes,workerStackMin.load(),ftpTransferReply.load(),ftpAbortReply.load(),ftpQuitReply.load(),ftpCleanupResult.load()};}
 void xtouch_print_preview_suspend(bool value){
  if(suspended.exchange(value)==value)return;
  ++generation;clearShown();activeKey="";tries=0;nextAttempt=millis()+1200;
@@ -301,7 +366,7 @@ void xtouch_print_preview_poll(){
  if(complete.exchange(false,std::memory_order_acquire)){
   publishedResult=lastResult;
   if(job.generation==generation.load()&&ready.pixels&&!lastResult){
-   clearShown();shown=ready;ready={};descriptor.header.cf=LV_IMG_CF_TRUE_COLOR;descriptor.header.w=shown.w;descriptor.header.h=shown.h;
+   clearShown();shown=ready;ready={};descriptor.header.magic=LV_IMAGE_HEADER_MAGIC;descriptor.header.cf=LV_IMG_CF_TRUE_COLOR;descriptor.header.w=shown.w;descriptor.header.stride=shown.w*2;descriptor.header.h=shown.h;
    descriptor.data=(const uint8_t*)shown.pixels;descriptor.data_size=shown.w*shown.h*2;
   }else{free(ready.pixels);ready={};}
   unsigned wait=XTouchPreview::retryDelay(publishedResult,networkStatus.load(),tries,jsonStatus.load());
@@ -324,7 +389,7 @@ void xtouch_print_preview_poll(){
  // A thumbnail must never suspend the printer's MQTT connection.
  // Unsupported sources retain the model image; retries remain bounded.
  ++tries;running=true;
- if(xTaskCreate(worker,"print-preview",8192,nullptr,1,nullptr)!=pdPASS){running=false;nextAttempt=millis()+30000;}
+ if(xTaskCreate(worker,"print-preview",workerStackBytes,nullptr,1,nullptr)!=pdPASS){running=false;nextAttempt=millis()+30000;}
 }
 
 #endif

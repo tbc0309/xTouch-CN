@@ -5,45 +5,19 @@
 #include "storage.h"
 #include "power.h"
 #include "ui/settings_gesture.h"
-#ifdef XTOUCH_WAVESHARE
 #include "board.h"
-#endif
 
 static bool xtouch_sdcard_firmware_waiting = false;
 
 static bool xtouch_sdcard_probe()
 {
-#ifdef XTOUCH_WAVESHARE
     return true;
-#else
-    // The board has no card-detect pin. One bounded CMD0 avoids the SD
-    // library's repeated 100ms delays on every empty-slot poll.
-    constexpr uint8_t chipSelect = 5;
-    SPI.begin();
-    pinMode(chipSelect, OUTPUT);
-    digitalWrite(chipSelect, HIGH);
-    SPI.beginTransaction(SPISettings(400000, MSBFIRST, SPI_MODE0));
-    for (unsigned i = 0; i < 10; i++) SPI.transfer(0xff);
-    digitalWrite(chipSelect, LOW);
-    const uint8_t command[] = {0x40, 0, 0, 0, 0, 0x95};
-    for (auto byte : command) SPI.transfer(byte);
-    uint8_t response = 0xff;
-    for (unsigned i = 0; i < 16 && (response & 0x80); i++) response = SPI.transfer(0xff);
-    digitalWrite(chipSelect, HIGH);
-    SPI.transfer(0xff);
-    SPI.endTransaction();
-    return response == 1;
-#endif
 }
 
 bool xtouch_sdcard_setup()
 {
     if (!xtouch_sdcard_probe()) return false;
-#ifdef XTOUCH_WAVESHARE
     bool available = board_card_begin() && SD.cardType() != CARD_NONE;
-#else
-    bool available = SD.begin() && SD.cardType() != CARD_NONE;
-#endif
     if (!available) SD.end();
     xtouch_storage_set_sd(available);
     if (available) {

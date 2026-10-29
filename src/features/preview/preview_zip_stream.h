@@ -70,7 +70,8 @@ int extract(ReadSome raw,Cancel cancel,Allocate allocate,unsigned plate,
   if(compressed==0xffffffffU||expanded==0xffffffffU)return 29;
   char full[64],small[64];std::snprintf(full,sizeof(full),"Metadata/plate_%u.png",plate);
   std::snprintf(small,sizeof(small),"Metadata/plate_%u_small.png",plate);
-  const bool target=!std::strcmp(name,full)||!std::strcmp(name,small),descriptor=flags&8;
+  const bool smallName=!std::strcmp(name,small);
+  const bool target=!std::strcmp(name,full)||smallName,descriptor=flags&8;
   if(!target&&!descriptor){if(compressed>scanLimit||!read(nullptr,size_t(compressed)))return 13;continue;}
   if(method!=0&&method!=8)return 29;
   // Stored, non-image streaming members have no self-delimiting codec.
@@ -160,7 +161,12 @@ int extract(ReadSome raw,Cancel cancel,Allocate allocate,unsigned plate,
   }
   if(consumed!=compressed||produced!=expanded||crc!=expectedCRC)return 19;
   if(target){
-   if(produced<8||std::memcmp(image.p,"\x89PNG\r\n\x1a\n",8))return 19;
+   if(produced<24||std::memcmp(image.p,"\x89PNG\r\n\x1a\n",8)||std::memcmp(image.p+12,"IHDR",4))return 19;
+   auto bigEndian=[](const uint8_t *v){return uint32_t(v[0])<<24|uint32_t(v[1])<<16|uint32_t(v[2])<<8|v[3];};
+   unsigned width=bigEndian(image.p+16),height=bigEndian(image.p+20);
+   if(!width||!height)return 20;
+   // Use the first verified image for this plate; display decoding downsamples it.
+   if(width>512||height>512)return 20;
    png=image.p;image.p=nullptr;pngSize=produced;return 0;
   }
  }

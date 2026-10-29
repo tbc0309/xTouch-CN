@@ -3,7 +3,8 @@
 #include <cstdint>
 // Runs only on the camera worker. No LVGL calls or references to UI objects.
 struct CameraRtspSink {
- uint16_t *pixels;unsigned width,height;
+ // Writable until publish(); acquire again for every decoded output frame.
+ uint16_t *(*acquire)();unsigned width,height;
  void (*publish)(unsigned,unsigned);
  void (*status)(int);
 };

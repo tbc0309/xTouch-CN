@@ -1,4 +1,5 @@
 #include "features/config.h"
+#include "features/provisioning/navigation.h"
 #if XTOUCH_FEATURE_XIAOMI_BLE
 #include "xiaomi_ble.h"
 #include "environment.h"
@@ -6,12 +7,14 @@
 #include "clock.h"
 #include "features/power/controller.h"
 #include "features/network/wifi_recovery.h"
+#include "features/network/limited_body.h"
 #if XTOUCH_FEATURE_BLE_PROVISIONING
 #include "ble_provisioning.h"
 #endif
 #include "features/sound/events.h"
 #include "features/capabilities.h"
 #include "features/settings_validation.h"
+#include "features/settings_reset.h"
 #include "features/preview/print_preview.h"
 #include "power.h"
 #include "types.h"
@@ -20,41 +23,65 @@
 #endif
 #include <esp_heap_caps.h>
 #include "portal.h"
+#include "features/config_memory.h"
+#include "portal_policy.h"
 #include "storage.h"
 #include "profile_schema.h"
 #include "cloud.h"
 #include "vault.h"
 #include "credentials.h"
-#include <Update.h>
+#include "platform/idf/ota.h"
 #include "firmware_target.h"
 #include "ui/settings_gesture.h"
 #include "printers.h"
 #include "ui/i18n/language.h"
-#include <Arduino.h>
-#include <WiFi.h>
+#include "platform/idf/runtime.h"
+#include "platform/idf/wifi.h"
 #include <esp_wifi.h>
 #include "http_client.h"
 #include <XTouchWebServer.h>
-#include <DNSServer.h>
-#include <SPIFFS.h>
-#include <lvgl.h>
+#include "platform/idf/dns.h"
+#include "platform/idf/filesystem.h"
+#include "ui/lvgl_compat.h"
 #include <esp_system.h>
-#include <esp_idf_version.h>
-#if ESP_IDF_VERSION_MAJOR >= 6
 #include <psa/crypto.h>
+#if XTOUCH_LANGUAGES_ZH_EN
+#include "portal_assets_zh_en.h"
 #else
-#include <mbedtls/md.h>
-#include <mbedtls/pkcs5.h>
-#endif
 #include "portal_assets.h"
+#endif
 #include "ui/layout_shared.h"
+#include "ui/notices.h"
 #if defined(XTOUCH_UI_NATIVE_CANVAS) && XTOUCH_UI_NATIVE_CANVAS
 #include "display_scale.h"
 #endif
 
-extern "C" { LV_FONT_DECLARE(ui_font_portal_title_22); void ui_confirmPanel_show(const char*,void(*)(void)); void ui_confirmPanel_show_danger(const char*,void(*)(void)); void loadScreen(int); extern lv_obj_t *introScreen; extern lv_obj_t *introScreenCaption; extern lv_obj_t *introScreenIcon; }
+extern "C" { LV_FONT_DECLARE(ui_font_symbols_28); LV_FONT_DECLARE(ui_font_portal_title_22); void ui_confirmPanel_show(const char*,void(*)(void)); void ui_confirmPanel_show_danger(const char*,void(*)(void)); void loadScreen(int); extern lv_obj_t *introScreen; extern lv_obj_t *introScreenCaption; extern lv_obj_t *introScreenIcon; }
 extern void xtouch_portal_release_transport();
+#if defined(XTOUCH_BOARD_CYD) && defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && !defined(XTOUCH_TEST_PROVISIONING_ONLY)
+void board_display_test(bool,bool);
+void board_display_test_polling(bool);
+#endif
+#if defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && !defined(XTOUCH_BOARD_CYD) && !defined(XTOUCH_TEST_PROVISIONING_ONLY)
+bool xtouch_test_frame_prepare();
+const uint8_t *xtouch_test_frame();
+bool xtouch_test_ui_tap(unsigned,unsigned,int);
+void xtouch_test_ui_labels(JsonArray);
+#endif
+#if defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION
+#include <unistd.h>
+#include <fcntl.h>
+#if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG_ENABLED && !defined(XTOUCH_BOARD_P4)
+#include "driver/usb_serial_jtag.h"
+#include "driver/usb_serial_jtag_vfs.h"
+#endif
+#endif
 namespace {
+void prepareCloudTransport(){
+#if XTOUCH_PORTAL_RECLAIM_TLS_ON_READ
+ xtouch_portal_release_transport();
+#endif
+}
 XTouchWebServer server(80);DNSServer dns;
 String session,csrf,adminSalt,adminHash,apSsid;
 bool mustChange=true,apMode=false,qrActive=false;
@@ -64,11 +91,15 @@ bool manualAP=false,bootComplete=false;
 bool bleScreen=false;
 #endif
 uint32_t wifiApplyAt=0,apExitAt=0;
+enum class WifiSetupState { idle, connecting, connected, failed };
+WifiSetupState wifiSetupState=WifiSetupState::idle;
+uint32_t wifiSetupStarted=0,setupLastActivity=0;
+bool savedWifiConfigured=false,pendingWifiCredentials=false;
+String pendingWifiSsid,pendingWifiPassword;
+String wifiAttemptId;
+void clearPendingWifi(){std::fill(pendingWifiPassword.begin(),pendingWifiPassword.end(),0);pendingWifiPassword.clear();pendingWifiSsid.clear();pendingWifiCredentials=false;wifiApplyAt=0;}
 String scanCache="[]";bool scanning=false,scanFailed=false;
 uint32_t scanStartedAt=0;
-// Both board SDKs expose the shared scan deadline as a protected static member.
-// AP+STA scans can exceed Arduino 2.x's six-second default while keeping the AP alive.
-class PortalScanDeadline:public WiFiScanClass{public:static void extend(){_scanTimeout=30000;}};
 
 bool uploading=false,uploadOk=false,uploadDenied=false;unsigned uploadFiles=0;String uploadError,accountTarget;
 
@@ -84,7 +115,6 @@ String binding(JsonVariantConst a){return XTouchCredentials::binding(a);}
 String randomHex(unsigned bytes=16) {String out;out.reserve(bytes*2);for(unsigned i=0;i<bytes;++i){char b[3];snprintf(b,sizeof(b),"%02x",(uint8_t)esp_random());out+=b;}return out;}
 String passwordHash(const String &password,const String &salt) {
  uint8_t result[32];
-#if ESP_IDF_VERSION_MAJOR >= 6
  psa_key_derivation_operation_t operation=PSA_KEY_DERIVATION_OPERATION_INIT;
  int rc=psa_crypto_init();
  if(!rc)rc=psa_key_derivation_setup(&operation,PSA_ALG_PBKDF2_HMAC(PSA_ALG_SHA_256));
@@ -93,12 +123,6 @@ String passwordHash(const String &password,const String &salt) {
  if(!rc)rc=psa_key_derivation_input_bytes(&operation,PSA_KEY_DERIVATION_INPUT_PASSWORD,(const uint8_t*)password.c_str(),password.length());
  if(!rc)rc=psa_key_derivation_output_bytes(&operation,result,sizeof(result));
  psa_key_derivation_abort(&operation);
-#else
- mbedtls_md_context_t context;mbedtls_md_init(&context);
- if(mbedtls_md_setup(&context,mbedtls_md_info_from_type(MBEDTLS_MD_SHA256),1))return "";
- int rc=mbedtls_pkcs5_pbkdf2_hmac(&context,(const unsigned char *)password.c_str(),password.length(),(const unsigned char *)salt.c_str(),salt.length(),10000,sizeof(result),result);
- mbedtls_md_free(&context);
-#endif
  if(rc)return "";String out;out.reserve(64);for(auto value:result){char b[3];snprintf(b,sizeof(b),"%02x",value);out+=b;}return out;
 }
 bool equal(const String &a,const String &b){if(a.length()!=b.length())return false;uint8_t diff=0;for(size_t i=0;i<a.length();++i)diff|=a[i]^b[i];return !diff;}
@@ -130,20 +154,20 @@ bool body(JsonDocument &doc,size_t limit=32768){
  if(result==DeserializationError::NoMemory||doc.overflowed()){error(503,"low_memory");return false;}
  if(result){error(400,"invalid_json");return false;}return true;
 }
-class LabBody:public Stream{public:String value;bool overflow=false;size_t write(uint8_t c)override{if(value.length()>=16384){overflow=true;return 0;}value+=(char)c;return 1;}int available()override{return 0;}int read()override{return -1;}int peek()override{return -1;}void flush()override{}};
+using LabBody=XTouchLimitedBody<16384>;
 void labDiscover(){
  if(!authenticated())return;
  if(xtouch_cloud_busy()){error(409,"cloud_busy");return;}
  StaticJsonDocument<256> request;if(!body(request))return;
  const char *host=request["host"]|"";unsigned port=request["port"]|8894U;
  if(!XTouchSchema::labHost(host)||!port||port>65535){error(400,"invalid_configuration");return;}
- xtouch_portal_release_transport();XTouchHttpClient http;http.setConnectTimeout(1500);http.setTimeout(2000);http.setFollowRedirects(false);
+ prepareCloudTransport();XTouchHttpClient http;http.setConnectTimeout(1500);http.setTimeout(2000);http.setFollowRedirects(false);
  if(!http.begin(String("http://")+host+":"+port+"/api/discovery")){error(502,"cloud_network_error");return;}
- int code=http.GET();LabBody sink;sink.value.reserve(16384);int received=code==200?http.writeToStream(&sink):-1;http.end();
+ int code=http.GET();LabBody sink;sink.body.reserve(16384);int received=code==200?http.writeToStream(&sink):-1;http.end();
  if(code!=200||received<0||sink.overflow){error(502,"cloud_network_error");return;}
- DynamicJsonDocument data(24576);if(deserializeJson(data,sink.value)||!data["devices"].is<JsonArray>()||data["devices"].size()>100){error(400,"invalid_configuration");return;}
+ DynamicJsonDocument data(24576);if(deserializeJson(data,sink.body)||!data["devices"].is<JsonArray>()||data["devices"].size()>100){error(400,"invalid_configuration");return;}
  for(JsonVariantConst p:data["devices"].as<JsonArrayConst>())if(!XTouchSchema::text(p["serialNumber"],32,true)||strncmp(p["serialNumber"]|"","XTSIM",5)||!XTouchSchema::asciiName(p["name"])||!XTouchSchema::text(p["printerModel"],32,true)){error(400,"invalid_configuration");return;}
- json(200,sink.value);
+ json(200,sink.body);
 }
 void login(){
  if((int32_t)(millis()-lockedUntil)<0){server.sendHeader("Retry-After","30");error(429,"login_throttled");return;}
@@ -160,15 +184,23 @@ void changePassword(){if(!authenticated(true))return;DynamicJsonDocument doc(512
  String oldHash=adminHash,oldSalt=adminSalt;bool oldChange=mustChange;adminSalt=randomHex();adminHash=passwordHash(password,adminSalt);mustChange=false;
  if(!saveAdmin()){adminHash=oldHash;adminSalt=oldSalt;mustChange=oldChange;error(507,"storage_failed");return;}session="";csrf="";server.sendHeader("Set-Cookie","xtouch_session=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict");json(200,"{\"ok\":true,\"loginRequired\":true}");
 }
+void jsonDocument(DynamicJsonDocument &doc,bool attachment=false){
+ if(doc.overflowed()){error(503,"low_memory");return;}
+ doc.shrinkToFit();const size_t bytes=measureJson(doc);
+ if(!XTouchConfigMemory::available(bytes+1,heap_caps_get_free_size(MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_8BIT))){error(503,"low_memory");return;}
+ String out;out.reserve(bytes);serializeJson(doc,out);
+ if(attachment)server.sendHeader("Content-Disposition","attachment; filename=xtouch.json");
+ json(200,out);
+}
 void configGet(){if(!authenticated())return;if(xtouch_cloud_busy()){error(409,"cloud_busy");return;}
  // Only memory-constrained targets trade their printer TLS session for config RAM.
  // Reading settings on PSRAM boards must not force another blocking handshake.
 #if XTOUCH_PORTAL_RECLAIM_TLS_ON_READ
  xtouch_portal_release_transport();
 #endif
- DynamicJsonDocument saved=xtouch_storage_read("/xtouch.json",0);
+ DynamicJsonDocument saved=xtouch_storage_read("/xtouch.json",0);saved.shrinkToFit();
  const size_t capacity=max(size_t(4096),saved.capacity()+saved["printers"].size()*64+saved["cloudAccounts"].size()*192+4096);
- DynamicJsonDocument doc(capacity);if(!doc.set(saved)||doc.overflowed()){error(503,"low_memory");return;}if(doc.isNull()){doc.to<JsonObject>();doc["ssid"]="";doc["activePrinter"]=0;doc.createNestedArray("printers");}
+ DynamicJsonDocument doc(capacity);if(!doc.set(saved)||doc.overflowed()){error(503,"low_memory");return;}saved.clear();saved.shrinkToFit();if(doc.isNull()){doc.to<JsonObject>();doc["ssid"]="";doc["activePrinter"]=0;doc.createNestedArray("printers");}
  doc["wifiPasswordSaved"]=strlen(doc["pwd"]|"")>0;doc["pwd"]="";
  unsigned slot=0;for(JsonObject p:doc["printers"].as<JsonArray>()){
   p["health"]=xtouch_printer_cloud_health(slot++);String plain;
@@ -178,7 +210,7 @@ void configGet(){if(!authenticated())return;if(xtouch_cloud_busy()){error(409,"c
   p["accessCode"]="";p.remove("accessCodeEnc");
  }
  for(JsonObject a:doc["cloudAccounts"].as<JsonArray>()){a["tokenEncrypted"]=XTouchCredentials::encrypted(a,true);a["passwordEncrypted"]=XTouchCredentials::encrypted(a,false);String plain;a["tokenSaved"]=XTouchCredentials::read(a,true,plain);a["credentialLocked"]=strlen(a["tokenEnc"]|"")&&!a["tokenSaved"].as<bool>();a["token"]="";a.remove("tokenEnc");a["passwordSaved"]=XTouchCredentials::read(a,false,plain);a.remove("password");a["passwordLocked"]=strlen(a["passwordEnc"]|"")&&!a["passwordSaved"].as<bool>();if(a["passwordLocked"].as<bool>())a["tokenSaved"]=false;a.remove("passwordEnc");for(unsigned i=0;i<healthCount;++i)if(health[i].id==(a["id"]|""))a["health"]=health[i].state<0?"invalid":health[i].state>0?"valid":"unknown";}
- DynamicJsonDocument settings=xtouch_storage_read("/xtouch/settings.json",0);doc["settings"]=settings;String out;serializeJson(doc,out);json(200,out);
+ DynamicJsonDocument settings=xtouch_storage_read("/xtouch/settings.json",0);doc["settings"]=settings;settings.clear();settings.shrinkToFit();jsonDocument(doc);
 }
 bool mergeSecrets(DynamicJsonDocument &doc, DynamicJsonDocument &old){
  if(old.isNull()&&SPIFFS.exists("/xtouch.json"))return false;
@@ -212,11 +244,13 @@ void configSave(){if(!authenticated())return;if(xtouch_cloud_busy()||background)
 #endif
  DynamicJsonDocument previous=xtouch_storage_read("/xtouch.json",0);
  if(previous.isNull()&&SPIFFS.exists("/xtouch.json")){error(503,"low_memory");return;}
+ previous.shrinkToFit();
  const size_t inputBytes=server.argReference("plain").length();
- const size_t capacity=min(XTouchSchema::MaxConfigCapacity,max(size_t(4096),inputBytes*2+previous.memoryUsage()+2048));
- // Parsing, secret merging and atomic storage temporarily hold multiple copies.
- // Reject before exhausting heap; a valid configuration must remain usable.
- if(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT)<capacity || heap_caps_get_free_size(MALLOC_CAP_8BIT)<capacity*3+inputBytes+8192){error(503,"low_memory");return;}
+ const size_t requested=min(XTouchSchema::MaxConfigCapacity,XTouchConfigMemory::parsePool(inputBytes,previous.memoryUsage()));
+ const size_t capacity=XTouchConfigMemory::parseBudget(requested,heap_caps_get_free_size(MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+ // The request body and previous document are already allocated. Reserve the
+ // parse pool now; check actual atomic-write scratch after old copies are freed.
+ if(!capacity){error(503,"low_memory");return;}
  DynamicJsonDocument doc(capacity);if(!body(doc,XTouchSchema::MaxConfigBytes))return;
 #if XTOUCH_FEATURE_XIAOMI_BLE
  DynamicJsonDocument environment(1024);bool environmentProvided=doc.containsKey("environmentSensor");if(environmentProvided){environment.set(doc["environmentSensor"]);if(environment.overflowed()||!xtouch_environment_valid(environment.as<JsonVariantConst>())){error(400,"invalid_settings");return;}doc.remove("environmentSensor");}
@@ -247,9 +281,17 @@ for(JsonVariantConst p:doc["printers"].as<JsonArrayConst>())if(!XTouchSchema::as
   else if(before.isNull()||after.isNull()||binding(before)!=binding(after)||before["token"]!=after["token"]||before["tokenEnc"]!=after["tokenEnc"]||before["password"]!=after["password"]||before["passwordEnc"]!=after["passwordEnc"]){savedHealthState[i]=0;savedHealthRenewed[i]=false;}
  }
  previous.clear();previous.shrinkToFit();
+ doc.shrinkToFit();settings.shrinkToFit();
  DynamicJsonDocument oldSettings=xtouch_storage_read("/xtouch/settings.json",0);
  const bool settingsChanged=oldSettings.as<JsonVariantConst>()!=settings.as<JsonVariantConst>();
  oldSettings.clear();oldSettings.shrinkToFit();
+ size_t storageScratch=0;
+ if(rootChanged)storageScratch=XTouchConfigMemory::storagePool(doc.memoryUsage(),4096);
+ if(settingsChanged)storageScratch=max(storageScratch,XTouchConfigMemory::storagePool(settings.memoryUsage(),2048));
+ #if XTOUCH_FEATURE_XIAOMI_BLE
+ if(environmentProvided)storageScratch=max(storageScratch,XTouchConfigMemory::storagePool(environment.memoryUsage(),1024));
+ #endif
+ if(storageScratch&&!XTouchConfigMemory::available(storageScratch,heap_caps_get_free_size(MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_8BIT))){error(503,"low_memory");return;}
  if(rootChanged&&!xtouch_storage_write("/xtouch.json",doc)){error(507,"storage_failed");return;}
  if(settingsChanged&&!settings.isNull()&&!xtouch_storage_write("/xtouch/settings.json",settings)){error(507,"settings_failed");return;}
  #if XTOUCH_FEATURE_XIAOMI_BLE
@@ -273,6 +315,11 @@ if(profilesChanged){
   healthCount=kept;healthIndex=0;
   checkAt=millis()+60000;
  }
+ // Runtime reload reads persisted records; it does not need request documents.
+ doc.clear();doc.shrinkToFit();settings.clear();settings.shrinkToFit();
+ #if XTOUCH_FEATURE_XIAOMI_BLE
+ environment.clear();environment.shrinkToFit();
+ #endif
  if(profilesChanged||settingsChanged)xtouch_runtime_config_reload(profilesChanged);
  if(wifiChanged)wifiApplyAt=millis()+500;
  json(200,String("{\"ok\":true,\"restarting\":false,\"reconnecting\":")+(wifiChanged?"true":"false")+"}");
@@ -281,15 +328,16 @@ void cancelScan(){
  if(scanning){esp_wifi_scan_stop();WiFi.scanDelete();scanning=false;scanFailed=false;scanAt=0;}
 }
 void scan(){if(!origin()){error(403,"origin");return;}if(!setupAccess()&&!authenticated())return;
+ if(wifiApplyAt||wifiSetupState==WifiSetupState::connecting){error(409,"busy");return;}
 #if XTOUCH_FEATURE_BLE_PROVISIONING
  if(board_ble_busy()){error(409,"busy");return;}
 #endif
  const bool refresh=server.arg("refresh")=="1";
  if(scanFailed&&!refresh){error(503,"wifi_scan_failed");return;}
  if(!scanning&&(refresh||!scanAt||millis()-scanAt>30000)){
-  scanStartedAt=millis();
+  scanStartedAt=millis();setupLastActivity=millis();
+  if(WiFi.status()!=WL_CONNECTED)WiFi.disconnect();
   const int result=WiFi.scanNetworks(true,true);
-  if(result==WIFI_SCAN_RUNNING)PortalScanDeadline::extend();
   Serial.printf("[WIFI-SCAN] start=%d mode=%d status=%d\n",result,int(WiFi.getMode()),int(WiFi.status()));
   scanFailed=result==WIFI_SCAN_FAILED;
   if(scanFailed){scanAt=0;error(503,"wifi_scan_failed");return;}
@@ -298,7 +346,7 @@ void scan(){if(!origin()){error(403,"origin");return;}if(!setupAccess()&&!authen
  json(200,String("{\"scanning\":")+(scanning?"true":"false")+",\"networks\":"+scanCache+"}");
 }
 int saveWifiCredentials(const char *ssid,const char *password){
- auto previous=xtouch_storage_read("/xtouch.json",0);
+ auto previous=xtouch_storage_read("/xtouch.json",0);previous.shrinkToFit();
  if(previous.isNull()&&SPIFFS.exists("/xtouch.json"))return 503;
  DynamicJsonDocument config(max(size_t(1024),previous.capacity()+512));
  if(!previous.isNull()&&!config.set(previous))return 503;
@@ -310,7 +358,7 @@ int saveWifiCredentials(const char *ssid,const char *password){
 }
 bool saveSetupLanguage(const char *language,bool initializeScreen=true){
  if(xtouch_language_index(language)<0)return false;
- auto previous=xtouch_storage_read("/xtouch/settings.json",0);
+ auto previous=xtouch_storage_read("/xtouch/settings.json",0);previous.shrinkToFit();
  if(previous.isNull()&&SPIFFS.exists("/xtouch/settings.json"))return false;
  DynamicJsonDocument settings(max(size_t(1024),previous.capacity()+128));
  if(!previous.isNull()&&!settings.set(previous))return false;
@@ -321,18 +369,20 @@ bool saveSetupLanguage(const char *language,bool initializeScreen=true){
  if(initializeScreen)xtouch_runtime_config_reload(false);
  return true;
 }
-void wifiSave(){if(!setupAccess()&&!authenticated())return;DynamicJsonDocument input(512);if(!body(input,384))return;
+void wifiSave(){if(!setupAccess()&&!authenticated())return;if(wifiSetupState==WifiSetupState::connecting){error(409,"busy");return;}DynamicJsonDocument input(512);if(!body(input,384))return;
 #if XTOUCH_FEATURE_BLE_PROVISIONING
  if(board_ble_busy()){error(409,"busy");return;}
 #endif
  if(input.containsKey("language")&&(!input["language"].is<const char*>()||xtouch_language_index(input["language"])<0)){error(400,"invalid_settings");return;}
  if(!XTouchSchema::text(input["ssid"],33,true)||!XTouchSchema::text(input["pwd"],65)){error(400,"invalid_wifi");return;}
- int failure=saveWifiCredentials(input["ssid"],input["pwd"]|"");
- if(failure){error(failure,failure==503?"low_memory":"storage_failed");return;}
- if(input.containsKey("language")&&!saveSetupLanguage(input["language"])){error(507,"settings_failed");return;}
+ if(input.containsKey("requestId")&&!XTouchSchema::text(input["requestId"],49,true)){error(400,"invalid_wifi");return;}
+ if(input.containsKey("language")&&!saveSetupLanguage(input["language"],!bootComplete)){error(507,"settings_failed");return;}
+ pendingWifiSsid=input["ssid"].as<const char*>();pendingWifiPassword=input["pwd"]|"";pendingWifiCredentials=true;
+ wifiAttemptId=input["requestId"]|"";
+ wifiSetupState=WifiSetupState::connecting;wifiSetupStarted=0;apExitAt=0;setupLastActivity=millis();
  json(200,"{\"ok\":true,\"reconnecting\":true}");wifiApplyAt=millis()+500;
 }
-void cloudStart(){if(!authenticated())return;if(background){error(409,"checking_accounts");return;}checkAt=millis()+60000;if(server.arg("plain").indexOf("\"devices\"")<0&&(int32_t)(millis()-cloudNext)<0){server.sendHeader("Retry-After",String((cloudNext-millis()+999)/1000));error(429,"wait_before_retry");return;}xtouch_portal_release_transport();
+void cloudStart(){if(!authenticated())return;if(background){error(409,"checking_accounts");return;}checkAt=millis()+60000;if(server.arg("plain").indexOf("\"devices\"")<0&&(int32_t)(millis()-cloudNext)<0){server.sendHeader("Retry-After",String((cloudNext-millis()+999)/1000));error(429,"wait_before_retry");return;}prepareCloudTransport();
  DynamicJsonDocument request(6144);if(!body(request,5500))return;
 #if XTOUCH_FEATURE_CLOUD_LOGIN
  if(!strcmp(request["action"]|"","login")&&!strlen(request["password"]|"")){
@@ -344,7 +394,6 @@ void cloudStart(){if(!authenticated())return;if(background){error(409,"checking_
 #endif
  bool sendingCode=!strcmp(request["action"]|"","send_code");if(sendingCode&&(int32_t)(millis()-codeNext)<0){error(429,"wait_before_retry");return;}
  if(!strlen(request["token"]|"")&&request["accountId"].is<const char *>()) {DynamicJsonDocument root=xtouch_storage_read("/xtouch.json",0);for(JsonObject a:root["cloudAccounts"].as<JsonArray>())if(!strcmp(a["id"]|"",request["accountId"])&&!strcmp(a["region"]|"cn",request["credentialSource"]["region"]| (request["region"]|"cn"))){String plain;if(!XTouchCredentials::read(a,true,plain)&&strlen(a["tokenEnc"]|"")){error(409,"credential_key_changed");return;}request["token"]=plain;}}
- request.remove("credentialSource");
  request.remove("credentialSource");
  if(!xtouch_cloud_job_start(request.as<JsonVariantConst>())){error(400,"invalid_or_busy");return;}
  manualAccount=request["accountId"].as<String>();cloudNext=millis()+5000;if(sendingCode)codeNext=millis()+60000;json(202,"{\"busy\":true}");
@@ -358,7 +407,7 @@ void validateLanStart(){
  StaticJsonDocument<768> request;if(!body(request,512))return;
  request["action"]="validate_lan";request["mode"]="lan";request["region"]="cn";
  if(!strlen(request["accessCode"]|"")){
-  DynamicJsonDocument saved=xtouch_storage_read("/xtouch.json",0);
+  DynamicJsonDocument saved=xtouch_storage_read("/xtouch.json",0);saved.shrinkToFit();
   JsonVariantConst source=request["credentialSource"].is<JsonObject>()?request["credentialSource"].as<JsonVariantConst>():request.as<JsonVariantConst>();
   for(JsonVariantConst p:saved["printers"].as<JsonArrayConst>())if(!strcmp(p["mode"]|"lan","lan")&&!strcmp(p["serialNumber"]|"",source["serialNumber"]|"")&&!strcmp(p["host"]|"",source["host"]|"")){String plain;if(XTouchCredentials::readAccessCode(p,plain))request["accessCode"]=plain;break;}
   request.remove("credentialSource");
@@ -369,13 +418,20 @@ void validateLanStart(){
  json(202,"{\"busy\":true}");
 }
 // Internal reset preserves the SD source. A fresh key makes old encrypted passwords unreadable.
-void factoryReset(){
- if(xtouch_cloud_busy()||uploading)return;
- if(!xtouch_vault_rotate()){Serial.println("[RESET] key rotation failed");return;}
- const char *paths[]={"/xtouch.json","/xtouch/settings.json","/xtouch/touch.json","/xtouch/hardware.json","/xtouch/admin.json"};
- for(const char *path:paths)for(const char *suffix:{"",".tmp",".previous"})SPIFFS.remove(String(path)+suffix);
- rebootAt=millis()+500;
+xtouch::settings::ResetResult resetConfiguration(){
+ auto result=xtouch::settings::reset(xtouch_cloud_busy()||uploading,xtouch_vault_rotate,[](const char *path,const char *suffix){
+  String file=String(path)+suffix;
+  return !SPIFFS.exists(file)||(SPIFFS.remove(file)&&!SPIFFS.exists(file));
+ });
+ if(result==xtouch::settings::ResetResult::success)rebootAt=millis()+500;
+ return result;
 }
+void factoryReset(){
+ auto result=resetConfiguration();
+ if(result==xtouch::settings::ResetResult::busy)ui_notice_unavailable();
+ else if(result!=xtouch::settings::ResetResult::success)ui_notice_show(xtouch_local("保存失败，请重试","Save failed. Please retry."),0);
+}
+
 void firmwareChunk(){
  // WebServer also invokes this callback for raw POST bodies, without HTTPUpload.
  if(!server.header("Content-Type").startsWith("multipart/form-data")){uploadOk=false;uploadError="application_firmware_required";return;}
@@ -394,12 +450,16 @@ void firmwareChunk(){
  }else if(upload.status==UPLOAD_FILE_ABORTED){Update.abort();uploading=false;uploadOk=false;uploadDenied=false;uploadFiles=0;uploadError="upload_aborted";}
 }
 const char *setupText(const char *zh,const char *en){return bootComplete?xtouch_local(zh,en):en;}
+lv_obj_t *setupTitle=nullptr;
+#if defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && !defined(XTOUCH_BOARD_CYD) && !defined(XTOUCH_TEST_PROVISIONING_ONLY)
+int setupTestFirstBoot=-1;bool setupTestDual=false;
+#endif
 void setupFrame(const char *text){
  loadScreen(-1);qrActive=true;
  lv_obj_add_flag(introScreenIcon,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(introScreenCaption,LV_OBJ_FLAG_HIDDEN);
  lv_obj_set_layout(introScreen,0);lv_obj_set_style_pad_all(introScreen,0,0);
  lv_obj_set_style_bg_color(introScreen,lv_color_hex(0x222222),0);
- lv_obj_t *title=lv_label_create(introScreen);lv_obj_set_style_text_font(title,&ui_font_portal_title_22,0);
+ lv_obj_t *title=lv_label_create(introScreen);setupTitle=title;lv_obj_set_style_text_font(title,&ui_font_portal_title_22,0);
  lv_obj_set_style_text_color(title,lv_color_white(),0);lv_obj_set_width(title,304);
  lv_obj_set_style_text_align(title,LV_TEXT_ALIGN_CENTER,0);lv_label_set_long_mode(title,LV_LABEL_LONG_CLIP);
  lv_label_set_text(title,text);lv_obj_align(title,LV_ALIGN_TOP_MID,0,6);
@@ -407,24 +467,23 @@ void setupFrame(const char *text){
 lv_obj_t *setupButton(const char *text,int y,int request,bool management=false){
  lv_obj_t *button=lv_btn_create(introScreen);lv_obj_set_size(button,240,28);lv_obj_align(button,LV_ALIGN_TOP_MID,0,y);
  ui_layout_setup_button(button,management);lv_obj_set_style_pad_ver(button,0,0);
- lv_obj_t *label=lv_label_create(button);lv_label_set_text(label,text);lv_obj_set_width(label,LV_PCT(100));
- lv_obj_set_style_text_align(label,LV_TEXT_ALIGN_CENTER,0);lv_label_set_long_mode(label,LV_LABEL_LONG_CLIP);
- lv_obj_add_event_cb(label,ui_layout_single_line_event,LV_EVENT_SIZE_CHANGED,nullptr);lv_obj_update_layout(button);ui_layout_single_line(label);lv_obj_center(label);
+ ui_layout_setup_caption(button,text);
  lv_obj_add_event_cb(button,[](lv_event_t *event){showRequest=(int)(intptr_t)lv_event_get_user_data(event);},LV_EVENT_CLICKED,(void*)(intptr_t)request);
  return button;
 }
-void setupCaption(const char *text,int y){
- lv_obj_t *label=lv_label_create(introScreen);lv_obj_set_width(label,304);lv_obj_set_style_text_color(label,lv_color_hex(0xCCCCCC),0);
- lv_obj_set_style_text_align(label,LV_TEXT_ALIGN_CENTER,0);lv_label_set_long_mode(label,LV_LABEL_LONG_DOT);
- lv_label_set_text(label,text);lv_obj_align(label,LV_ALIGN_TOP_MID,0,y);
-}
 lv_obj_t *setupQr(const String &value){
- lv_obj_t *code=lv_qrcode_create(introScreen,128,lv_color_hex(0x222222),lv_color_white());lv_obj_align(code,LV_ALIGN_TOP_MID,0,38);
+ lv_obj_t *code=ui_qrcode_create(introScreen,128,lv_color_hex(0x222222),lv_color_white());lv_obj_align(code,LV_ALIGN_TOP_MID,0,38);
+ ui_layout_qr_size(code);ui_layout_qr_title(setupTitle,code);
  lv_qrcode_update(code,value.c_str(),value.length());return code;
 }
 lv_obj_t *setupReturn(lv_obj_t *code,int request,bool management=false){
- if(!bootComplete)return nullptr;
- lv_obj_t *back=setupButton(xtouch_local("返回设置","Back to settings"),206,request,management);
+ bool configured=bootComplete,multipleMethods=XTOUCH_FEATURE_BLE_PROVISIONING;
+#if defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && !defined(XTOUCH_BOARD_CYD) && !defined(XTOUCH_TEST_PROVISIONING_ONLY)
+ if(setupTestFirstBoot>=0){configured=!setupTestFirstBoot;multipleMethods=setupTestDual;}
+#endif
+ auto target=xtouch_setup_back(configured,multipleMethods);if(target==XTOUCH_SETUP_BACK_NONE)return nullptr;
+ const char *caption=target==XTOUCH_SETUP_BACK_METHODS?setupText("返回配网方式选择","Back to connection methods"):xtouch_local("返回设置","Back to settings");
+ lv_obj_t *back=setupButton(caption,206,target==XTOUCH_SETUP_BACK_METHODS?7:request,management);
  ui_layout_match_width(back,code);return back;
 }
 void qr(bool wifi) {
@@ -434,40 +493,50 @@ void qr(bool wifi) {
  lv_obj_t *code=setupQr(value),*back=setupReturn(code,3,!wifi);
  ui_layout_qr_details(code,back,wifi?apSsid.c_str():ip.c_str(),wifi?"192.168.4.1 / 12345678":nullptr,!wifi);
 }
-#if XTOUCH_FEATURE_BLE_PROVISIONING
+#if XTOUCH_FEATURE_BLE_PROVISIONING || (defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && !defined(XTOUCH_BOARD_CYD) && !defined(XTOUCH_TEST_PROVISIONING_ONLY))
+void setupCaption(const char *text,int y,bool bottom=false){
+ lv_obj_t *caption=lv_label_create(introScreen);lv_label_set_text(caption,text);lv_obj_set_style_text_font(caption,LV_FONT_DEFAULT,0);lv_obj_set_width(caption,304);lv_obj_set_style_text_align(caption,LV_TEXT_ALIGN_CENTER,0);lv_obj_set_style_text_color(caption,lv_color_hex(0xAAAAAA),0);ui_text_guard(caption);lv_obj_align(caption,bottom?LV_ALIGN_BOTTOM_MID:LV_ALIGN_TOP_MID,0,bottom?-y:y);
+}
 void setupChooser(){
- setupFrame("Network setup");bleScreen=false;
- setupCaption("Choose a connection method",39);
+#if XTOUCH_FEATURE_BLE_PROVISIONING
+ bleScreen=false;
+#endif
+ setupFrame(setupText("选择配网方式","Network setup"));
+ setupCaption(setupText("选择一种连接方式","Choose a connection method"),39);
  for(int method=0;method<2;++method){
   lv_obj_t *card=setupButton(method?"Bluetooth":"Wi-Fi",72+method*66,method?5:2);
-  lv_obj_set_size(card,288,58);lv_obj_set_style_radius(card,8,0);
-  lv_obj_set_style_bg_color(card,lv_color_hex(0x555555),0);
-  lv_obj_t *label=lv_obj_get_child(card,0);lv_obj_set_width(label,220);
-  lv_obj_set_style_text_align(label,LV_TEXT_ALIGN_LEFT,0);
-  lv_obj_align(label,LV_ALIGN_TOP_LEFT,44,5);
-  lv_obj_t *slot=lv_obj_create(card);lv_obj_remove_style_all(slot);lv_obj_set_size(slot,32,32);
-  lv_obj_clear_flag(slot,LV_OBJ_FLAG_SCROLLABLE|LV_OBJ_FLAG_CLICKABLE);lv_obj_align(slot,LV_ALIGN_LEFT_MID,-2,0);
-  lv_obj_t *icon=lv_label_create(slot);lv_obj_set_style_text_font(icon,&ui_font_symbols_28,0);
-  lv_obj_set_style_text_color(icon,lv_color_hex(0x2AFF00),0);
-  lv_label_set_text(icon,method?LV_SYMBOL_BLUETOOTH:LV_SYMBOL_WIFI);
-  lv_obj_add_event_cb(slot,ui_layout_setup_symbol_event,LV_EVENT_SIZE_CHANGED,nullptr);
-  lv_obj_update_layout(card);lv_event_send(slot,LV_EVENT_SIZE_CHANGED,nullptr);
-  lv_obj_t *detail=lv_label_create(card);lv_label_set_text(detail,method?"ESP BLE Provisioning app":"Phone or computer browser");
-  lv_obj_set_style_text_color(detail,lv_color_hex(0xAAAAAA),0);lv_obj_align(detail,LV_ALIGN_BOTTOM_LEFT,44,-3);
+  lv_obj_set_size(card,288,58);lv_obj_update_layout(card);
+  ui_layout_setup_choice_content(card,method?LV_SYMBOL_BLUETOOTH:LV_SYMBOL_WIFI,method?"Bluetooth":"Wi-Fi",method?"ESP BLE Provisioning app":setupText("手机或电脑浏览器","Phone or computer browser"));
  }
- setupCaption("xTouch-CN",215);
+ setupCaption("xTouch-CN",6,true);
 }
-void bluetoothQr(){
- StaticJsonDocument<1536> status;board_ble_status(status.to<JsonObject>());
- setupFrame(setupText("扫码蓝牙配网","Scan to join Bluetooth"));bleScreen=true;
- StaticJsonDocument<192> payload;payload["ver"]="v1";payload["name"]=status["serviceName"];payload["pop"]="abcd1234";payload["transport"]="ble";
- String value;serializeJson(payload,value);lv_obj_t *code=setupQr(value);
- lv_obj_t *back=setupReturn(code,6);
- ui_layout_qr_details(code,back,status["serviceName"]|"","ESP BLE Prov / abcd1234",false);
+void bluetoothQrView(const char *service){
+ setupFrame(setupText("扫码蓝牙配网","Scan to join Bluetooth"));
+ StaticJsonDocument<192> payload;payload["ver"]="v1";payload["name"]=service;payload["pop"]="abcd1234";payload["transport"]="ble";
+ String value;serializeJson(payload,value);lv_obj_t *code=setupQr(value);lv_obj_t *back=setupReturn(code,6);
+ ui_layout_qr_details(code,back,service,"ESP BLE Prov / abcd1234",false);
 }
+#if XTOUCH_FEATURE_BLE_PROVISIONING
+void bluetoothQr(){StaticJsonDocument<1536> status;board_ble_status(status.to<JsonObject>());bluetoothQrView(status["serviceName"]|"");bleScreen=true;}
 #endif
 
-void startAP(){apExitAt=0;if(apMode)return;apMode=true;WiFi.mode(WIFI_AP_STA);apSsid="XTOUCH-CN-"+String((uint32_t)ESP.getEfuseMac(),HEX);WiFi.softAP(apSsid.c_str(),"12345678");dns.start(53,"*",WiFi.softAPIP());qr(true);}
+#endif
+
+void startAP(){apExitAt=0;setupLastActivity=millis();if(apMode)return;if(wifiSetupState==WifiSetupState::connected)wifiSetupState=WifiSetupState::idle;if(WiFi.status()!=WL_CONNECTED)WiFi.disconnect();apMode=true;WiFi.mode(WIFI_AP_STA);apSsid="XTOUCH-CN-"+String((uint32_t)ESP.getEfuseMac(),HEX);WiFi.softAP(apSsid.c_str(),"12345678");dns.start(53,"*",WiFi.softAPIP());qr(true);}
+void restoreSavedWifi(){
+ auto saved=xtouch_storage_read("/xtouch.json",0);saved.shrinkToFit();
+ String ssid=saved["ssid"]|"",password=saved["pwd"]|"";
+ savedWifiConfigured=!ssid.isEmpty();
+ if(savedWifiConfigured)WiFi.begin(ssid.c_str(),password.c_str());
+}
+void closeSetupWifi(bool restore){
+ bool candidate=pendingWifiCredentials||wifiSetupState==WifiSetupState::connecting;
+ clearPendingWifi();wifiSetupStarted=0;cancelScan();scanAt=0;scanFailed=false;apExitAt=0;
+ if(apMode){dns.stop();WiFi.softAPdisconnect(false);WiFi.mode(WIFI_STA);apMode=manualAP=false;}
+ if(restore&&(candidate||WiFi.status()!=WL_CONNECTED)){WiFi.disconnect();restoreSavedWifi();}
+ wifiSetupState=WifiSetupState::idle;
+}
+#include "provisioning_test_console.h"
 }
 extern "C" void xtouch_portal_show_management(){accountTarget="";showRequest=1;}
 extern "C" void xtouch_portal_show_account(const char *id){accountTarget=id;showRequest=1;}
@@ -484,7 +553,7 @@ extern "C" bool xtouch_portal_provisioning(){
  return false;
 #endif
 }
-bool xtouch_portal_maintenance(){return rebootAt||uploading||xtouch_cloud_busy()
+bool xtouch_portal_maintenance(){return xtouch_portal_transport_maintenance(rebootAt,uploading,xtouch_cloud_busy())
 #if XTOUCH_FEATURE_BLE_PROVISIONING
  ||board_ble_busy()
 #endif
@@ -493,6 +562,7 @@ void xtouch_portal_cloud_rejected(){
  const char *id=xtouch_printer_account();for(unsigned i=0;i<healthCount;++i)if(health[i].id==id&&!health[i].renewed&&!background){healthIndex=i;checkAt=millis()+5000;break;}
 }
 void xtouch_portal_begin(){
+ printf("[PORTAL] initialize heap=%u\n",unsigned(esp_get_free_heap_size()));
  WiFi.persistent(false);WiFi.mode(WIFI_STA);
  WiFi.setAutoReconnect(true);
 #if XTOUCH_FEATURE_BLE_PROVISIONING
@@ -503,11 +573,11 @@ void xtouch_portal_begin(){
  server.on("/",HTTP_GET,[]{headers();server.sendHeader("Content-Encoding","gzip");server.send_P(200,"text/html; charset=utf-8",(const char*)portal_index,sizeof(portal_index));});
  server.on("/portal.js",HTTP_GET,[]{headers();server.sendHeader("Content-Encoding","gzip");server.send_P(200,"text/javascript; charset=utf-8",(const char*)portal_script,sizeof(portal_script));});
  server.on("/portal.css",HTTP_GET,[]{headers();server.sendHeader("Content-Encoding","gzip");server.send_P(200,"text/css; charset=utf-8",(const char*)portal_style,sizeof(portal_style));});
- server.on("/api/info",HTTP_GET,[]{DynamicJsonDocument d(4096+healthCount*64+(XTOUCH_FEATURE_XIAOMI_BLE?4096:0));d["ap"]=setupAccess();d["portalLanguage"]=xTouchConfig.xTouchPortalLanguage[0]?xTouchConfig.xTouchPortalLanguage:"en";if(hasSession()&&!mustChange){JsonObject accountHealth=d.createNestedObject("accountHealth");for(unsigned i=0;i<healthCount;++i)accountHealth[health[i].id]=health[i].state;d["ip"]=WiFi.localIP().toString();d["ssid"]=WiFi.SSID();lv_mem_monitor_t graphics;lv_mem_monitor(&graphics);d["lvglFree"]=graphics.free_size;d["lvglLargest"]=graphics.free_biggest_size;xtouch_feature_diagnostics(d);d["cpuMHz"]=ESP.getCpuFreqMHz();
+ server.on("/api/info",HTTP_GET,[]{const bool privateInfo=hasSession()&&!mustChange;if(privateInfo&&xtouch_cloud_busy()){error(409,"busy");return;}DynamicJsonDocument d(privateInfo?size_t(4096+healthCount*64+(XTOUCH_FEATURE_XIAOMI_BLE?4096:0)):size_t(256));d["ap"]=setupAccess();d["portalLanguage"]=xTouchConfig.xTouchPortalLanguage[0]?xTouchConfig.xTouchPortalLanguage:"en";if(privateInfo){JsonObject accountHealth=d.createNestedObject("accountHealth");for(unsigned i=0;i<healthCount;++i)accountHealth[health[i].id]=health[i].state;d["ip"]=WiFi.localIP().toString();d["ssid"]=WiFi.SSID();lv_mem_monitor_t graphics;lv_mem_monitor(&graphics);d["lvglFree"]=graphics.free_size;d["lvglLargest"]=graphics.free_biggest_size;xtouch_feature_diagnostics(d);d["cpuMHz"]=ESP.getCpuFreqMHz();
 #if defined(XTOUCH_BOARD_P4)
  d["cacheLineBytes"]=CONFIG_CACHE_L2_CACHE_LINE_SIZE;
 #endif
-auto power=xtouch_power_status();auto pm=d.createNestedObject("power");pm["screenSleeping"]=power.screenSleeping;pm["automaticDfs"]=power.automaticDfs;pm["automaticLightSleep"]=power.automaticLightSleep;pm["minMHz"]=power.minMHz;pm["maxMHz"]=power.maxMHz;pm["error"]=power.error;pm["wakeCause"]=power.wakeCause;pm["deepSleepAfter"]=xTouchConfig.xTouchDeepSleepAfter;d["heap"]=ESP.getFreeHeap();d["minHeap"]=ESP.getMinFreeHeap();d["heap8"]=heap_caps_get_free_size(MALLOC_CAP_8BIT);d["largestHeap8"]=heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);d["mode"]=xtouch_cloud_simulator()?"Simulator":xtouch_printer_cloud()?"Cloud":"LAN";d["clockReady"]=time(nullptr)>1577836800;char clockText[6];d["clockLocal"]=xtouch_clock_text(clockText,sizeof(clockText))?clockText:"";d["timezone"]=xTouchConfig.xTouchTimezone;d["ntpServer"]=xTouchConfig.xTouchNtpServer;d["uptime"]=millis()/1000;
+auto power=xtouch_power_status();auto pm=d.createNestedObject("power");pm["screenSleeping"]=power.screenSleeping;pm["automaticDfs"]=power.automaticDfs;pm["automaticLightSleep"]=power.automaticLightSleep;pm["minMHz"]=power.minMHz;pm["maxMHz"]=power.maxMHz;pm["error"]=power.error;pm["wakeCause"]=power.wakeCause;pm["deepSleepAfter"]=xTouchConfig.xTouchDeepSleepAfter;d["heap"]=ESP.getFreeHeap();d["internalHeap"]=heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT);d["psramHeap"]=heap_caps_get_free_size(MALLOC_CAP_SPIRAM);d["psramTotal"]=heap_caps_get_total_size(MALLOC_CAP_SPIRAM);d["minHeap"]=ESP.getMinFreeHeap();d["heap8"]=heap_caps_get_free_size(MALLOC_CAP_8BIT);d["largestHeap8"]=heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);d["mode"]=xtouch_cloud_simulator()?"Simulator":xtouch_printer_cloud()?"Cloud":"LAN";d["clockReady"]=time(nullptr)>1577836800;char clockText[6];d["clockLocal"]=xtouch_clock_text(clockText,sizeof(clockText))?clockText:"";d["timezone"]=xTouchConfig.xTouchTimezone;d["ntpServer"]=xTouchConfig.xTouchNtpServer;d["uptime"]=millis()/1000;
 #if XTOUCH_FEATURE_BLE_PROVISIONING
  auto radio=d.createNestedObject("radio");board_ble_status(radio);radio.remove("proofOfPossession");radio.remove("serviceName");
 #endif
@@ -515,11 +585,11 @@ auto power=xtouch_power_status();auto pm=d.createNestedObject("power");pm["scree
 #if XTOUCH_FEATURE_XIAOMI_BLE
 xtouch_xiaomi_ble_status(d.createNestedObject("xiaomiBle"));xtouch_environment_status(d.createNestedObject("environment"));
 #endif
-d["online"]=xtouch_printer_online();d["printer"]=xtouch_printer_name();d["version"]=XTOUCH_FIRMWARE_VERSION;d["resetReason"]=(int)esp_reset_reason();auto preview=xtouch_print_preview_status();JsonObject pv=d.createNestedObject("preview");pv["busy"]=preview.busy;pv["visible"]=preview.visible;pv["width"]=preview.width;pv["height"]=preview.height;pv["attempts"]=preview.attempts;pv["result"]=preview.result;pv["stage"]=preview.stage;pv["httpStatus"]=preview.httpStatus;pv["tlsError"]=preview.tlsError;pv["renderedLines"]=preview.renderedLines;pv["tlsPhase"]=preview.tlsPhase;pv["jsonError"]=preview.jsonError;pv["plateIndex"]=bambuStatus.plate_index;pv["plateKnown"]=bambuStatus.plate_index_valid;pv["printState"]=(int)bambuStatus.print_status;pv["hasTaskId"]=bambuStatus.task_id[0]&&strcmp(bambuStatus.task_id,"0");pv["hasSubtaskId"]=bambuStatus.obj_subtask_id[0]&&strcmp(bambuStatus.obj_subtask_id,"0");pv["hasFile"]=bool(bambuStatus.gcode_file[0]||bambuStatus.subtask_name[0]);
+d["online"]=xtouch_printer_online();d["printer"]=xtouch_printer_name();d["version"]=XTOUCH_FIRMWARE_VERSION;d["resetReason"]=(int)esp_reset_reason();auto preview=xtouch_print_preview_status();JsonObject pv=d.createNestedObject("preview");pv["busy"]=preview.busy;pv["visible"]=preview.visible;pv["width"]=preview.width;pv["height"]=preview.height;pv["attempts"]=preview.attempts;pv["result"]=preview.result;pv["stage"]=preview.stage;pv["httpStatus"]=preview.httpStatus;pv["tlsError"]=preview.tlsError;pv["renderedLines"]=preview.renderedLines;pv["tlsPhase"]=preview.tlsPhase;pv["jsonError"]=preview.jsonError;pv["workerStackBytes"]=preview.workerStackBytes;pv["workerStackMin"]=preview.workerStackMin;pv["ftpTransferReply"]=preview.ftpTransferReply;pv["ftpAbortReply"]=preview.ftpAbortReply;pv["ftpQuitReply"]=preview.ftpQuitReply;pv["ftpCleanupResult"]=preview.ftpCleanupResult;pv["plateIndex"]=bambuStatus.plate_index;pv["plateKnown"]=bambuStatus.plate_index_valid;pv["printState"]=(int)bambuStatus.print_status;pv["hasTaskId"]=bambuStatus.task_id[0]&&strcmp(bambuStatus.task_id,"0");pv["hasSubtaskId"]=bambuStatus.obj_subtask_id[0]&&strcmp(bambuStatus.obj_subtask_id,"0");pv["hasFile"]=bool(bambuStatus.gcode_file[0]||bambuStatus.subtask_name[0]);
 #ifdef XTOUCH_WAVESHARE
- auto cs=xtouch_camera_status();auto cam=d.createNestedObject("camera");cam["open"]=cs.open;cam["running"]=cs.running;cam["state"]=cs.state;cam["frames"]=cs.frames;cam["connections"]=cs.connections;cam["width"]=cs.width;cam["height"]=cs.height;cam["lastFrameAgeMs"]=cs.lastFrameAgeMs;cam["freeInternal"]=cs.freeInternal;cam["largestInternal"]=cs.largestInternal;
+ auto cs=xtouch_camera_status();auto cam=d.createNestedObject("camera");cam["open"]=cs.open;cam["running"]=cs.running;cam["state"]=cs.state;cam["frames"]=cs.frames;cam["connections"]=cs.connections;cam["width"]=cs.width;cam["height"]=cs.height;cam["lastFrameAgeMs"]=cs.lastFrameAgeMs;cam["freeInternal"]=cs.freeInternal;cam["largestInternal"]=cs.largestInternal;cam["closeReason"]=cs.closeReason;
 #endif
-d["clockEpoch"]=(uint32_t)time(nullptr);}if(d.overflowed()){error(503,"low_memory");return;}String out;serializeJson(d,out);json(200,out);});
+d["clockEpoch"]=(uint32_t)time(nullptr);}d["profileLimits"]["accounts"]=XTouchSchema::MaxAccounts;d["profileLimits"]["devices"]=XTouchSchema::MaxPrinters;if(d.overflowed()){Serial.printf("[PORTAL] info capacity=%u used=%u heap=%u largest=%u\n",unsigned(d.capacity()),unsigned(d.memoryUsage()),unsigned(ESP.getFreeHeap()),unsigned(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT)));error(503,"low_memory");return;}String out;if(!out.reserve(measureJson(d)+1)){error(503,"low_memory");return;}serializeJson(d,out);json(200,out);});
  server.on("/api/language",HTTP_POST,[]{
   if(!authenticated(true))return;
   StaticJsonDocument<96> input;if(!body(input,96))return;
@@ -537,21 +607,123 @@ d["clockEpoch"]=(uint32_t)time(nullptr);}if(d.overflowed()){error(503,"low_memor
  server.on("/api/password",HTTP_POST,changePassword);
  server.on("/api/logout",HTTP_POST,[]{if(!authenticated(true))return;session="";csrf="";server.sendHeader("Set-Cookie","xtouch_session=; Max-Age=0; Path=/; HttpOnly; SameSite=Strict");xtouch_cloud_job_clear();json(200,"{\"ok\":true}");});
  server.on("/api/session",HTTP_GET,[]{if(!authenticated(true))return;json(200,String("{\"csrf\":\"")+csrf+"\",\"mustChange\":"+(mustChange?"true":"false")+"}");});
- server.on("/api/reset",HTTP_POST,[]{if(!authenticated())return;StaticJsonDocument<64> d;if(!body(d,64))return;if(strcmp(d["confirm"]|"","RESET")){error(400,"confirmation_required");return;}if(xtouch_cloud_busy()||uploading){error(409,"busy");return;}json(200,"{\"ok\":true}");factoryReset();});
+ server.on("/api/reset",HTTP_POST,[]{if(!authenticated())return;StaticJsonDocument<64> d;if(!body(d,64))return;if(strcmp(d["confirm"]|"","RESET")){error(400,"confirmation_required");return;}if(xtouch_cloud_busy()||uploading){error(409,"busy");return;}if(resetConfiguration()!=xtouch::settings::ResetResult::success){error(507,"storage_failed");return;}json(200,"{\"ok\":true}");});
  server.setUploadGuard([](){return authenticated();});
- server.on("/api/firmware",HTTP_POST,[]{if(uploadDenied){uploadDenied=false;uploadFiles=0;return;}if(!authenticated()){Update.abort();uploadFiles=0;return;}uploadFiles=0;if(uploadOk&&uploadError.isEmpty())uploadOk=Update.end(true);if(uploadOk&&uploadError.isEmpty()){json(200,"{\"ok\":true}");rebootAt=millis()+1800;}else {Update.abort();error(400,uploadError.isEmpty()?"update_failed":uploadError.c_str());}},firmwareChunk);
+ server.setBodyGuard([](){
+  const String path=server.uri();
+  if(path!="/api/config"&&path!="/api/cloud")return true;
+  if(!authenticated())return false;
+  prepareCloudTransport();
+  return true;
+ });
+ server.on("/api/firmware",HTTP_POST,[]{if(uploadDenied){uploadDenied=false;uploadFiles=0;return;}if(!authenticated()){Update.abort();uploadFiles=0;return;}uploadFiles=0;if(uploadOk&&uploadError.isEmpty())uploadOk=Update.end(true);if(uploadOk&&uploadError.isEmpty()){json(200,"{\"ok\":true}");rebootAt=millis()+1800;}else {Update.abort();error(uploadError=="not_ready"?409:400,uploadError.isEmpty()?"update_failed":uploadError.c_str());}},firmwareChunk);
  server.on("/api/config",HTTP_GET,configGet);server.on("/api/config",HTTP_POST,configSave);
  server.on("/api/printer/validate",HTTP_POST,validateLanStart);
  server.on("/api/printer/validate",HTTP_GET,[]{if(!authenticated())return;if(background){error(409,"checking_accounts");return;}json(200,xtouch_cloud_job_result());});
+ server.on("/api/wifi/status",HTTP_GET,[]{
+  if(!setupAccess()&&!authenticated())return;
+  setupLastActivity=millis();DynamicJsonDocument d(256);
+  d["reason"]=WiFi.lastDisconnectReason();d["attempts"]=WiFi.connectionAttempts();
+  d["requestId"]=wifiAttemptId;
+  d["state"]=wifiSetupState==WifiSetupState::connecting?"connecting":wifiSetupState==WifiSetupState::connected?"connected":wifiSetupState==WifiSetupState::failed?"failed":"idle";
+  if(wifiSetupState==WifiSetupState::connected)d["ip"]=WiFi.localIP().toString();
+  String out;serializeJson(d,out);json(200,out);
+ });
  server.on("/api/wifi/scan",HTTP_GET,scan);server.on("/api/wifi",HTTP_POST,wifiSave);
+#if defined(XTOUCH_BOARD_CYD) && defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && !defined(XTOUCH_TEST_PROVISIONING_ONLY)
+ server.on("/api/test/display",HTTP_POST,[]{
+  if(!authenticated())return;
+  DynamicJsonDocument d(192);if(!body(d))return;
+  if(!d["frozen"].is<bool>()||!d["directLight"].is<bool>()){error(400,"invalid_config");return;}
+  if(d.containsKey("doubleBuffer")){if(!d["doubleBuffer"].is<bool>()){error(400,"invalid_config");return;}extern void board_display_test_buffers(bool);board_display_test_buffers(d["doubleBuffer"].as<bool>());}
+  if(d.containsKey("polling")){if(!d["polling"].is<bool>()){error(400,"invalid_config");return;}board_display_test_polling(d["polling"].as<bool>());}
+#if XTOUCH_FEATURE_XIAOMI_BLE
+  if(d.containsKey("btStart")){
+   if(!d["btStart"].is<bool>()||!d["btStart"].as<bool>()){error(400,"invalid_config");return;}
+   if(!xtouch_xiaomi_ble_test_start()){error(409,"bt_start_failed");return;}
+   board_display_test(d["frozen"].as<bool>(),d["directLight"].as<bool>());
+   json(200,"{\"ok\":true,\"controllerEnabled\":true}");return;
+  }
+  if(d.containsKey("btStop")){
+   if(!d["btStop"].is<bool>()||!d["btStop"].as<bool>()){error(400,"invalid_config");return;}
+   if(!xtouch_xiaomi_ble_test_stop()){error(409,"bt_stop_failed");return;}
+   board_display_test(d["frozen"].as<bool>(),d["directLight"].as<bool>());
+   json(200,"{\"ok\":true,\"controllerOff\":true}");return;
+  }
+  if(d.containsKey("btSleep")){
+   if(!d["btSleep"].is<bool>()){error(400,"invalid_config");return;}
+   if(!xtouch_xiaomi_ble_test_sleep(d["btSleep"].as<bool>())){error(409,"bt_sleep_failed");return;}
+  }
+  if(d.containsKey("scan")){
+   if(!d["scan"].is<bool>()){error(400,"invalid_config");return;}
+   if(!xtouch_xiaomi_ble_test_scan(d["scan"].as<bool>())){error(409,"scan_busy");return;}
+  }
+#endif
+  board_display_test(d["frozen"].as<bool>(),d["directLight"].as<bool>());
+  json(200,"{\"ok\":true}");
+ });
+#endif
+#if defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && !defined(XTOUCH_BOARD_CYD) && !defined(XTOUCH_TEST_PROVISIONING_ONLY)
+ server.on("/api/test/ui",HTTP_POST,[]{
+  if(!authenticated())return;StaticJsonDocument<256> d;if(!body(d,192))return;
+  const char *page=d["page"]|"";
+  if(!strcmp(page,"tree")){
+   DynamicJsonDocument result(16384);xtouch_test_ui_labels(result.createNestedArray("labels"));
+   if(result.overflowed()){error(503,"low_memory");return;}jsonDocument(result);return;
+  }
+  if(!strcmp(page,"tap")){
+   if(!d["x"].is<unsigned>()||!d["y"].is<unsigned>()||!xtouch_test_ui_tap(d["x"],d["y"],d["selected"]|-1)){error(400,"invalid_target");return;}
+   json(200,"{\"ok\":true}");return;
+  }
+  if(d["firstBoot"].is<bool>())setupTestFirstBoot=d["firstBoot"].as<bool>()?1:0;
+  if(d["dual"].is<bool>())setupTestDual=d["dual"].as<bool>();
+  if(!xtouch_test_frame_prepare()){error(503,"low_memory");return;}
+  if(!strcmp(page,"home"))loadScreen(0);
+  else if(!strcmp(page,"temperature"))loadScreen(1);
+  else if(!strcmp(page,"motion"))loadScreen(2);
+  else if(!strcmp(page,"filament"))loadScreen(3);
+  else if(!strcmp(page,"management"))qr(false);
+  else if(!strcmp(page,"wifi")){manualAP=bootComplete;startAP();qr(true);}
+  else if(!strcmp(page,"chooser"))setupChooser();
+  else if(!strcmp(page,"bluetooth"))bluetoothQrView("XTOUCH-UI-TEST");
+  else if(!strcmp(page,"back")){
+   bool found=false;for(unsigned n=0;n<lv_obj_get_child_count(introScreen);++n){auto *child=lv_obj_get_child(introScreen,n);if(lv_obj_check_type(child,&lv_button_class)){lv_obj_send_event(child,LV_EVENT_CLICKED,nullptr);found=true;break;}}
+   if(!found){error(409,"no_back_button");return;}
+  }
+  else if(!strcmp(page,"settings")){setupTestFirstBoot=-1;qrActive=false;loadScreen(4);if(apMode&&manualAP)apExitAt=millis()+100;}
+  else {error(400,"invalid_config");return;}
+  json(200,"{\"ok\":true}");
+ });
+ server.on("/api/test/screen",HTTP_GET,[]{
+  if(!authenticated())return;
+  const unsigned w=lv_display_get_horizontal_resolution(nullptr),h=lv_display_get_vertical_resolution(nullptr);
+  const uint8_t *pixels=xtouch_test_frame();if(!pixels){error(409,"not_ready");return;}
+  headers();server.sendHeader("X-Width",String(w));server.sendHeader("X-Height",String(h));server.sendHeader("X-Stride",String(w*2));
+  server.send_P(200,"application/octet-stream",(const char*)pixels,w*h*2);
+ });
+#endif
  server.on("/api/display/power",HTTP_POST,[]{if(!authenticated())return;DynamicJsonDocument d(192);if(!body(d))return;const char *mode=d["mode"]|"";unsigned value=!strcmp(mode,"standby")?1:!strcmp(mode,"wake")?2:!strcmp(mode,"deep")?3:0;if(!xtouch_display_request(value)){error(409,"power_unavailable");return;}json(202,"{\"ok\":true}");});
  server.on("/api/sound/test",HTTP_POST,[]{if(!authenticated())return;DynamicJsonDocument d(128);if(!body(d))return;const char *kind=d["kind"]|"warning";if(strcmp(kind,"touch")&&strcmp(kind,"warning")&&strcmp(kind,"error")&&strcmp(kind,"complete")){error(400,"invalid_config");return;}XTouchSoundEvent event=!strcmp(kind,"touch")?XTOUCH_SOUND_TOUCH:!strcmp(kind,"error")?XTOUCH_SOUND_ERROR:!strcmp(kind,"complete")?XTOUCH_SOUND_COMPLETE:XTOUCH_SOUND_WARNING;if(!xtouch_sound_test(event)){error(409,"sound_unavailable");return;}json(202,"{\"ok\":true}");});
- server.on("/api/backup",HTTP_GET,[]{if(!authenticated())return;DynamicJsonDocument saved=xtouch_storage_read("/xtouch.json",0);DynamicJsonDocument doc(saved.capacity()+4096);doc.set(saved);doc["settings"]=xtouch_storage_read("/xtouch/settings.json",0);
+ server.on("/api/backup",HTTP_GET,[]{if(!authenticated())return;prepareCloudTransport();DynamicJsonDocument saved=xtouch_storage_read("/xtouch.json",0);saved.shrinkToFit();DynamicJsonDocument doc(saved.capacity()+4096);doc.set(saved);saved.clear();saved.shrinkToFit();doc["settings"]=xtouch_storage_read("/xtouch/settings.json",0);
 #if XTOUCH_FEATURE_XIAOMI_BLE
  doc["environmentSensor"]=xtouch_storage_read(xtouch_environment_config_path,0);if(doc["environmentSensor"].isNull())doc.remove("environmentSensor");
 #endif
- if(doc.overflowed()){error(503,"low_memory");return;}String out;serializeJson(doc,out);server.sendHeader("Content-Disposition","attachment; filename=xtouch.json");json(200,out);});
+ jsonDocument(doc,true);});
  server.on("/api/lab/discover",HTTP_POST,labDiscover);
+#if defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && XTOUCH_FEATURE_CAMERA && !defined(XTOUCH_TEST_PROVISIONING_ONLY)
+ // Compiled only in explicit laboratory builds. Same session/origin/CSRF gates as config writes.
+ server.on("/api/test/camera",HTTP_POST,[]{
+  if(!authenticated())return;
+  StaticJsonDocument<128> request;if(!body(request,128))return;
+  if(!request["open"].is<bool>()){error(400,"invalid_configuration");return;}
+  if(request["open"].as<bool>()){
+   if(!xtouch_camera_available()){error(409,"camera_unavailable");return;}
+   if(!xtouch_camera_status().open)xtouch_camera_open();
+  }else xtouch_camera_suspend();
+  json(202,"{\"ok\":true}");
+ });
+#endif
+
  server.on("/api/cloud",HTTP_POST,cloudStart);server.on("/api/cloud",HTTP_GET,[]{if(!authenticated())return;if(background){json(200,"{\"busy\":true}");return;}
  String value=xtouch_cloud_job_result();if(!xtouch_cloud_busy()){
   DynamicJsonDocument d(min((size_t)18432,max((size_t)2048,value.length()*2)));deserializeJson(d,value);inspectResult(d,manualAccount);
@@ -566,9 +738,27 @@ d["clockEpoch"]=(uint32_t)time(nullptr);}if(d.overflowed()){error(503,"low_memor
 #else
  startAP();
 #endif
- }else{WiFi.begin(ssid.c_str(),password.c_str());connectAt=millis();}
+ }else{savedWifiConfigured=true;WiFi.begin(ssid.c_str(),password.c_str());connectAt=millis();}
 }
 void xtouch_portal_loop(){
+#if defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION
+ provisioningTestPoll();
+#endif
+#if XTOUCH_FEATURE_BLE_PROVISIONING || (defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && !defined(XTOUCH_BOARD_CYD) && !defined(XTOUCH_TEST_PROVISIONING_ONLY))
+ if(showRequest==7){
+  showRequest=0;
+#if XTOUCH_FEATURE_BLE_PROVISIONING
+  board_ble_request(false);bleScreen=false;
+#endif
+#if XTOUCH_FEATURE_BLE_PROVISIONING
+  closeSetupWifi(!board_ble_busy());
+#else
+  closeSetupWifi(true);
+#endif
+  setupChooser();return;
+ }
+#endif
+
 #if XTOUCH_FEATURE_BLE_PROVISIONING
  char radioSsid[33]={},radioPassword[65]={};
  if(showRequest==6){
@@ -585,14 +775,15 @@ void xtouch_portal_loop(){
   }
   memset(radioPassword,0,sizeof(radioPassword));
   WiFi.setAutoReconnect(true);
-  {auto restored=xtouch_storage_read("/xtouch.json",0);wifiApplyAt=strlen(restored["ssid"]|"")?millis()+500:0;}
-  if(bleScreen){bleScreen=false;qrActive=false;if(!radioSsid[0]){if(bootComplete)loadScreen(4);else setupChooser();}else loadScreen(bootComplete?0:-1);}
+  if(saved){savedWifiConfigured=true;WiFi.resumeAutoReconnect();wifiSetupState=WifiSetupState::connected;}else restoreSavedWifi();
+  if(bleScreen){bleScreen=false;qrActive=false;if(!saved){if(bootComplete)loadScreen(4);else setupChooser();}else loadScreen(bootComplete?0:-1);}
  }
  if(board_ble_busy()){
   // Let the SDK provisioning manager own Wi-Fi until it completes or times out.
   WiFi.setAutoReconnect(false);server.handleClient();return;
  }
 #endif
+ WiFi.poll();
  if((int32_t)(millis()-nextSweep)>=0&&!background){healthIndex=0;nextSweep=millis()+21600000;for(unsigned i=0;i<healthCount;++i)health[i].renewed=false;}
 
  if(background && !xtouch_cloud_busy() && !ui_scroll_busy(750)){
@@ -641,18 +832,23 @@ void xtouch_portal_loop(){
    if(!tokenReady){req.clear();break;}
 #endif
   }
-  if(!req["action"].isNull()){xtouch_portal_release_transport();background=xtouch_cloud_job_start(req.as<JsonVariantConst>());}if(!background){renewing=false;++healthIndex;}
+  if(!req["action"].isNull()){prepareCloudTransport();background=xtouch_cloud_job_start(req.as<JsonVariantConst>());}if(!background){renewing=false;++healthIndex;}
  }
 
  server.handleClient();if(apMode)dns.processNextRequest();
  if(apExitAt&&(int32_t)(millis()-apExitAt)>=0){
   apExitAt=0;
-  if(apMode&&manualAP){cancelScan();dns.stop();WiFi.softAPdisconnect(false);WiFi.mode(WIFI_STA);apMode=manualAP=false;Serial.println("[PORTAL] setup AP closed; station retained");}
+  if(apMode){cancelScan();dns.stop();WiFi.softAPdisconnect(false);WiFi.mode(WIFI_STA);apMode=manualAP=false;if(qrActive){qrActive=false;loadScreen(bootComplete?0:-1);}Serial.println("[PORTAL] setup AP closed; station retained");}
  }
  if(wifiApplyAt&&(int32_t)(millis()-wifiApplyAt)>=0){
-  wifiApplyAt=0;xtouch_portal_release_transport();
-  DynamicJsonDocument saved=xtouch_storage_read("/xtouch.json",0);String ssid=saved["ssid"]|"",password=saved["pwd"]|"";
-  WiFi.disconnect();if(ssid.isEmpty())startAP();else{WiFi.begin(ssid.c_str(),password.c_str());connectAt=millis();}
+  wifiApplyAt=0;cancelScan();scanCache="[]";xtouch_portal_release_transport();
+  DynamicJsonDocument saved(0);if(!pendingWifiCredentials){saved=xtouch_storage_read("/xtouch.json",0);saved.shrinkToFit();}
+  String ssid=pendingWifiCredentials?pendingWifiSsid:String(saved["ssid"]|""),password=pendingWifiCredentials?pendingWifiPassword:String(saved["pwd"]|"");
+  WiFi.disconnect();if(ssid.isEmpty()){wifiSetupState=WifiSetupState::failed;startAP();}else{
+   wifiSetupStarted=millis();
+   WiFi.begin(ssid.c_str(),password.c_str());
+   connectAt=millis();
+  }
  }
  if(scanning){
   const int count=WiFi.scanComplete();
@@ -666,23 +862,33 @@ void xtouch_portal_loop(){
   }else if(count==WIFI_SCAN_FAILED){Serial.printf("[WIFI-SCAN] failed elapsed=%lu\n",(unsigned long)(millis()-scanStartedAt));WiFi.scanDelete();scanning=false;scanFailed=true;scanAt=0;}
  }
 
+ if(wifiSetupState==WifiSetupState::connecting&&wifiSetupStarted){
+  if(WiFi.status()==WL_CONNECTED){
+   int failure=pendingWifiCredentials?saveWifiCredentials(pendingWifiSsid.c_str(),pendingWifiPassword.c_str()):0;
+   clearPendingWifi();
+   if(failure){wifiSetupState=WifiSetupState::failed;WiFi.disconnect();startAP();}
+   else{savedWifiConfigured=true;wifiSetupState=WifiSetupState::connected;apExitAt=apMode?millis()+10000:0;}
+  }
+  else if(WiFi.retryExhausted()||uint32_t(millis()-wifiSetupStarted)>=30000){clearPendingWifi();wifiSetupState=WifiSetupState::failed;connectAt=0;WiFi.disconnect();startAP();}
+ }
  if(WiFi.status()==WL_CONNECTED){
   connectAt=0;
-  if(apMode&&!manualAP){
+  if(apMode&&!manualAP&&wifiSetupState!=WifiSetupState::connected){
    dns.stop();WiFi.softAPdisconnect(true);apMode=false;
    if(qrActive){qrActive=false;loadScreen(bootComplete?0:-1);}
   }
- }else if(xtouch_wifi_fallback_due(millis(),connectAt,false)){connectAt=0;startAP();}
+ }else if(wifiSetupState!=WifiSetupState::connecting&&(WiFi.retryExhausted()||xtouch_wifi_fallback_due(millis(),WiFi.connectionStartedAt(),false))){connectAt=0;WiFi.disconnect();xtouch_portal_release_transport();startAP();}
+ if(apMode&&!apExitAt&&wifiSetupState!=WifiSetupState::connecting&&(bootComplete||savedWifiConfigured)&&uint32_t(millis()-setupLastActivity)>=180000){bool manual=manualAP;closeSetupWifi(true);qrActive=false;loadScreen(bootComplete?(manual?4:0):-1);Serial.println("[PORTAL] setup idle timeout; saved network retained");}
  int request=showRequest;showRequest=0;
 #if XTOUCH_FEATURE_BLE_PROVISIONING
  if(request==5){
-  if(!uploading&&!xtouch_cloud_busy()&&!wifiApplyAt){
-   xtouch_portal_release_transport();cancelScan();if(apMode){dns.stop();WiFi.softAPdisconnect(false);WiFi.mode(WIFI_STA);apMode=false;}apExitAt=0;manualAP=false;connectAt=0;
-   if(board_ble_request(true))bluetoothQr();
-  }
+  if(!uploading&&!xtouch_cloud_busy()&&!wifiApplyAt&&wifiSetupState!=WifiSetupState::connecting){
+   xtouch_portal_release_transport();closeSetupWifi(false);WiFi.disconnect();WiFi.setAutoReconnect(false);connectAt=0;
+   if(board_ble_request(true))bluetoothQr();else{WiFi.setAutoReconnect(true);restoreSavedWifi();ui_notice_unavailable();}
+  }else ui_notice_unavailable();
   return;
  }
 #endif
-if(request==1){if(WiFi.status()==WL_CONNECTED)qr(false);else{manualAP=bootComplete;startAP();}}else if(request==2){manualAP=bootComplete;startAP();qr(true);}else if(request==3){qrActive=false;loadScreen(4);if(apMode&&manualAP)apExitAt=millis()+100;}else if(request==4){ui_confirmPanel_show_danger(xtouch_local("重置设备？保留SD备份", "Reset device? SD backup remains."),factoryReset);}
+if(request==1){if(WiFi.status()==WL_CONNECTED)qr(false);else{manualAP=bootComplete;startAP();}}else if(request==2){manualAP=bootComplete;startAP();qr(true);}else if(request==3){closeSetupWifi(true);qrActive=false;loadScreen(4);}else if(request==4){ui_confirmPanel_show_danger(xtouch_local("重置设备？保留SD备份", "Reset device? SD backup remains."),factoryReset);}
  if(rebootAt&&(int32_t)(millis()-rebootAt)>=0)ESP.restart();
 }

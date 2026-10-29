@@ -12,7 +12,7 @@ inline bool xtouch_feature_settings_valid(JsonVariantConst doc){
  }
  for(const char *key:{"language","portalLanguage"})if(doc.containsKey(key)){
   if(!doc[key].is<const char*>())return false;
-  bool supported=false;for(const char *code:{XTOUCH_LANGUAGE_CODES})supported|=!strcmp(doc[key],code);
+  bool supported=false;for(const char *code:{XTOUCH_LANGUAGE_CODES})supported|=*code&&!strcmp(doc[key],code);
   if(!supported)return false;
  }
  if(doc.containsKey("soundVolume")&&(!doc["soundVolume"].is<int>()||doc["soundVolume"].as<int>()<0||doc["soundVolume"].as<int>()>100))return false;

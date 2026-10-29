@@ -4,13 +4,13 @@
 #include "features/diagnostics/mqtt_timing.h"
 #include "features/power/runtime.h"
 #include "features/network/mqtt_status_policy.h"
+#include "features/network/print_job_state.h"
 #include "ui/printer_models.h"
 #include "ui/printer_picker.h"
 #include "ui/settings_gesture.h"
 
-#include <WiFi.h>
-#include <WiFiClientSecure.h>
-#include <PubSubClient.h>
+#include "platform/idf/wifi.h"
+#include "features/network/idf_mqtt.h"
 #include <ArduinoJson.h>
 #include "ui/ui_msgs.h"
 #include "types.h"
@@ -18,10 +18,8 @@
 #include "protocol_telemetry.h"
 #include "ams_module.h"
 #include "autogrowstream.h"
-// #include "xtouch/ams-status.hpp"
 
-WiFiClientSecure xtouch_wiFiClientSecure;
-PubSubClient xtouch_pubSubClient(xtouch_wiFiClientSecure);
+XTouchIdfMqtt xtouch_pubSubClient;
 
 String xtouch_mqtt_request_topic;
 String xtouch_mqtt_report_topic;
@@ -31,7 +29,6 @@ String xtouch_mqtt_report_topic;
 #include "config.h"
 
 #define XTOUCH_MQTT_SERVER_TIMEOUT 20
-#define XTOUCH_MQTT_SERVER_PUSH_STATUS_TIMEOUT 15
 #define XTOUCH_MQTT_SERVER_JSON_PARSE_SIZE 8192
 
 /* ---------------------------------------------- */
@@ -40,6 +37,10 @@ static uint32_t xtouch_mqtt_nextAttempt = 0;
 static uint32_t xtouch_mqtt_retryMs = 5000;
 static bool xtouch_mqtt_hasStatus = false;
 static XTouchMqttStatusPolicy xtouch_mqtt_status_policy;
+
+XTouchMqttReportSnapshot xtouch_mqtt_report_snapshot(){
+ return {xtouch_mqtt_status_policy.received,xtouch_mqtt_status_policy.expired,xtouch_mqtt_status_policy.received?uint32_t(millis()-xtouch_mqtt_lastPushStatus):0};
+}
 
 bool xtouch_printer_online(void) {
     return xtouch_pubSubClient.connected() && xtouch_mqtt_hasStatus && xtouch_printer_cloud_health(xtouch_printer_active())>=0;
@@ -116,6 +117,15 @@ void xtouch_mqtt_processPushStatus(JsonDocument &incomingJson)
     if (incomingJson != NULL && incomingJson.containsKey("print"))
     {
         JsonObjectConst telemetry=incomingJson["print"].as<JsonObjectConst>();
+        const char *reportedState=telemetry["gcode_state"]|lastPrintState.c_str();
+        const char *taskId=telemetry["task_id"]|"",*subtaskId=telemetry["subtask_id"]|"";
+        bool knownJobIdentity=XTouchPrintJob::known(bambuStatus.task_id) ||
+            XTouchPrintJob::known(bambuStatus.obj_subtask_id);
+        bool jobIdentityChanged=XTouchPrintJob::changed(bambuStatus.task_id,taskId) ||
+            XTouchPrintJob::changed(bambuStatus.obj_subtask_id,subtaskId) ||
+            (!knownJobIdentity && XTouchPrintJob::changed(bambuStatus.gcode_file,telemetry["gcode_file"]|""));
+        bool jobStarted=XTouchPrintJob::beginReport(bambuStatus,lastPrintState.c_str(),reportedState,jobIdentityChanged);
+
         if(telemetry["support_chamber_temp_display"].is<bool>()){bambuStatus.chamber_support_known=true;bambuStatus.chamber_supported=telemetry["support_chamber_temp_display"];}
         else if(telemetry["support_chamber"].is<bool>()){bambuStatus.chamber_support_known=true;bambuStatus.chamber_supported=telemetry["support_chamber"];}
         if(telemetry["support_chamber_temp_edit"].is<bool>()){bambuStatus.chamber_edit_known=true;bambuStatus.chamber_edit_supported=telemetry["support_chamber_temp_edit"];}
@@ -525,12 +535,15 @@ void xtouch_mqtt_processPushStatus(JsonDocument &incomingJson)
         }
         // #pragma endregion
 
+        // Valid metadata learned during preparation belongs to this job and must
+        // survive later delta reports that omit it.
+        XTouchPrintJob::finishReport(bambuStatus,reportedState);
         if(faultsChanged){
             ConsoleInfo.printf("[HMS] report print=0x%08lX count=%u pending=%u\n",(unsigned long)hms_print_error(),hms_health_count(),(unsigned)hms_has_pending());
             for(unsigned i=0;i<hms_health_count();++i){uint64_t code=hms_health_at(i);ConsoleInfo.printf("[HMS] code=%08lX%08lX\n",(unsigned long)(code>>32),(unsigned long)code);}
             xtouch_mqtt_sendMsg(XTOUCH_ON_ERROR,0);
         }
-        if (incomingJson["print"].containsKey("gcode_state") ||
+        if (jobStarted || incomingJson["print"].containsKey("gcode_state") ||
             incomingJson["print"].containsKey("layer_num") ||
             incomingJson["print"].containsKey("total_layer_num") ||
             incomingJson["print"].containsKey("mc_remaining_time") ||
@@ -703,7 +716,7 @@ void xtouch_mqtt_connect()
     String clientId = "XTOUCH-" + String((uint32_t)ESP.getEfuseMac(), HEX);
     bool cloud = xtouch_printer_cloud();
     if (cloud && (!xtouch_cloud_ready() || (!xtouch_cloud_simulator() && time(NULL) < 1577836800))) { xtouch_mqtt_nextAttempt=millis()+5000; return; }
-    if (cloud && !xtouch_cloud_simulator()) xtouch_wiFiClientSecure.setCACert(xtouch_cloud_trust()); else xtouch_wiFiClientSecure.setInsecure();
+    xtouch_pubSubClient.setCACert(cloud&&!xtouch_cloud_simulator()?xtouch_cloud_trust():nullptr);
     const char *host=cloud?xtouch_cloud_broker():xTouchConfig.xTouchHost;
     uint16_t port=cloud?xtouch_cloud_port():8883;
     xtouch_pubSubClient.setServer(host,port);
@@ -715,22 +728,13 @@ void xtouch_mqtt_connect()
     xtouch_mqtt_timing.cpuWorkMHz=getCpuFrequencyMhz();
     uint32_t attemptStarted=millis(),stageStarted=attemptStarted;
     ++xtouch_mqtt_timing.attempts;
-    bool transportReady = xtouch_wiFiClientSecure.connect(host, port, 2000) == 1;
-    xtouch_mqtt_timing.transportMs=millis()-stageStarted;
-    xtouch_mqtt_timing.transportReady=transportReady;
-    if (transportReady) {
-#if ESP_ARDUINO_VERSION_MAJOR >= 3
-        // NetworkClientSecure inherits Stream's millisecond timeout in Arduino 3.
-        xtouch_wiFiClientSecure.setTimeout(2000);
-#else
-        // Arduino 2 WiFiClientSecure overrides this API with seconds.
-        xtouch_wiFiClientSecure.setTimeout(2);
-#endif
-    }
+    bool transportReady=true; // IDF performs TLS and MQTT together on its worker.
+    xtouch_mqtt_timing.transportMs=0;
     stageStarted=millis();
     bool connected = transportReady &&
         xtouch_pubSubClient.connect(clientId.c_str(), cloud?xtouch_cloud_user():"bblp", cloud?xtouch_cloud_token():xTouchConfig.xTouchAccessCode);
     xtouch_mqtt_timing.loginMs=millis()-stageStarted;
+    xtouch_mqtt_timing.transportReady=connected;
     xtouch_mqtt_timing.subscribeMs=0;
     if (connected) {
         stageStarted=millis();
@@ -747,7 +751,7 @@ void xtouch_mqtt_connect()
         }
     }
     if (!xtouch_pubSubClient.connected()) {
-        xtouch_wiFiClientSecure.stop();
+
         ConsoleError.printf("[XTouch][PRINTER] slot=%u retry state=%d\n",
                             xtouch_active_printer + 1, xtouch_pubSubClient.state());
         if(cloud&&(xtouch_pubSubClient.state()==4||xtouch_pubSubClient.state()==5))xtouch_portal_cloud_rejected();
@@ -768,7 +772,7 @@ static void xtouch_mqtt_switch_printer()
     if (xtouch_pending_printer < 0) return;
     uint8_t slot = xtouch_pending_printer;
     xtouch_pubSubClient.disconnect();
-    xtouch_wiFiClientSecure.stop();
+
     stream.flush();
     xtouch_filament_pending_sequence="";xtouch_device_control_clear();
     xtouch_printer_apply(slot);
@@ -806,18 +810,13 @@ void xtouch_mqtt_setup()
 
     xtouch_mqtt_topic_setup();
 
-    xtouch_wiFiClientSecure.flush();
-    xtouch_wiFiClientSecure.stop();
-
-    xtouch_wiFiClientSecure.setInsecure();
-    xtouch_wiFiClientSecure.setHandshakeTimeout(3);
 
     xtouch_pubSubClient.setServer(xTouchConfig.xTouchHost, 8883);
-    xtouch_pubSubClient.setBufferSize(4096); // 2KB for mqtt message JWT output
-    xtouch_pubSubClient.setStream(stream);
-    xtouch_pubSubClient.setCallback(xtouch_pubSubClient_streamCallback);
+    xtouch_pubSubClient.setCallback([](char *topic,uint8_t *payload,unsigned length){
+        stream.flush();stream.write(payload,length);
+        xtouch_pubSubClient_streamCallback(topic,payload,length);
+    });
     xtouch_pubSubClient.setKeepAlive(10);
-    xtouch_pubSubClient.setSocketTimeout(2);
 
     /* home */
     lv_msg_subscribe(XTOUCH_COMMAND_LIGHT_TOGGLE, xtouch_message_callback<xtouch_device_onLightToggleCommand>, NULL);
@@ -859,7 +858,7 @@ void xtouch_mqtt_loop()
     if (xtouch_pubSubClient.connected()) {
         {XTouchLoopScope timing(XTOUCH_PHASE_RECEIVE);xtouch_pubSubClient.loop();}
         if (xtouch_pubSubClient.connected() && xtouch_mqtt_status_expired(&xtouch_mqtt_status_policy,millis(),xtouch_mqtt_lastPushStatus,
-            (xtouch_printer_cloud()?180U:XTOUCH_MQTT_SERVER_PUSH_STATUS_TIMEOUT) * 1000U)) {
+            xtouch_mqtt_status_timeout(xtouch_printer_cloud()))) {
             // Keep the subscription: no reply is not evidence of a broken
             // transport, and reconnecting would repeat unanswered queries.
             xtouch_mqtt_hasStatus = false;

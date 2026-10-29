@@ -3,9 +3,11 @@
 #include "camera_rtsp.h"
 #include "camera_rtp.h"
 #include "camera_protocol.h"
-#include <Arduino.h>
-#include <WiFiClientSecure.h>
+#include "platform/idf/runtime.h"
+#include "platform/idf/socket.h"
 #include <esp_heap_caps.h>
+#include "platform/idf/heap_buffer.h"
+#include "features/diagnostics/stack_margin.h"
 #include <esp_h264_dec_sw.h>
 #include <esp_h264_dec_param.h>
 #include <esp_random.h>
@@ -61,7 +63,7 @@ struct Session {
  }
 };
 struct Decoder {
- esp_h264_dec_handle_t handle=nullptr;CameraRtp::Sps info;const CameraRtspSink &sink;std::atomic<bool> &stop;uint8_t *nal;bool configured=false,keyFrame=false;int error=0;uint32_t started=0,published=0;
+ esp_h264_dec_handle_t handle=nullptr;CameraRtp::Sps info;const CameraRtspSink &sink;std::atomic<bool> &stop;uint8_t *nal;uint16_t *columns;bool configured=false,keyFrame=false;int error=0;uint32_t started=0,published=0;
  ~Decoder(){if(handle){esp_h264_dec_close(handle);esp_h264_dec_del(handle);}}
  bool emit(const uint8_t *p,size_t n){
   if(stop)return false;
@@ -69,7 +71,7 @@ struct Decoder {
   if(type==8&&!CameraRtp::pps(p,n)){error=7;return false;}
   if(type==7){CameraRtp::Sps next;if(!CameraRtp::sps(p,n,next)){error=7;return false;}
    if(configured&&(next.width!=info.width||next.height!=info.height||next.refs!=info.refs||next.visibleWidth!=info.visibleWidth||next.visibleHeight!=info.visibleHeight)){error=3;return false;}
-   if(!configured){size_t need=CameraRtp::decoderBytes(next);if(heap_caps_get_free_size(MALLOC_CAP_SPIRAM|MALLOC_CAP_8BIT)<need+CameraFrame::psramReserve||heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT)<80000){error=5;return false;}info=next;configured=true;}
+   if(!configured){size_t need=CameraRtp::decoderBytes(next);size_t external=heap_caps_get_free_size(MALLOC_CAP_SPIRAM|MALLOC_CAP_8BIT),internal=heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT);if(!CameraFrame::decoderMemoryAllowed(need,external,internal)){Serial.printf("[CAMERA] H264 memory need=%u external=%u internal=%u\n",unsigned(need),unsigned(external),unsigned(internal));error=5;return false;}info=next;configured=true;}
   }
   if(!configured)return true;
   if(type==1&&!keyFrame)return true; // PLAY may join between keyframes.
@@ -78,10 +80,14 @@ struct Decoder {
   if(n>CameraProtocol::maxFrame-4){error=3;return false;}memcpy(nal+4,p,n);nal[0]=nal[1]=nal[2]=0;nal[3]=1;
   esp_h264_dec_in_frame_t in{};in.raw_data.buffer=nal;in.raw_data.len=n+4;started=millis();
   while(in.raw_data.len&&!stop){esp_h264_dec_out_frame_t out{};auto ret=esp_h264_dec_process(handle,&in,&out);
-   if(ret!=ESP_H264_ERR_OK){error=ret==ESP_H264_ERR_MEM?5:3;return false;}
+   XTouchStackMargin::sample(XTouchStackMargin::Path::H264);
+   if(ret!=ESP_H264_ERR_OK){Serial.printf("[CAMERA] H264 decoder error=%d input=%u consumed=%u\n",int(ret),unsigned(in.raw_data.len),unsigned(in.consume));error=ret==ESP_H264_ERR_MEM?5:3;return false;}
    if(uint32_t(millis()-started)>CameraFrame::decodeBudgetMs){error=11;return false;}
-   if(out.out_size){size_t expected=size_t(info.width)*info.height*3/2;if(out.out_size!=expected||!out.outbuf){error=3;return false;}
-    if(!CameraRtp::i420(out.outbuf,info.width,info.height,sink.pixels,sink.width,sink.height,[this]{return stop||uint32_t(millis()-started)>CameraFrame::decodeBudgetMs;},[]{vTaskDelay(1);},info.visibleWidth,info.visibleHeight)){error=11;return false;}
+   if(out.out_size){size_t expected=size_t(info.width)*info.height*3/2;if(out.out_size!=expected||!out.outbuf){Serial.printf("[CAMERA] H264 layout bytes=%u expected=%u coded=%ux%u visible=%ux%u\n",unsigned(out.out_size),unsigned(expected),info.width,info.height,info.visibleWidth,info.visibleHeight);error=3;return false;}
+    if(heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT)<CameraFrame::streamInternalReserve){error=5;return false;}
+    uint16_t *pixels=sink.acquire?sink.acquire():nullptr;
+    if(!pixels){error=5;return false;}
+    if(!CameraRtp::i420(out.outbuf,info.width,info.height,pixels,sink.width,sink.height,columns,sink.width,[this]{return stop||uint32_t(millis()-started)>CameraFrame::decodeBudgetMs;},[]{vTaskDelay(1);},info.visibleWidth,info.visibleHeight)){error=11;return false;}
     sink.publish(info.visibleWidth,info.visibleHeight);published=millis();sink.status(6);
    }
    if(!in.consume||in.consume>in.raw_data.len){error=3;return false;}in.raw_data.buffer+=in.consume;in.raw_data.len-=in.consume;vTaskDelay(1);
@@ -90,16 +96,22 @@ struct Decoder {
 };
 }
 int cameraRtspRun(const char *host,const char *code,std::atomic<bool> &stop,const CameraRtspSink &sink){
+ XTouchStackMargin::Scope stack(XTouchStackMargin::Path::H264);
+ if(!sink.width||sink.width>SIZE_MAX/sizeof(uint16_t))return 5;
+ NativeHeapBuffer coordinates(size_t(sink.width)*sizeof(uint16_t));
+ if(!coordinates)return 5;
  uint8_t *packet=(uint8_t*)ps_malloc(65536),*assembly=(uint8_t*)ps_malloc(CameraProtocol::maxFrame),*nal=(uint8_t*)ps_malloc(CameraProtocol::maxFrame);
  if(!packet||!assembly||!nal){free(packet);free(assembly);free(nal);return 5;}
  int failure=1;
  {
- Session s(host,code,stop,packet);Decoder decoder{nullptr,{},sink,stop,nal};CameraRtp::Assembler rtp{assembly,CameraProtocol::maxFrame-4};
- s.client.setInsecure();s.client.setTimeout(250);s.client.setHandshakeTimeout(3);
+ Session s(host,code,stop,packet);Decoder decoder{nullptr,{},sink,stop,nal,reinterpret_cast<uint16_t*>(coordinates.data())};CameraRtp::Assembler rtp{assembly,CameraProtocol::maxFrame-4};
+ s.client.setInsecure();
+ s.client.setTimeoutMs(250);
+ s.client.setHandshakeTimeout(3);
  if(s.client.connect(host,322,3000)){
   string headers,body,track,base;bool setup=false;
   do {
-   if(heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT)<80000){failure=5;break;}
+   if(heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT)<CameraFrame::decoderInternalBudget){failure=5;break;}
    if(!s.request("DESCRIBE",s.root,"Accept: application/sdp\r\n",headers,body)){failure=s.status==401?12:s.status?1:2;break;}
    base=field(headers,"content-base");if(base.empty())base=s.root+"/";
    // Only use URLs on this printer. Never follow an SDP URL to another host.
@@ -131,7 +143,7 @@ int cameraRtspRun(const char *host,const char *code,std::atomic<bool> &stop,cons
     if(!s.interleaved()){failure=decoder.error?decoder.error:3;break;}
     if(uint32_t(millis()-keep)>15000){if(!s.request("OPTIONS",s.root,"",headers,body)){failure=decoder.error?decoder.error:2;break;}keep=millis();}
     if(uint32_t(millis()-decoder.published)>30000){failure=2;break;}
-    if(heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT)<32768){printf("[CAMERA] RTSPS internal reserve: free=%u\n",unsigned(heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT)));failure=5;break;}vTaskDelay(1);
+    if(heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT)<CameraFrame::streamInternalReserve){printf("[CAMERA] RTSPS internal reserve: free=%u\n",unsigned(heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT)));failure=5;break;}vTaskDelay(1);
    }
   }while(false);
   // Closing TLS immediately also tears down the session; no blocking RTSP wait on exit.

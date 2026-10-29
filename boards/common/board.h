@@ -1,12 +1,14 @@
 #pragma once
-#include <Arduino.h>
-#include <lvgl.h>
+#include "platform/idf/runtime.h"
+#include "ui/lvgl_compat.h"
 bool board_display_begin();
-bool board_draw_buffers(lv_color_t **first,lv_color_t **second,uint32_t *pixels);
-bool board_pixels_async(lv_disp_drv_t *driver,int x,int y,int w,int h,const uint16_t *pixels);
-void board_pixels(int x,int y,int w,int h,const uint16_t *pixels);
+void board_display_ready(
+    lv_display_t *display); // Register driver hooks before the first LVGL frame.
+bool board_draw_buffers(uint16_t **first, uint16_t **second, uint32_t *pixels);
+bool board_pixels_async(lv_display_t *driver, int x, int y, int w, int h, const uint16_t *pixels);
+void board_pixels(int x, int y, int w, int h, const uint16_t *pixels);
 void board_flush(); // Complete a logical LVGL refresh after its final draw-buffer chunk.
-bool board_touch(int &x,int &y);
+bool board_touch(int &x, int &y);
 void board_brightness(uint8_t level);
 bool board_display_sleep(bool sleeping);
 void board_invert(bool invert);

@@ -3,7 +3,7 @@
 void ui_event_comp_controlComponent_controlScreenRange(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_controlComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -14,7 +14,7 @@ void ui_event_comp_controlComponent_controlScreenRange(lv_event_t *e)
 void ui_event_comp_controlComponent_controlScreenLeft(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_controlComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -24,7 +24,7 @@ void ui_event_comp_controlComponent_controlScreenLeft(lv_event_t *e)
 void ui_event_comp_controlComponent_controlScreenUp(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_controlComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -35,7 +35,7 @@ void ui_event_comp_controlComponent_controlScreenUp(lv_event_t *e)
 void ui_event_comp_controlComponent_controlScreenHome(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_controlComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -45,7 +45,7 @@ void ui_event_comp_controlComponent_controlScreenHome(lv_event_t *e)
 void ui_event_comp_controlComponent_controlScreenDown(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_controlComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -55,7 +55,7 @@ void ui_event_comp_controlComponent_controlScreenDown(lv_event_t *e)
 void ui_event_comp_controlComponent_controlScreenAxixToggle(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_controlComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -65,7 +65,7 @@ void ui_event_comp_controlComponent_controlScreenAxixToggle(lv_event_t *e)
 void ui_event_comp_controlComponent_controlScreenRight(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_controlComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -76,7 +76,7 @@ void ui_event_comp_controlComponent_controlScreenRight(lv_event_t *e)
 void onXtouchRangeChange(lv_event_t *e)
 {
 
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_label_set_text(target, controlMode.inc == 1 ? "1" : "10");
     ui_layout_control_card(lv_obj_get_parent(target));
 }
@@ -84,7 +84,7 @@ void onXtouchRangeChange(lv_event_t *e)
 void onXTouchAxisChange(lv_event_t *e)
 {
 
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     controlMode.axis = controlMode.axis == 0 ? 1 : 0;
     lv_label_set_text(target, controlMode.axis == 0 ? "l" : "m");
     ui_layout_control_card(lv_obj_get_parent(target));
@@ -110,7 +110,7 @@ void onXTouchAxisChange(lv_event_t *e)
     }
 }
 
-static void motion_state(lv_event_t *e){lv_obj_t *component=lv_event_get_target(e);const unsigned ids[]={5,9,11,13,18};for(unsigned i=0;i<5;i++){lv_obj_t *button=ui_comp_get_child(component,ids[i]);if(ui_manual_motion_allowed())lv_obj_clear_state(button,LV_STATE_DISABLED);else lv_obj_add_state(button,LV_STATE_DISABLED);}}
+static void motion_state(lv_event_t *e){lv_obj_t *component=lv_event_get_target_obj(e);const unsigned ids[]={5,9,11,13,18};for(unsigned i=0;i<5;i++){lv_obj_t *button=ui_comp_get_child(component,ids[i]);if(ui_manual_motion_allowed())lv_obj_clear_state(button,LV_STATE_DISABLED);else lv_obj_add_state(button,LV_STATE_DISABLED);}}
 // COMPONENT controlComponent
 
 lv_obj_t *ui_controlComponent_create(lv_obj_t *comp_parent)
@@ -555,7 +555,7 @@ lv_obj_t *ui_controlComponent_create(lv_obj_t *comp_parent)
     lv_obj_add_event_cb(cui_controlScreenAxixToggleIcon, onXTouchAxisChange, LV_EVENT_MSG_RECEIVED, NULL);
     lv_msg_subsribe_obj(XTOUCH_CONTROL_AXIS_SWITCH, cui_controlScreenAxixToggleIcon, NULL);
 
-    lv_msg_subsribe_obj(XTOUCH_ON_PRINT_STATUS,cui_controlComponent,NULL);lv_msg_subsribe_obj(XTOUCH_ON_MQTT,cui_controlComponent,NULL);lv_obj_add_event_cb(cui_controlComponent,motion_state,LV_EVENT_MSG_RECEIVED,NULL);lv_event_send(cui_controlComponent,LV_EVENT_MSG_RECEIVED,NULL);
+    lv_msg_subsribe_obj(XTOUCH_ON_PRINT_STATUS,cui_controlComponent,NULL);lv_msg_subsribe_obj(XTOUCH_ON_MQTT,cui_controlComponent,NULL);lv_obj_add_event_cb(cui_controlComponent,motion_state,LV_EVENT_MSG_RECEIVED,NULL);lv_obj_send_event(cui_controlComponent,LV_EVENT_MSG_RECEIVED,NULL);
     lv_obj_t *cards[]={cui_controlScreenRange,cui_controlScreenLeft,cui_controlScreenUp,cui_controlScreenHome,cui_controlScreenDown,cui_controlScreenAxixToggle,cui_controlScreenRight};
     for(unsigned i=0;i<sizeof(cards)/sizeof(cards[0]);++i)ui_layout_control_card_setup(cards[i]);
     ui_comp_controlComponent_create_hook(cui_controlComponent);

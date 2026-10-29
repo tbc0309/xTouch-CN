@@ -1,0 +1,14 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 4194304,
+  "applicationSlotBytes": 1966080,
+  "chip": "esp32",
+  "version": "1.0.1",
+  "application": "xtouch-2.8.bin",
+  "fullImage": "xtouch-2.8-full.bin",
+  "applicationBytes": 1958768,
+  "applicationOffset": 65536,
+  "sha256": "aa5400634fe42e6460fcf3a0ab9804a3b6789525e1b929fd3171e1c875d5cb85",
+  "fullSha256": "7262111b35559a0c7a488766d6c57c7998e1a8dbce7da0ca2b502d4f1fb973a2",
+  "project": "xtouch_cyd"
+}

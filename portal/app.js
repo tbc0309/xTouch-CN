@@ -309,6 +309,13 @@ function message(value, error = false) {
   $("status").title = value;
   $("status").classList.toggle("error", error);
 }
+function profileLimit(kind) {
+  const value = info.profileLimits?.[kind];
+  return Number.isInteger(value) && value > 0 ? value : (kind === "accounts" ? 50 : 100);
+}
+function profileLimitMessage(kind) {
+  return (kind === "accounts" ? t("最多 {n} 个账号。", "Maximum {n} accounts.") : t("最多 {n} 台设备。", "Maximum {n} devices.")).replace("{n}", profileLimit(kind));
+}
 function updateInfo(d) {
   info = d;
   if(typeof updateEnvironmentPanel==='function')updateEnvironmentPanel(d.environment,d.xiaomiBle?.authenticationFailures||0);
@@ -319,10 +326,23 @@ function updateInfo(d) {
   }
   if (typeof d.version === "string" && /^\d+\.\d+\.\d+$/.test(d.version))
     $("portalVersion").textContent = d.version;
+  if (d.capabilities?.deepWakeButton)
+    $("deepHint").textContent = t("深睡会断网。按 {button} 或复位键启动。", "Deep sleep disconnects the network. Press {button} or RESET to restart.").replace("{button}", d.capabilities.deepWakeButton);
   $("statPrinter").textContent = d.printer || "—";
   $("statConnection").textContent =
     `${d.mode || "LAN"} · ${d.online ? t("在线", "Online") : t("等待连接", "Waiting")}`;
-  $("statHeap").textContent = `${Math.round(d.heap / 1024)} KB`;
+  const memorySize = bytes => bytes >= 1024 * 1024
+    ? `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+    : `${Math.round(bytes / 1024)} KB`;
+  $("statHeap").textContent = d.psramTotal > 0
+    ? `${memorySize(d.internalHeap)} + ${memorySize(d.psramHeap)}`
+    : memorySize(d.internalHeap ?? d.heap);
+  document.querySelector('[data-t="freeMemory"]').textContent = d.psramTotal > 0
+    ? t("xTouch 可用内部内存 + PSRAM", "xTouch free internal memory + PSRAM")
+    : t("xTouch 可用内部内存", "xTouch free internal memory");
+  $("statHeap").title = d.psramTotal > 0
+    ? t("内部内存 + PSRAM", "Internal memory + PSRAM")
+    : t("内部内存", "Internal memory");
   $("statUptime").textContent =
     `${Math.floor(d.uptime / 3600)}h ${Math.floor((d.uptime % 3600) / 60)}m`;
   if (cfg && d.accountHealth && !cloudBusy && !document.activeElement?.closest("#accounts")) {
@@ -340,7 +360,7 @@ function updateInfo(d) {
     if (changed) accounts();
   }
 }
-async function api(path, data) {
+async function api(path, data, timeoutMs = 20000) {
   const epoch = sessionEpoch;
   const response = await fetch(path, {
     method: data === undefined ? "GET" : "POST",
@@ -350,7 +370,7 @@ async function api(path, data) {
         ? {}
         : { "Content-Type": "application/json", "X-XTouch-CSRF": csrf },
     body: data === undefined ? undefined : JSON.stringify(data),
-    signal: AbortSignal.timeout(20000),
+    signal: AbortSignal.timeout(timeoutMs),
   });
   let result;
   try {
@@ -947,8 +967,8 @@ function editor() {
 
 }
 $("addPrinter").onclick = () => {
-  if (cfg.printers.length >= 100)
-    return message(t("最多 100 台。", "Maximum 100 devices."));
+  if (cfg.printers.length >= profileLimit("devices"))
+    return message(profileLimitMessage("devices"));
   cfg.printers.push({
     mode: "lan",
     name: "",
@@ -985,7 +1005,7 @@ function labAccount(body,a){
     const row=document.createElement("label");row.className="checkbox deviceRow tokenSource";
     const check=document.createElement("input");check.type="checkbox";check.checked=cfg.printers.some(x=>x.accountId===a.id&&x.serialNumber===p.serialNumber);
     check.onchange=()=>{
-      if(check.checked){if(cfg.printers.length>=100){check.checked=false;return message(t("最多 100 台设备。", "Maximum 100 devices."));}
+      if(check.checked){if(cfg.printers.length>=profileLimit("devices")){check.checked=false;return message(profileLimitMessage("devices"));}
         cfg.printers.push({name:p.name,serialNumber:p.serialNumber,printerModel:p.printerModel,mode:"cloud",accountId:a.id});
       }else{const active=cfg.printers[cfg.activePrinter||0];cfg.printers=cfg.printers.filter(x=>!(x.accountId===a.id&&x.serialNumber===p.serialNumber));cfg.activePrinter=Math.max(0,cfg.printers.indexOf(active));}
       profiles();editor();
@@ -1045,7 +1065,7 @@ function accounts() {
   $("addSimulator")?.remove();
   if(labTools) {
     const addSimulator = button($("addAccount").parentElement,t("添加 MQTT 模拟器", "Add MQTT simulator"),()=>{
-    if(cfg.cloudAccounts.length>=50)return message(t("最多 50 个账号。", "Maximum 50 accounts."));
+    if(cfg.cloudAccounts.length>=profileLimit("accounts"))return message(profileLimitMessage("accounts"));
     let n=1;while(cfg.cloudAccounts.some(a=>a.id===`Lab-${n}`))n++;
     cfg.cloudAccounts.push({id:`Lab-${n}`,name:`Lab-${n}`,simulator:true,mqttHost:"",mqttPort:8883,labHttpPort:8894,region:"cn",token:"xtouch-lab",userId:"xtouch-lab",signedIn:false,expanded:true});
     accounts();
@@ -1275,9 +1295,9 @@ function accounts() {
         );
         check.onchange = () => {
           if (check.checked) {
-            if (cfg.printers.length >= 100) {
+            if (cfg.printers.length >= profileLimit("devices")) {
               check.checked = false;
-              return message(t("最多 100 台。", "Maximum 100 devices."), true);
+              return message(profileLimitMessage("devices"), true);
             }
             cfg.printers.push({
               name: validName(p.name) ? p.name : "",
@@ -1328,8 +1348,8 @@ function accounts() {
       el.disabled = true;
 }
 $("addAccount").onclick = () => {
-  if (cfg.cloudAccounts.length >= 50)
-    return message(t("最多 50 个账号。", "Maximum 50 accounts."));
+  if (cfg.cloudAccounts.length >= profileLimit("accounts"))
+    return message(profileLimitMessage("accounts"));
   let n = cfg.cloudAccounts.length + 1;
   while (
     cfg.cloudAccounts.some(
@@ -1345,8 +1365,8 @@ $("addAccount").onclick = () => {
     tokenEncrypted: false,
     passwordEncrypted: false,
     rememberPassword: true,
-    authMode: "token",
-    loginMethod: "token",
+    authMode: XTouchTokenEntry ? "token" : "password",
+    loginMethod: XTouchTokenEntry ? "token" : "password",
     signInMode: "password",
     userId: "",
   });
@@ -1651,10 +1671,13 @@ async function saveConfiguration(automatic = false) {
       backlight: Number($("brightness").value),
       tftOff: Number($("sleep").value),
       wop: $("wake").checked,
-      soundVolume: Number($("soundVolume").value), touchSound: $("touchSound").checked, warningSound: $("warningSound").checked, statusLed: $("statusLed").checked,
-      deepSleepAfter: $("deepEnabled").checked?Number($("deepSleepAfter").value):0,
       ota: $("ota").checked,
     });
+    for (const id of ["soundVolume", "touchSound", "warningSound", "statusLed"]) {
+      const field = $(id);
+      if (field) cfg.settings[id] = field.type === "checkbox" ? field.checked : Number(field.value);
+    }
+    if ($("deepEnabled")) cfg.settings.deepSleepAfter = $("deepEnabled").checked ? Number($("deepSleepAfter").value) : 0;
     const imported = cfg.cloudAccounts.some(a => a.imported);
     const payload = persistableConfiguration();
     sentState = configState();
@@ -1712,12 +1735,16 @@ async function saveConfiguration(automatic = false) {
   return !failed;
 }
 $("save").onclick = () => saveConfiguration(false);
-let scanTimer;
+let scanTimer, wifiSetupPending = false;
+let wifiScanGeneration = 0;
 async function scan(refresh = false, attempt = 0) {
+  if (wifiSetupPending) return;
+  const generation = ++wifiScanGeneration;
   clearTimeout(scanTimer);
   $("scanSetup").disabled = true;
   try {
     const data = await api("/api/wifi/scan"+(refresh?"?refresh=1":""));
+    if (wifiSetupPending || generation !== wifiScanGeneration) return;
     const networks = (data.networks || []).filter((n, i, all) => n.ssid && all.findIndex(x => x.ssid === n.ssid) === i);
     $("setupNetworks").replaceChildren(
       new Option(t("选择网络", "Choose a network"), ""),
@@ -1728,13 +1755,18 @@ async function scan(refresh = false, attempt = 0) {
     $("setupNetworks").firstElementChild.dataset.t = "chooseNetwork";
     $("setupNetworkChoice").hidden = networks.length === 0;
     $("setupNetworks").value = $("setupSsid").value;
-    if (data.scanning) scanTimer = setTimeout(()=>scan(false,attempt), 1500);
+    if (data.scanning) scanTimer = setTimeout(()=>{
+      if (generation === wifiScanGeneration) scan(false,attempt);
+    }, 1500);
     else {
       $("scanSetup").disabled = false;
       if (!networks.length) message(t("未找到 Wi-Fi，可手动填写名称或重试。", "No Wi-Fi networks found. Enter the name manually or retry."));
     }
   } catch (error) {
-    if(error.code==="wifi_scan_failed"&&attempt<2){scanTimer=setTimeout(()=>scan(true,attempt+1),1500);return;}
+    if (wifiSetupPending || generation !== wifiScanGeneration) return;
+    if(error.code==="wifi_scan_failed"&&attempt<2){scanTimer=setTimeout(()=>{
+      if (generation === wifiScanGeneration) scan(true,attempt+1);
+    },1500);return;}
     $("scanSetup").disabled = false;
     message(failure(error), true);
   }
@@ -1744,16 +1776,49 @@ $("setupNetworks").onchange = () => {
   if ($("setupNetworks").value) $("setupSsid").value = $("setupNetworks").value;
 };
 $("saveWifi").onclick = async () => {
+  if (wifiSetupPending) return;
+  wifiSetupPending = true;
+  ++wifiScanGeneration;
+  clearTimeout(scanTimer);
+  $("saveWifi").disabled = true;
+  $("scanSetup").disabled = true;
+  const requestId = Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+  const deadline = Date.now() + 45000;
+  const interrupted = error => ["TypeError", "AbortError", "TimeoutError"].includes(error.name);
   try {
-    await api("/api/wifi", {
-      ssid: $("setupSsid").value,
-      language: lang,
-      pwd: $("setupPassword").value,
-    });
+    try {
+      await api("/api/wifi", {
+        ssid: $("setupSsid").value,
+        language: lang,
+        pwd: $("setupPassword").value,
+        requestId,
+      }, 15000);
+    } catch (error) {
+      // Switching AP+STA channels can interrupt a reply after accepting the request.
+      // Match the attempt identifier before interpreting subsequent status.
+      if (!interrupted(error)) throw error;
+    }
     pendingLanguage = null;
-    message(t("配网已保存，正在重新连接。", "Wi-Fi saved. Reconnecting."));
+    message(t("正在连接 Wi-Fi，请稍候。", "Connecting to Wi-Fi. Please wait."));
+    while (Date.now() < deadline) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      let result;
+      try { result = await api("/api/wifi/status", undefined, 3000); }
+      catch (error) { if (interrupted(error)) continue; throw error; }
+      if (result.requestId !== requestId) continue;
+      if (result.state === "connected") {
+        message(t("配网成功，热点将在10秒内关闭。设备地址：", "Wi-Fi connected. Setup hotspot closes within 10 seconds. Device address: ") + result.ip);
+        return;
+      }
+      if (result.state === "failed") throw new Error(t("连接失败，请检查网络和密码后重试。", "Connection failed. Check the network and password, then retry."));
+    }
+    throw new Error(t("连接超时，请重新连接设备热点后检查。", "Connection timed out. Reconnect to the setup hotspot and check."));
   } catch (error) {
     message(failure(error), true);
+  } finally {
+    wifiSetupPending = false;
+    $("saveWifi").disabled = false;
+    $("scanSetup").disabled = false;
   }
 };
 (async () => {
@@ -1876,15 +1941,20 @@ function applyFields() {
   $("sleep").value = cfg.settings.tftOff ?? 15;updateSleepValue();
   $("wake").checked = cfg.settings.wop ?? true;
   $("ota").checked = cfg.settings.ota ?? true;
-  $("touchSound").checked=cfg.settings.touchSound??false;$("warningSound").checked=cfg.settings.warningSound??false;$("statusLed").checked=cfg.settings.statusLed??true;
-  $("deepSleepAfter").value=cfg.settings.deepSleepAfter??0;
-  $("deepEnabled").checked=Number(cfg.settings.deepSleepAfter??0)>0;
-  if(!$("deepEnabled").checked)$("deepSleepAfter").value=60;
-  $("soundVolume").value=cfg.settings.soundVolume??20;$("soundVolumeValue").textContent=$("soundVolume").value+"%";
+  const enabled = Number(cfg.settings.deepSleepAfter ?? 0) > 0;
+  for (const [id, value] of Object.entries({
+    touchSound: cfg.settings.touchSound ?? false, warningSound: cfg.settings.warningSound ?? false,
+    statusLed: cfg.settings.statusLed ?? true, deepEnabled: enabled,
+    deepSleepAfter: enabled ? cfg.settings.deepSleepAfter : 60, soundVolume: cfg.settings.soundVolume ?? 20,
+  })) {
+    const field = $(id);
+    if (field) field[typeof value === "boolean" ? "checked" : "value"] = value;
+  }
+  if ($("soundVolumeValue")) $("soundVolumeValue").textContent = $("soundVolume").value + "%";
   updateDeepFields();
 }
 
-function updateDeepFields(){const enabled=$("deepEnabled").checked;$("deepTimers").hidden=!enabled;$("deepSleepAfter").disabled=!enabled;}
+function updateDeepFields(){if(!$("deepEnabled"))return;const enabled=$("deepEnabled").checked;$("deepTimers").hidden=!enabled;$("deepSleepAfter").disabled=!enabled;}
 function configState() {
   return JSON.stringify(
     [
@@ -1896,8 +1966,8 @@ function configState() {
         "brightness",
         "sleep",
         "defaultDevice", "deepSleepAfter", "soundVolume",
-      ].map((id) => $(id).value),
-      $("deepEnabled").checked, $("wake").checked, $("touchSound").checked, $("warningSound").checked, $("statusLed").checked,
+      ].map((id) => $(id)?.value),
+      $("deepEnabled")?.checked, $("wake").checked, $("touchSound")?.checked, $("warningSound")?.checked, $("statusLed")?.checked,
       $("ota").checked,
     ],
     (key, value) =>
@@ -1944,12 +2014,12 @@ $("backupFile").onchange = async () => {
       !next ||
       typeof next.ssid !== "string" ||
       !Array.isArray(next.printers) ||
-      next.printers.length > 100 ||
+      next.printers.length > profileLimit("devices") ||
       next.printers.some(
         (p) => p && (!p.serialNumber || typeof p.serialNumber !== "string"),
       ) ||
       (next.cloudAccounts &&
-        (!Array.isArray(next.cloudAccounts) || next.cloudAccounts.length > 50))
+        (!Array.isArray(next.cloudAccounts) || next.cloudAccounts.length > profileLimit("accounts")))
     )
       throw Error(t("配置备份格式错误。", "Invalid configuration backup."));
     if (
@@ -2010,9 +2080,9 @@ $("backupFile").onchange = async () => {
   }
 };
 
-$("deepEnabled").onchange=()=>{updateDeepFields();updatePending();};
+if($("deepEnabled"))$("deepEnabled").onchange=()=>{updateDeepFields();updatePending();};
 
 function updateSleepValue(){const n=Number($("sleep").value);$("sleepValue").textContent=n<5?t("关闭","Off"):n+"m";}
 $("brightness").oninput=()=>{$("brightnessValue").textContent=$("brightness").value;updatePending();};
 $("sleep").oninput=()=>{updateSleepValue();updatePending();};
-$("soundVolume").oninput=()=>{$("soundVolumeValue").textContent=$("soundVolume").value+"%";updatePending();};
+if($("soundVolume"))$("soundVolume").oninput=()=>{$("soundVolumeValue").textContent=$("soundVolume").value+"%";updatePending();};

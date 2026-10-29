@@ -2,211 +2,99 @@
 
 [简体中文](README.md) | English
 
-Multilingual touchscreen firmware for Bambu Lab printer monitoring and control, supporting ESP32-2432S028R, Waveshare S3 V2 and P4 boards. Based on [xTouch](https://github.com/xperiments-in/xtouch) `0.9.213`; independently maintained and unofficial.
+An independent touchscreen controller for Bambu Lab printers. Monitor printing, AMS and environmental readings; control temperature, fans and movement; manage printers and cloud accounts in a browser. Not affiliated with Bambu Lab.
 
-**[Web installer](https://tbc0309.github.io/xTouch-CN/)** · [Firmware downloads](https://github.com/tbc0309/xTouch-CN/releases/latest) · [Error lookup](https://tbc0309.github.io/xTouch-CN/errors.html) · [All documentation](docs/README.en.md)
+Native ESP-IDF 6.1 and LVGL 9.6.0. Match the complete board model and use documentation for your firmware version.
 
-[Installation](#installation-and-setup) · [Board comparison](#board-features) · [Screenshots](#interface-gallery) · [Usage](#usage-notes) · [Development](#development-and-documentation)
+[Installation](docs/INSTALLATION.en.md) · [Web installer](https://tbc0309.github.io/xTouch-CN/) · [Downloads](https://github.com/tbc0309/xTouch-CN/releases/latest) · [Documentation](docs/README.en.md)
 
-## Main features
+## Features
 
 - Eight languages: Simplified Chinese, Traditional Chinese, English, French, German, Russian, Japanese and Korean.
-- LAN and Bambu accounts via Access Tokens, with account sign-in on S3/P4; QR Wi-Fi setup and web management. Store up to 100 printers with one active connection at a time.
-- Print progress, temperatures, AMS filament colors and remaining material; light, fan, speed, motion and filament controls.
-- Camera viewing and print thumbnails on S3/P4; sounds, network standby, print wake and optional deep sleep on all three boards.
-- Home shows local time after NTP synchronization and hides the clock when AMS needs the space. The portal fills a missing time zone from your browser; saved time settings remain configurable.
-- S3/P4 support Xiaomi BLE thermometers, alternating with AMS or displaying temperature and humidity only. Bind the MAC address and BLE Key in the portal; the alternating interval is 1–30 seconds, with a 5-second default.
-- Internal configuration with optional SD backup synchronization; portal, SD and OTA updates.
+- Monitor printer status, progress, temperatures, fans, Wi-Fi and task previews.
+- Manage LAN printers and cloud accounts using Token, password or verification-code login.
+- Pause, resume and cancel printing; control temperature, fans, lighting and movement.
+- View AMS and external filament sources, material colors, remaining filament and supported loading or drying controls.
+- Bind BLE thermometers and choose hidden, alternating or thermometer-only readings.
+- View supported local cameras, error codes and printer notifications.
+- Configure Wi-Fi and device settings in the browser; back up, restore and update firmware.
+- Adjust language, brightness, sounds and standby settings.
 
-The thermometer module recognizes **19 model identifiers and 23 product IDs**. See the [supported models and validation status](docs/THERMOMETERS.en.md).
+## Interface
 
-## Installation and setup
+Six P4 screenshots rendered with demonstration data. The camera image is illustrative; these are not evidence that every printer or peripheral has been tested.
 
-Check the exact board below first. **Board images are not interchangeable. Application images are for updates; `-full.bin` images are for USB installation.**
-
-| Current installation | Action |
+| | |
 |---|---|
-| New device | Open the [Web installer](https://tbc0309.github.io/xTouch-CN/), select the correct board and serial port, then follow the installation steps. |
-| xTouch-CN installed | Upload the matching application image through the device portal, or tap the screen's version three times to check OTA. Startup OTA and SD updates are also available. |
+| **Home**<br>![P4 Home](docs/images/en/boards/p4-home.png) | **Printing**<br>![P4 Printing](docs/images/en/boards/p4-printing.png) |
+| **Printer selection**<br>![P4 Printer selection](docs/images/en/boards/p4-printer-picker.png) | **Temperature and fans**<br>![P4 Temperature and fans](docs/images/en/boards/p4-temperature.png) |
+| **Filament**<br>![P4 Filament](docs/images/en/boards/p4-filament.png) | **Camera**<br>![P4 Camera](docs/images/en/boards/p4-camera.png) |
 
-See [Updates and recovery](docs/INSTALLATION.en.md#install) for file selection and recovery.
+[Full screenshot gallery](docs/SCREENSHOTS.en.md)
 
-### First-time setup
+## Boards
 
-1. Calibrate CYD when prompted; S3 V2/P4 do not need calibration. Scan the screen QR code to join the device hotspot, password `12345678`.
-2. Open `http://192.168.4.1/` and configure your home 2.4 GHz Wi-Fi.
-3. Open Web management from screen settings and scan the QR code. Sign in with the initial management password `12345678` and change it.
-4. Add a LAN printer and choose “Validate & save device”, or validate a Bambu account Access Token and select linked printers. Connection changes require validation again; other valid settings save automatically.
+Hardware specifications are separate from the feature matrix. Similar appearance, chip or screen size does not make firmware interchangeable.
 
-SD is optional for normal operation. Configuration can be imported and exported in the portal. See [Web management](docs/INSTALLATION.en.md#accounts), [Token retrieval](docs/INSTALLATION.en.md#token) and [Storage](docs/MAINTENANCE.en.md#storage).
+> **More boards (test firmware)**: [Board specifications and validation status](https://github.com/tbc0309/xTouch-CN/blob/test/README.test.md). Test firmware is provided as a pre-release. Check the exact model and validation status, and back up your settings before installing.
 
-## Board features
+| Parameter | CYD | S3 2.8 V2 | P4 4.3 | ES3C35P 3.5 |
+|---|---|---|---|---|
+| Model | [ESP32-2432S028R (CYD)](docs/HARDWARE.en.md#cyd) | [Waveshare ESP32-S3-Touch-LCD-2.8 V2](docs/HARDWARE.en.md#waveshare) | [Waveshare ESP32-P4-WIFI6-Touch-LCD-4.3](docs/HARDWARE.en.md#waveshare) | [LCDWIKI ES3C35P](boards/lcdwiki-es3c35p/README.en.md) |
+| Image | <img src="docs/images/cyd-board-product.jpg" width="100%" alt="CYD board"> | <img src="docs/images/boards/esp32-s3-touch-lcd-2.8-v2-product-right.svg" width="100%" alt="Waveshare S3 V2 board"> | <img src="docs/images/boards/esp32-p4-wifi6-touch-lcd-4.3-product-right.svg" width="100%" alt="Waveshare P4 board"> | <img src="docs/images/boards/es3c35p-product.jpg" width="100%" alt="LCDWIKI ES3C35P board"> |
+| Display and touch | 320×240; ILI9341 / XPT2046 resistive | 320×240; ST7789 / CST3530 | 800×480; ST7701 / GT911 | 480×320; integrated ST77922 display/touch, 3.5-inch |
+| Chip and memory | ESP32; 4 MB Flash, no PSRAM | ESP32-S3; 16 MB Flash, 8 MB PSRAM | P4 v3.x + C6; 32 MB Flash, 32 MB PSRAM | ESP32-S3; 16 MB Flash, 8 MB PSRAM; ES8311 audio, RGB LED |
+| Default assets | Small original; ZH/EN, dual OTA | Small original | Large MDI | Large MDI; S3 modules |
 
-| CYD · ESP32-2432S028R | Waveshare · ESP32-S3-Touch-LCD-2.8 V2 | Waveshare · ESP32-P4-WIFI6-Touch-LCD-4.3 |
-|---|---|---|
-| ![CYD board](docs/images/cyd-board-product.jpg) | ![S3 V2 board](docs/images/boards/esp32-s3-touch-lcd-2.8-v2-product.png) | ![P4 board](docs/images/boards/esp32-p4-wifi6-touch-lcd-4.3-product.png) |
-| 2.8-inch, ILI9341 + XPT2046 resistive touch | **V2 / CST3530 only** | **P4 chip revision v3.x, minimum v3.0** |
+Resource size and icon style are independent build options. See the board guide for hardware details and the download manifest for firmware files. [Pins, power and enclosures](docs/HARDWARE.en.md) · [Printer and AMS compatibility](docs/PRINTERS.en.md)
 
-Product photos show factory demos; xTouch screenshots follow below. Other display, touch or chip revisions need separate adaptation. [CYD pins](docs/HARDWARE.en.md) · [S3/P4 hardware and builds](boards/README.md).
+### Feature availability by board
 
-| Feature | CYD | S3 V2 | P4 4.3-inch |
-|---|---|---|---|
-| Landscape resolution | 320×240 | 320×240 | 800×480 |
-| Flash / PSRAM | 4 MB / none | 16 MB / 8 MB | 32 MB / 32 MB |
-| OTA application slots | 2 × 1.875 MiB | 2 × 6 MiB | 2 × 12 MiB |
-| Data partition | 128 KiB | 3.875 MiB | 7.875 MiB |
-| LAN / Cloud / Access Token | Supported | Supported | Supported |
-| Account password / verification-code sign-in | Exceeds storage capacity | Supported | Supported |
-| Print, AMS, temperature and motion controls | Shared | Shared | Shared |
-| Network standby / print wake | Supported | Supported | Supported |
-| Optional idle deep sleep | Touch / reset wake | Touch / reset wake | Touch / reset wake |
-| Touch and warning sounds / volume | Supported; off by default | Supported; off by default | Supported; off by default |
-| Software LED control | RGB LED; on by default | Power/charge LEDs hardware-controlled | Power/charge LEDs hardware-controlled |
-| Print image area | Printer artwork | Task thumbnail, up to 128 px | Task thumbnail, up to 512 px |
-| JPEG camera | Unavailable | Supported; P1S compatible | Supported; P1S compatible |
-| RTSPS / H.264 camera | Unavailable | Subject to codec/memory limits | Subject to codec/memory limits |
-| Fault description module | Exceeds storage capacity | Optional; off by default | Optional; off by default |
-| Fonts / icons | Small-screen assets | Small-screen assets | Large-screen assets |
-| Xiaomi BLE thermometers | Exceeds storage capacity | Supported | Supported |
+✅ Supported; ❌ unavailable in standard builds; ➖ not applicable. S3 means Waveshare 2.8 V2; 3.5-inch means the LCDWIKI ES3C35P. Printer capabilities, accessories and firmware permissions still apply.
 
-CYD has 4 MB Flash. With dual OTA slots retained, account password sign-in, Xiaomi BLE thermometers and full fault descriptions exceed the available application capacity. Camera viewing and task thumbnails are also limited by the lack of PSRAM.
+| Feature | CYD | S3 | P4 | 3.5-inch | Notes |
+|---|:---:|:---:|:---:|:---:|---|
+| Saved devices / accounts | 20 / 10 | 100 / 50 | 100 / 50 | 100 / 50 | Also subject to free memory and credential length |
+| LAN printers | ✅ | ✅ | ✅ | ✅ | Validate IP, serial number and access code before saving |
+| Access Token | ✅ | ✅ | ✅ | ✅ | China / international accounts; independent login module |
+| Password / verification-code login | ✅ | ✅ | ✅ | ✅ | SMS or email verification as requested by the service |
+| Multiple saved printers | ✅ | ✅ | ✅ | ✅ | One active connection; isolated data sources |
+| Print monitoring, pause / resume / cancel | ✅ | ✅ | ✅ | ✅ | Yellow preparation progress, green printing progress |
+| Temperature, fan and motion controls | ✅ | ✅ | ✅ | ✅ | Some commands require LAN and developer modes |
+| AMS / external filament | ✅ | ✅ | ✅ | ✅ | Slots, colors, material and reported remaining amount; supported load/unload operations |
+| BLE thermometers | ✅ | ✅ | ✅ | ✅ | [Supported devices](docs/THERMOMETERS.en.md); Hide / Alternate / Sensor only |
+| Cloud / LAN task thumbnails | ❌ | ✅ | ✅ | ✅ | CYD storage and RAM limits; green Bambu Logo replaces model artwork |
+| Local JPEG camera | ❌ | ✅ | ✅ | ✅ | Model/protocol restrictions; camera alone may associate a cloud printer with the same local serial |
+| Picture printer picker | ❌ | ✅ | ✅ | ✅ | CYD list only; other boards offer picture/list modes |
+| Error codes and essential hints | ✅ | ✅ | ✅ | ✅ | Reported HMS and print errors |
+| Full English error details | ❌ | ✅ | ✅ | ✅ | CYD retains codes and essential hints within its capacity |
+| Screen and browser languages | ✅ | ✅ | ✅ | ✅ | CYD ZH/EN; eight screen languages on other boards; independent browser language |
+| Wi-Fi QR setup / web management | ✅ | ✅ | ✅ | ✅ | Configuration, backups and application OTA |
+| Online standby, brightness and sounds | ✅ | ✅ | ✅ | ✅ | Touch wake in online standby; optional sounds |
+| RGB status LED | ✅ | ➖ | ➖ | ✅ | CYD / ES3C35P onboard RGB: green online, blinking blue offline, alternating green/yellow on alerts; off when disabled or the screen sleeps |
+| Bluetooth Wi-Fi provisioning | ❌ | ❌ | ❌ | ❌ | Off in standard builds; see [build options](docs/DEVELOPMENT.en.md#options) |
 
-### 3D-printable cases
+## 3D-printable enclosures
 
-Download and extract the archive for your board, then choose the required variant. Each variant contains STL files for the case and three buttons.
+[S3 and P4 enclosure models](cases/README.en.md) include buttons, connector-opening and speaker variants. Match the complete board model and extract the STL files. No CYD or ES3C35P model is included.
 
-| Board | Download | Included variants |
-|---|---|---|
-| Waveshare · ESP32-S3-Touch-LCD-2.8 V2 | [Case ZIP](cases/case_esp32-s3-touch-lcd-2.8-v2.zip) | `1mm`, `2mm` and `2mm+speaker`, each with `case_tf` and `case_tf_usb` cases. |
-| Waveshare · ESP32-P4-WIFI6-Touch-LCD-4.3 | [Case ZIP](cases/case_esp32-p4-wifi6-touch-lcd-4.3.zip) | With or without a 40-pin opening; both options include a speaker variant. |
+## Getting started
 
-Choose the files matching your connector and speaker requirements. No CYD case is included.
+1. Match the complete board model. Use the application image for updates and `-full.bin` for full USB installation.
+2. Calibrate CYD on first boot. Scan the Wi-Fi setup code, join the device hotspot and configure a 2.4 GHz network.
+3. Open web management from screen settings, sign in with the initial password `12345678`, then change it.
+4. Add and validate a LAN printer, or sign in to a cloud account and select its linked printers.
 
-## Interface gallery
+See [installation](docs/INSTALLATION.en.md) for Token retrieval, backups and recovery.
 
-Interface examples use demonstration data.
+## Limits
 
-### S3 small screen · 320×240
+Printer models, accessories and firmware determine capabilities and permissions. Successful login does not authorize every command. Some operations require LAN and developer modes. Cloud status and task images never borrow data from saved LAN printers.
 
-| Home | Printing |
-| --- | --- |
-| ![S3 home](docs/images/boards/s3-home-en.png) | ![S3 printing](docs/images/boards/s3-printing-en.png) |
+Online standby supports touch wake. Deep-sleep wake depends on hardware; ES3C35P uses BOOT. Backups contain credentials: keep them private. Web management is intended for a trusted LAN. [Usage](docs/USER-GUIDE.en.md) · [Maintenance and security](docs/MAINTENANCE.en.md) · [Error lookup](https://tbc0309.github.io/xTouch-CN/errors.html)
 
-| Temperature and fans | Motion controls |
-| --- | --- |
-| ![S3 temperature](docs/images/boards/s3-temperature-en.png) | ![S3 control](docs/images/boards/s3-control-en.png) |
+## Development and license
 
-| Settings | Camera |
-| --- | --- |
-| ![S3 settings](docs/images/boards/s3-settings-en.png) | ![S3 camera](docs/images/boards/s3-camera-en.png) |
+All four targets use native ESP-IDF. Cloud HTTP and thumbnails use `esp_http_client`; MQTT uses `esp_mqtt_client`, without Arduino. See the [development guide](docs/DEVELOPMENT.en.md) for shared UI, module options, builds and asset generation.
 
-| Filament | Printer selection |
-|---|---|
-| ![S3 Filament](docs/images/boards/s3-filament-en.png) | ![S3 Printer selection](docs/images/boards/s3-printer-picker-en.png) |
-
-| Printer list | Control permissions |
-|---|---|
-| ![S3 list](docs/images/boards/s3-printer-picker-list-en.png) | ![S3 control permissions](docs/images/boards/s3-error-en.png) |
-
-| Thermometer | Wi-Fi QR setup |
-|---|---|
-| ![S3 thermometer](docs/images/boards/s3-thermometer-en.png) | ![S3 Wi-Fi setup](docs/images/boards/s3-wifi-setup-en.png) |
-
-### P4 interface · 800×480
-
-| Home | Printing |
-|---|---|
-| ![P4 home](docs/images/boards/p4-home-en.png) | ![P4 printing](docs/images/boards/p4-printing-en.png) |
-
-| Temperature and fans | Motion controls |
-|---|---|
-| ![P4 temperature](docs/images/boards/p4-temperature-en.png) | ![P4 control](docs/images/boards/p4-control-en.png) |
-
-| Settings | Camera |
-|---|---|
-| ![P4 settings](docs/images/boards/p4-settings-en.png) | ![P4 camera](docs/images/boards/p4-camera-en.png) |
-
-| Filament | Printer selection |
-|---|---|
-| ![P4 Filament](docs/images/boards/p4-filament-en.png) | ![P4 Printer selection](docs/images/boards/p4-printer-picker-en.png) |
-
-| Printer list | Control permissions |
-|---|---|
-| ![P4 list](docs/images/boards/p4-printer-picker-list-en.png) | ![P4 control permissions](docs/images/boards/p4-error-en.png) |
-
-| Thermometer | Wi-Fi QR setup |
-|---|---|
-| ![P4 thermometer](docs/images/boards/p4-thermometer-en.png) | ![P4 Wi-Fi setup](docs/images/boards/p4-wifi-setup-en.png) |
-
-## Usage notes
-
-- **Control permissions:** some controls require LAN mode and developer mode. Availability depends on printer firmware; a successful cloud or Token login does not authorize every command. See [Cloud control](docs/PRINTERS.en.md#authorization).
-- **Camera and thumbnails:** S3/P4 support local JPEG viewing. RTSPS/H.264 depends on encoding and memory; see [Camera support](boards/CAMERA.md#en) for compatibility. LAN thumbnails use the task file and plate number, scanning at most the first 1 MiB without downloading the complete 3MF. Cloud thumbnails use the selected account and region, without borrowing LAN files. Unsupported layouts and unavailable thumbnails retain printer artwork; CYD always uses printer artwork.
-- **Standby and sound:** ordinary screen standby stays online and supports print wake. Deep sleep disconnects and reconnects on wake. Deep sleep and sounds default to off; screen and portal settings provide sound switches and volume.
-- **Printer switching:** tap the home printer card to cycle between up to two printers; with three or more, it opens the printer picker. Hold always opens the picker. Switching affects only the current connection; startup uses the saved default printer.
-- **Text and faults:** subset fonts cover all interface languages; external filenames can contain missing glyphs. Default builds display fault codes; use the [online lookup](https://tbc0309.github.io/xTouch-CN/errors.html) for descriptions.
-
-<details>
-<summary>Optional: SD configuration and printer model codes</summary>
-
-Use the [Configuration generator (alternative)](https://tbc0309.github.io/xTouch-CN/config.html?lang=en) to enter Wi-Fi, LAN printers, existing Access Tokens, and display and time settings. Import the downloaded JSON in the device portal, or extract the SD configuration package at the card root and restart. Tokens and printer connections still require verification in the device portal. Generated files contain plaintext credentials; keep them private.
-
-`printerModel` uses case-sensitive protocol codes, such as `C12` for P1S; unknown models may be left empty. Artwork appears after valid model telemetry, otherwise the xTouch logo remains. These recognition mappings do not claim full hardware validation of every control.
-
-| Model | `printerModel` protocol code |
-| --- | --- |
-| X1 Carbon | `BL-P001` |
-| X1 | `BL-P002` |
-| P1P | `C11` |
-| P1S | `C12` |
-| X1E | `C13` |
-| A1 mini | `N1` |
-| A1 | `N2S` |
-| X2D | `N6` |
-| P2S | `N7` |
-| A2L | `N9` |
-| H2C | `O1C` |
-| H2C | `O1C2` |
-| H2D | `O1D` |
-| H2D Pro | `O1E` |
-| H2S | `O1S` |
-
-See [Storage](docs/MAINTENANCE.en.md#storage) for import and backup rules.
-
-</details>
-
-## Development and documentation
-
-| Topic | Guides |
-|---|---|
-| Operation, AMS and faults | [Interaction](docs/USER-GUIDE.en.md#controls) · [AMS support](docs/PRINTERS.en.md#ams) · [Notifications](docs/USER-GUIDE.en.md#notifications) |
-| Builds and board adaptation | [Development](docs/DEVELOPMENT.en.md) · [Architecture](docs/DEVELOPMENT.en.md#architecture) · [Build options](docs/DEVELOPMENT.en.md#options) |
-| Firmware packaging and OTA | [Release packaging](docs/DEVELOPMENT.en.md#release) · [Updates](docs/INSTALLATION.en.md#install) |
-| Compatibility and security | [MQTT scope](docs/PRINTERS.en.md#capabilities) · [Security](docs/MAINTENANCE.en.md#security) |
-
-<details>
-<summary>Source builds and per-board OTA manifests</summary>
-
-CYD build:
-
-```sh
-npm ci --prefix web
-python -m pip install platformio -r scripts/requirements.txt
-python -m platformio run
-```
-
-The interface uses **OPPO Sans 4.0, weight 600**, with Noto Sans CJK fallback glyphs for Japanese kana and Korean. See [font copyright and licenses](LICENSE-3RD-PARTY.md#oppo-sans-40).
-
-S3/P4 require the ESP-IDF environment. Follow the [board build guide](boards/README.md#构建) and run `python boards/build.py s3` or `python boards/build.py p4`. Generated fonts are included; ordinary builds do not require the original TTF.
-
-| Board directory | OTA manifest |
-|---|---|
-| `esp32-2432s028r` | [ota.json](boards/esp32-2432s028r/ota.json) |
-| `esp32-s3-touch-lcd-2.8-v2` | [ota.json](boards/esp32-s3-touch-lcd-2.8-v2/ota.json) |
-| `esp32-p4-wifi6-touch-lcd-4.3` | [ota.json](boards/esp32-p4-wifi6-touch-lcd-4.3/ota.json) |
-
-</details>
-
-## Source and licensing
-
-Upstream: [xperiments-in/xtouch](https://github.com/xperiments-in/xtouch). Upstream copyright notices are retained. Code follows the [upstream license](LICENSE.md); dependencies are listed in [Third-party licenses](LICENSE-3RD-PARTY.md).
+Upstream copyright is retained. See the [license](LICENSE.md) and [third-party notices](LICENSE-3RD-PARTY.md).

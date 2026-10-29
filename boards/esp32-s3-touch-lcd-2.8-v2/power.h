@@ -1,5 +1,5 @@
 #pragma once
-#include <Arduino.h>
+#include "platform/idf/runtime.h"
 #include <driver/gpio.h>
 inline BoardPowerProfile board_power_profile(bool sleeping){
  // Keep the Wi-Fi HTTP server reachable in network standby.

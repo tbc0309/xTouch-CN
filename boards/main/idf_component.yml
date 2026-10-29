@@ -1,9 +1,10 @@
 dependencies:
   idf: ">=6.1,<6.2"
-  espressif/arduino-esp32:
-    version: "==3.3.12"
-    override_path: "../.deps/espressif__arduino-esp32"
-  espressif/esp_h264: "==1.4.1"
+  espressif/mqtt: "==1.1.0"
+  espressif/esp_h264:
+    version: "==1.4.1"
+    rules:
+      - if: "target in [esp32s3, esp32p4]"
   espressif/esp_codec_dev:
     version: "==1.5.9"
     rules:
@@ -12,3 +13,15 @@ dependencies:
     version: "==3.0.10"
     rules:
       - if: "target == esp32p4"
+  espressif/esp_wifi_remote:
+    version: "==1.6.5"
+    rules:
+      - if: "target == esp32p4"
+  espressif/network_provisioning:
+    version: "==1.2.4"
+    rules:
+      - if: "target in [esp32s3, esp32p4]"
+  espressif/esp-dsp:
+    version: "==1.8.2"
+    rules:
+      - if: "target in [esp32s3, esp32p4]"

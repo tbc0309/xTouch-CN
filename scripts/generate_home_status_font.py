@@ -18,7 +18,7 @@ with tempfile.TemporaryDirectory(prefix='xtouch-status-font-') as temp:
     for size, sensor in ((14, True), (28, True), (14, False), (28, False)):
         output = Path(temp) / f'status-{size}.c'
         subprocess.run([npx, '--yes', 'lv_font_conv@1.5.3', '--font', str(args.font),
-                        '--size', str(size), '--range', ('0x20,0x25,0x2d-0x2e,0x30-0x3a,0x43,0x7e,0xb0' if sensor else '0x30-0x3a'), '--bpp', '4',
+                        '--size', str(size), '--range', ('0x20,0x25,0x2d-0x2e,0x30-0x3a,0x7e,0x2103' if sensor else '0x30-0x3a'), '--bpp', '4',
                         '--format', 'lvgl', '--autohint-strong', '--no-kerning', '--lv-include', 'lvgl.h',
                         '--lv-font-name', f'ui_font_home_status_{size}', '-o', str(output)], check=True)
         text = re.sub(r'/\*\*.*?\*/', '', output.read_text('utf-8'), count=1, flags=re.S)

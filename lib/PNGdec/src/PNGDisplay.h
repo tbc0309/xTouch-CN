@@ -21,7 +21,11 @@
 #include <PNGdec.h>
 #include <SD.h>
 #ifndef ARDUINO_ARCH_NRF52
+#if defined(XTOUCH_NATIVE_IDF)
+#include "platform/idf/filesystem.h"
+#else
 #include "FS.h"
+#endif
 #include <LittleFS.h>
 #endif
 

@@ -1,17 +1,14 @@
 # Xiaomi BLE thermometer (optional)
 
-Enable `XTOUCH_FEATURE_XIAOMI_BLE=ON` for S3 or P4, using the board Xiaomi BLE
-sdkconfig defaults. Included by default in S3/P4 release builds; CYD is excluded. BLE provisioning and
-this receiver are mutually exclusive. P4 uses the existing C6 Bluetooth HCI
-transport.
-For C6 firmware that initializes its controller at boot, also set
-`XTOUCH_P4_C6_PREINITIALIZED_BT=ON`; otherwise the P4 initializes it via RPC.
+Enable `XTOUCH_FEATURE_XIAOMI_BLE=ON`, using the board Xiaomi BLE
+sdkconfig defaults. Included by default in the native CYD, S3, P4 and ES3C35P builds. BLE provisioning and
+this receiver are mutually exclusive. P4 uses the board Bluetooth HCI transport.
 
 The model table covers 19 model identifiers / 23 product IDs, including Linp KS2
 (KS2BB), Mijia Thermometer 2/3/3 mini/3 Pro, Qingping and MiaoMiaoce devices. Only
 KS2BB and LYWSD03MMC have physical sensor validation; other entries are protocol
 implementations with synthetic tests, not physical-device guarantees. See the
-installation guide for product IDs and verification status.
+[thermometer guide](../../../docs/THERMOMETERS.en.md) for product IDs and verification status.
 
 Supports bounded MiBeacon v2/v3 public packets and authenticated AES-CCM v4/v5,
 including optional MAC/capability/IO fields and standard integer/float temperature

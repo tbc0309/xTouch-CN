@@ -1,7 +1,6 @@
 #pragma once
-#include <Arduino.h>
-#include <Stream.h>
-
+#include "platform/idf/runtime.h"
+#include "platform/idf/runtime.h"
 // Bounded MQTT frame storage. Small blocks avoid requiring a contiguous 60KB
 // allocation beside TLS and LVGL. Rewind supports two filtered JSON passes.
 class XtouchAutoGrowBufferStream : public Stream {

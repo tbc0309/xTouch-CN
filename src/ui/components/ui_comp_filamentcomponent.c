@@ -5,7 +5,7 @@
 
 void ui_event_comp_filamentComponent_onNozzleTemp(lv_event_t *e)
 {
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_msg_t *m = lv_event_get_msg(e);
 
     struct XTOUCH_MESSAGE_DATA *message = (struct XTOUCH_MESSAGE_DATA *)m->payload;
@@ -21,7 +21,7 @@ void ui_event_comp_filamentComponent_onNozzleTemp(lv_event_t *e)
 void ui_event_comp_filamentComponent_filamentScreenNozzleUp(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_filamentComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -31,7 +31,7 @@ void ui_event_comp_filamentComponent_filamentScreenNozzleUp(lv_event_t *e)
 void ui_event_comp_filamentComponent_filamentScreenNozzleDown(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_filamentComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -41,7 +41,7 @@ void ui_event_comp_filamentComponent_filamentScreenNozzleDown(lv_event_t *e)
 void ui_event_comp_filamentComponent_filamentScreenUnload(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_filamentComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -51,7 +51,7 @@ void ui_event_comp_filamentComponent_filamentScreenUnload(lv_event_t *e)
 void ui_event_comp_filamentComponent_filamentScreenLoad(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_filamentComponent = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {

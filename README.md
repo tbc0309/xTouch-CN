@@ -2,213 +2,99 @@
 
 简体中文 | [English](README.en.md)
 
-用于拓竹打印机状态显示与控制的多语言触摸屏固件，支持 ESP32-2432S028R、Waveshare S3 V2 和 P4 主板。基于 [xTouch](https://github.com/xperiments-in/xtouch) `0.9.213`，独立维护，非官方版本。
+拓竹打印机的独立触摸控制屏。查看打印状态、AMS 和温湿度，操作温度、风扇与运动，并通过网页管理打印机和拓竹账号。非拓竹官方产品。
 
-**[在线刷写](https://tbc0309.github.io/xTouch-CN/)** · [固件下载](https://github.com/tbc0309/xTouch-CN/releases/latest) · [故障码查询](https://tbc0309.github.io/xTouch-CN/errors.html) · [全部文档](docs/README.md)
+使用原生 ESP-IDF 6.1 与 LVGL 9.6.0。安装时请核对完整主板型号，并使用与固件版本对应的文档。
 
-[安装与配置](#安装与配置) · [主板对比](#主板功能对比) · [界面展示](#界面展示) · [使用说明](#使用说明) · [开发与文档](#开发与文档)
+[安装指南](docs/INSTALLATION.md) · [在线安装](https://tbc0309.github.io/xTouch-CN/) · [固件下载](https://github.com/tbc0309/xTouch-CN/releases/latest) · [文档目录](docs/README.md)
 
-## 主要功能
+## 功能
 
 - 八种语言：简体中文、繁體中文、英语、法语、德语、俄语、日语、韩语。
-- 支持局域网和拓竹账号 Access Token；S3/P4 另提供账号登录，扫码配网、网页管理；最多保存 100 台打印机，一次连接一台。
-- 查看打印进度、温度、AMS 耗材颜色与余量；控制灯光、风扇、速度、运动及进退料。
-- S3/P4 支持摄像头和打印缩略图；三板均支持提示音、联网待机、打印唤醒与可选深睡。
-- 首页在 NTP 同步后显示当地时间，AMS 占满状态栏时自动隐藏；首次访问后台可自动保存浏览器时区，配置可自定义。
-- S3/P4 支持 Xiaomi BLE 温湿度计，可与 AMS 交替显示或仅显示温湿度；在后台绑定 MAC 和 BLE Key，交替间隔为 1～30 秒，默认 5 秒。
-- 配置保存在设备内部，可使用 SD 卡同步备份；支持网页后台、SD 卡及 OTA 升级。
-
-温湿度计支持 **19 个型号标识、23 个产品 ID**，型号、产品名称及兼容范围见[温湿度计支持列表](docs/THERMOMETERS.md)。
-
-## 安装与配置
-
-先核对下方完整主板型号。**三板固件不能混刷；应用镜像用于升级，`-full.bin` 用于 USB 安装。**
-
-| 当前情况 | 操作 |
-|---|---|
-| 首次安装 | 打开 [在线刷写](https://tbc0309.github.io/xTouch-CN/)，选择对应主板和串口，按提示安装。 |
-| 已安装 xTouch-CN | 在网页后台上传对应主板的应用镜像，或在设置页连续点击版本号三次检查 OTA。也可开启开机检查更新或使用 SD 卡升级。 |
-
-固件文件与恢复步骤见 [更新与维护](docs/INSTALLATION.md#install)。
-
-### 首次配置
-
-1. CYD 按提示完成触摸校准；S3 V2/P4 无需校准。扫描屏幕二维码连接设备热点，密码 `12345678`。
-2. 打开 `http://192.168.4.1/`，设置家庭 2.4 GHz Wi-Fi。
-3. 在屏幕设置中打开“网页管理”并扫码，使用初始管理密码 `12345678` 登录后修改密码。
-4. 添加局域网打印机后点击“验证并保存设备”，或验证拓竹账号 Access Token 后勾选关联设备。修改连接参数后需重新验证；其他有效设置自动保存。
-
-日常运行无需 SD 卡，可在网页后台导入、导出配置备份。详见 [网页管理](docs/INSTALLATION.md#accounts)、[Token 获取](docs/INSTALLATION.md#token) 和 [存储与备份](docs/MAINTENANCE.md#storage)。
-
-## 主板功能对比
-
-| CYD · ESP32-2432S028R | 微雪 · ESP32-S3-Touch-LCD-2.8 V2 | 微雪 · ESP32-P4-WIFI6-Touch-LCD-4.3 |
-|---|---|---|
-| ![CYD 主板](docs/images/cyd-board-product.jpg) | ![S3 V2 主板](docs/images/boards/esp32-s3-touch-lcd-2.8-v2-product.png) | ![P4 主板](docs/images/boards/esp32-p4-wifi6-touch-lcd-4.3-product.png) |
-| 2.8 英寸，ILI9341 + XPT2046 电阻触摸 | 仅 **V2 / CST3530** | **P4 芯片版本 v3.x，最低 v3.0** |
-
-商品图片展示原厂演示界面，xTouch 界面见下方。其他屏幕、触摸或芯片版本需单独适配；[CYD 引脚](docs/HARDWARE.md) · [S3/P4 硬件与构建](boards/README.md)。
-
-| 功能 | CYD | S3 V2 | P4 4.3 英寸 |
-|---|---|---|---|
-| 横屏分辨率 | 320×240 | 320×240 | 800×480 |
-| Flash / PSRAM | 4 MB / 无 | 16 MB / 8 MB | 32 MB / 32 MB |
-| OTA 应用槽 | 2 × 1.875 MiB | 2 × 6 MiB | 2 × 12 MiB |
-| 数据分区 | 128 KiB | 3.875 MiB | 7.875 MiB |
-| LAN / Cloud / Access Token | 支持 | 支持 | 支持 |
-| 账号密码 / 验证码登录 | 容量超限 | 支持 | 支持 |
-| 打印、AMS、温度与运动控制 | 共用 | 共用 | 共用 |
-| 联网待机、打印唤醒 | 支持 | 支持 | 支持 |
-| 可选空闲深睡 | 触摸或复位唤醒 | 触摸或复位唤醒 | 触摸或复位唤醒 |
-| 触摸音、警告音 | 支持，默认关闭 | 支持，默认关闭 | 支持，默认关闭 |
-| 软件指示灯 | RGB 可控，默认开启 | 电源/充电灯由硬件控制 | 电源/充电灯由硬件控制 |
-| 打印时图片区域 | 机型图 | 任务缩略图，最大128像素 | 任务缩略图，最大512像素 |
-| JPEG 摄像头 | 不支持 | 支持，P1S 兼容 | 支持，P1S 兼容 |
-| RTSPS/H.264 摄像头 | 不支持 | 受编码和内存限制 | 受编码和内存限制 |
-| 故障码文字详情 | 容量超限 | 可选模块，默认关闭 | 可选模块，默认关闭 |
-| 字体、图标 | 小屏资源 | 小屏资源 | 大屏资源 |
-| Xiaomi BLE 温湿度计 | 容量超限 | 支持 | 支持 |
-
-CYD 仅有 4 MB Flash；保留双 OTA 升级分区后，账号密码登录、Xiaomi BLE 温湿度计和完整故障文字模块会超出应用容量，因此发行固件无法容纳这些功能。摄像头及任务缩略图还受无 PSRAM 的运行内存限制。
-
-### 3D 打印外壳
-
-按主板型号下载并解压，选择所需版本打印。各版本目录均包含外壳与三个按键的 STL 文件。
-
-| 主板 | 下载 | 包内版本 |
-|---|---|---|
-| 微雪 · ESP32-S3-Touch-LCD-2.8 V2 | [外壳 ZIP](cases/case_esp32-s3-touch-lcd-2.8-v2.zip) | `1mm`、`2mm`、`2mm+speaker`；各含 `case_tf` 与 `case_tf_usb` 外壳。 |
-| 微雪 · ESP32-P4-WIFI6-Touch-LCD-4.3 | [外壳 ZIP](cases/case_esp32-p4-wifi6-touch-lcd-4.3.zip) | 无 40-pin 开口、带 40-pin 开口，两种均提供带扬声器版本。 |
-
-请根据接口与扬声器需求选择文件；不包含 CYD 外壳。
+- 查看打印状态、进度、温度、风扇、Wi-Fi信号与任务缩略图。
+- 管理局域网打印机和云端账号，支持Token、账号密码与验证码登录。
+- 暂停、恢复和取消打印，控制温度、风扇、灯光与运动。
+- 查看AMS及外置耗材、材料颜色与已上报余量，操作设备支持的进退料、重读和烘干功能。
+- 绑定BLE温湿度计，选择关闭显示、交替显示或仅温湿度。
+- 查看支持的本地摄像头、故障码和打印机提示。
+- 通过网页配置Wi-Fi、设备与账号，备份、恢复配置及升级固件。
+- 设置语言、亮度、提示音和待机方式。
 
 ## 界面展示
 
-以下为界面示例，数据为演示数据。
+以下六张为P4界面的演示数据渲染，摄像头画面仅作示意，不表示所有机型和外设均已实测。
 
-### S3 小屏 · 320×240
-
-| 首页 | 打印状态 |
+| | |
 |---|---|
-| ![S3 首页](docs/images/boards/s3-home.png) | ![S3 打印](docs/images/boards/s3-printing.png) |
+| **首页**<br>![P4 首页](docs/images/boards/p4-home.png) | **打印状态**<br>![P4 打印状态](docs/images/boards/p4-printing.png) |
+| **选择打印机**<br>![P4 选择打印机](docs/images/boards/p4-printer-picker.png) | **温度与风扇**<br>![P4 温度与风扇](docs/images/boards/p4-temperature.png) |
+| **耗材**<br>![P4 耗材](docs/images/boards/p4-filament.png) | **摄像头**<br>![P4 摄像头](docs/images/boards/p4-camera.png) |
 
-| 温度与风扇 | 运动控制 |
-|---|---|
-| ![S3 温度](docs/images/boards/s3-temperature.png) | ![S3 控制](docs/images/boards/s3-control.png) |
+[查看完整界面图集](docs/SCREENSHOTS.md)
 
-| 设置 | 摄像头 |
-|---|---|
-| ![S3 设置](docs/images/boards/s3-settings.png) | ![S3 摄像头](docs/images/boards/s3-camera.png) |
+## 支持的主板
 
-| 耗材 | 选择打印机 |
-|---|---|
-| ![S3 耗材](docs/images/boards/s3-filament.png) | ![S3 选择打印机](docs/images/boards/s3-printer-picker.png) |
+主板参数与功能支持分开列出。外观相似、芯片相同或屏幕尺寸相同都不代表镜像通用。
 
-| 设备列表 | 控制权限提醒 |
-|---|---|
-| ![S3 设备列表](docs/images/boards/s3-printer-picker-list.png) | ![S3 控制权限提醒](docs/images/boards/s3-error.png) |
+> **更多主板（测试版）**：[查看主板参数与实测状态](https://github.com/tbc0309/xTouch-CN/blob/test/README.test.md)。测试版以 Pre-release 提供，安装前请核对完整型号、查看实测状态并备份配置。
 
-| 温湿度计 | Wi-Fi 扫码配网 |
-|---|---|
-| ![S3 温湿度计](docs/images/boards/s3-thermometer.png) | ![S3 Wi-Fi 配网](docs/images/boards/s3-wifi-setup.png) |
+| 参数 | CYD | S3 2.8 V2 | P4 4.3 | ES3C35P 3.5 |
+|---|---|---|---|---|
+| 主板型号 | [ESP32-2432S028R（CYD）](docs/HARDWARE.md#cyd) | [Waveshare ESP32-S3-Touch-LCD-2.8 V2](docs/HARDWARE.md#waveshare) | [Waveshare ESP32-P4-WIFI6-Touch-LCD-4.3](docs/HARDWARE.md#waveshare) | [LCDWIKI ES3C35P](boards/lcdwiki-es3c35p/README.md) |
+| 图片 | <img src="docs/images/cyd-board-product.jpg" width="100%" alt="CYD主板"> | <img src="docs/images/boards/esp32-s3-touch-lcd-2.8-v2-product-right.svg" width="100%" alt="Waveshare S3 V2主板"> | <img src="docs/images/boards/esp32-p4-wifi6-touch-lcd-4.3-product-right.svg" width="100%" alt="Waveshare P4主板"> | <img src="docs/images/boards/es3c35p-product.jpg" width="100%" alt="LCDWIKI ES3C35P主板"> |
+| 显示与触摸 | 320×240；ILI9341／XPT2046电阻触摸 | 320×240；ST7789／CST3530 | 800×480；ST7701／GT911 | 480×320；ST77922显示触摸一体，3.5寸 |
+| 芯片与存储 | ESP32；4 MB Flash，无PSRAM | ESP32-S3；16 MB Flash、8 MB PSRAM | P4 v3.x＋C6；32 MB Flash、32 MB PSRAM | ESP32-S3；16 MB Flash、8 MB PSRAM；ES8311音频、RGB灯 |
+| 默认资源 | 小屏 original；中英文字库、双OTA | 小屏 original | 大屏 MDI | 大屏 MDI；与S3相同功能模块 |
 
-### P4 界面 · 800×480
+资源大小与图标风格为独立编译选项。各主板的硬件说明见板级文档；固件文件见下载包清单。[引脚、供电与外壳](docs/HARDWARE.md) · [打印机与AMS兼容](docs/PRINTERS.md)
 
-| 首页 | 打印状态 |
-|---|---|
-| ![P4 首页](docs/images/boards/p4-home.png) | ![P4 打印](docs/images/boards/p4-printing.png) |
+### 各主板功能支持
 
-| 温度与风扇 | 运动控制 |
-|---|---|
-| ![P4 温度](docs/images/boards/p4-temperature.png) | ![P4 控制](docs/images/boards/p4-control.png) |
+✅ 支持；❌ 标准构建不提供；➖ 不适用。S3 指 Waveshare 2.8 V2，3.5寸指 LCDWIKI ES3C35P。功能是否可操作还取决于打印机、外设和固件权限。
 
-| 设置 | 摄像头 |
-|---|---|
-| ![P4 设置](docs/images/boards/p4-settings.png) | ![P4 摄像头](docs/images/boards/p4-camera.png) |
+| 功能 | CYD | S3 | P4 | 3.5寸 | 说明 |
+|---|:---:|:---:|:---:|:---:|---|
+| 设备／账号上限 | 20／10 | 100／50 | 100／50 | 100／50 | 实际还受可用内存及凭据长度限制 |
+| 局域网设备 | ✅ | ✅ | ✅ | ✅ | IP、序列号与访问码验证后保存 |
+| Access Token | ✅ | ✅ | ✅ | ✅ | 中国区／国际区账号；与密码登录独立编译 |
+| 密码／验证码登录 | ✅ | ✅ | ✅ | ✅ | 按云端要求使用短信或邮箱验证 |
+| 多打印机管理 | ✅ | ✅ | ✅ | ✅ | 一次连接一台；来源数据相互隔离 |
+| 打印状态、暂停／恢复／取消 | ✅ | ✅ | ✅ | ✅ | 准备进度黄色，实际打印进度绿色 |
+| 温度、风扇与运动控制 | ✅ | ✅ | ✅ | ✅ | 按机型能力显示；部分控制需要局域网＋开发者模式 |
+| AMS／外置耗材 | ✅ | ✅ | ✅ | ✅ | 槽位、颜色、材料与已上报余量；支持的设备提供进退料等操作 |
+| BLE 温湿度计 | ✅ | ✅ | ✅ | ✅ | [支持型号](docs/THERMOMETERS.md)；关闭显示／交替显示／仅温湿度 |
+| 云端／局域网任务缩略图 | ❌ | ✅ | ✅ | ✅ | CYD受存储与运行内存限制，打印机型图使用绿色拓竹Logo |
+| 本地JPEG摄像头 | ❌ | ✅ | ✅ | ✅ | 受机型协议限制；云设备仅摄像头可按同序列号关联本地连接 |
+| 图片式设备选择 | ❌ | ✅ | ✅ | ✅ | CYD仅列表模式；其它板可切换图片／列表 |
+| 故障码与必要提示 | ✅ | ✅ | ✅ | ✅ | 机型上报的HMS与打印错误 |
+| 完整英文故障详情 | ❌ | ✅ | ✅ | ✅ | CYD容量受限，保留故障码与必要提示 |
+| 屏幕与网页语言 | ✅ | ✅ | ✅ | ✅ | CYD中英，其它板八种屏幕语言；网页语言独立保存 |
+| Wi-Fi扫码配网／网页管理 | ✅ | ✅ | ✅ | ✅ | 配置、备份与应用OTA升级 |
+| 联网待机、亮度与提示音 | ✅ | ✅ | ✅ | ✅ | 保持联网；触摸唤醒，声音可关闭 |
+| RGB 状态指示灯 | ✅ | ➖ | ➖ | ✅ | CYD / ES3C35P 板载 RGB；在线绿色、离线蓝色闪烁、告警绿黄交替；关闭开关或熄屏时关灯 |
+| 蓝牙配网 | ❌ | ❌ | ❌ | ❌ | 标准构建关闭；定制条件见[构建选项](docs/DEVELOPMENT.md#options) |
 
-| 耗材 | 选择打印机 |
-|---|---|
-| ![P4 耗材](docs/images/boards/p4-filament.png) | ![P4 选择打印机](docs/images/boards/p4-printer-picker.png) |
+## 3D 打印外壳
 
-| 设备列表 | 控制权限提醒 |
-|---|---|
-| ![P4 设备列表](docs/images/boards/p4-printer-picker-list.png) | ![P4 控制权限提醒](docs/images/boards/p4-error.png) |
+项目提供 [S3 与 P4 外壳模型](cases/README.md)，含按钮、不同接口开口及扬声器版本。按完整主板型号选择并解压 STL；CYD 与 ES3C35P 暂无随项目提供的模型。
 
-| 温湿度计 | Wi-Fi 扫码配网 |
-|---|---|
-| ![P4 温湿度计](docs/images/boards/p4-thermometer.png) | ![P4 Wi-Fi 配网](docs/images/boards/p4-wifi-setup.png) |
+## 开始使用
 
-## 使用说明
+1. 核对完整主板型号，安装对应固件。应用镜像用于升级，`-full.bin`用于USB完整安装。
+2. CYD首次启动按提示校准。扫描Wi-Fi配网二维码，连接设备热点并配置2.4 GHz网络。
+3. 在屏幕设置中打开网页管理，使用初始密码`12345678`登录并修改密码。
+4. 添加并验证局域网设备，或登录拓竹账号并勾选关联设备。
 
-[日常操作](docs/USER-GUIDE.md) · [打印机与 AMS 兼容](docs/PRINTERS.md) · [温湿度计](docs/THERMOMETERS.md) · [备份与维护](docs/MAINTENANCE.md)
+详细步骤、Token获取、配置备份与恢复见[安装指南](docs/INSTALLATION.md)。
 
-- **控制权限**：部分控制功能需局域网模式及开发者模式。实际能力取决于打印机及固件；拓竹账号或 Token 登录成功不代表所有命令获准，见 [云端控制](docs/PRINTERS.md#authorization)。
-- **摄像头与缩略图**：S3/P4 支持本地 JPEG 摄像头；RTSPS/H.264 受编码和内存限制，机型兼容情况见[摄像头说明](boards/CAMERA.md)。局域网缩略图按任务文件与盘号读取，最多扫描文件前 1 MiB，不下载整个 3MF；云端按所选账号及区域读取当前任务图片，两种连接不混用。遇到不支持的文件布局或缩略图未就绪时显示机型图。CYD 始终使用机型图。
-- **待机与声音**：普通休眠保持联网，可收到打印唤醒。深睡断网，唤醒时重新连接；深睡与提示音默认关闭，声音开关、音量可在屏幕或后台设置。
-- **多设备切换**：两台以内点按首页设备卡依次切换；三台及以上时打开设备选择页，长按始终打开设备选择页。切换只影响当前连接，开机仍使用保存的默认设备。
-- **文字与故障**：精简字库覆盖八语界面，外部文件名可能缺字。默认显示原始故障码，含义可在 [在线查询页](https://tbc0309.github.io/xTouch-CN/errors.html) 查看。
+## 使用边界
 
-<details>
-<summary>可选：SD 配置与机型协议代码</summary>
+打印机能力与控制权限取决于型号、外设和固件。账号登录成功不代表所有控制命令获准；部分操作需要局域网模式和开发者模式。状态与任务图片按连接来源处理，云设备不会借用局域网设备的状态或任务资料。
 
-使用[配置文件生成器](https://tbc0309.github.io/xTouch-CN/config.html?lang=zh)填写 Wi-Fi、局域网设备、已有 Access Token 和显示与时间设置。下载的 JSON 可从设备后台导入；使用 TF 卡时，将配置包解压到卡根目录后重启。Token 和设备连接仍需在设备后台验证。生成文件包含明文凭据，请妥善保管。
+联网待机可触摸唤醒；深睡唤醒取决于主板硬件，ES3C35P深睡使用BOOT键。配置备份包含连接凭据，请自行保管；管理后台用于可信局域网。[操作说明](docs/USER-GUIDE.md) · [备份与安全](docs/MAINTENANCE.md) · [故障码查询](https://tbc0309.github.io/xTouch-CN/errors.html)
 
-`printerModel` 使用区分大小写的协议代码，例如 P1S 填 `C12`；未知型号可留空。收到有效型号上报后显示机型图片，否则保留 xTouch 标志。下表用于型号识别；控制功能仍受机型、打印机固件和授权限制。
+## 开发与许可
 
-| 机型 | `printerModel` 协议代码 |
-| --- | --- |
-| X1 Carbon | `BL-P001` |
-| X1 | `BL-P002` |
-| P1P | `C11` |
-| P1S | `C12` |
-| X1E | `C13` |
-| A1 mini | `N1` |
-| A1 | `N2S` |
-| X2D | `N6` |
-| P2S | `N7` |
-| A2L | `N9` |
-| H2C | `O1C` |
-| H2C | `O1C2` |
-| H2D | `O1D` |
-| H2D Pro | `O1E` |
-| H2S | `O1S` |
+四种目标均使用原生ESP-IDF。云HTTP和缩略图使用`esp_http_client`，MQTT使用`esp_mqtt_client`，不链接Arduino框架。共用界面、模块开关、构建和资源生成见[开发指南](docs/DEVELOPMENT.md)。
 
-配置导入与备份规则见 [存储说明](docs/MAINTENANCE.md#storage)。
-
-</details>
-
-## 开发与文档
-
-| 内容 | 入口 |
-|---|---|
-| 操作、AMS 与故障提示 | [交互规则](docs/USER-GUIDE.md#controls) · [AMS 支持](docs/PRINTERS.md#ams) · [提示规则](docs/USER-GUIDE.md#notifications) |
-| 编译与新主板适配 | [开发说明](docs/DEVELOPMENT.md) · [代码结构](docs/DEVELOPMENT.md#architecture) · [功能模块](docs/DEVELOPMENT.md#options) |
-| 固件打包与 OTA | [发布构建](docs/DEVELOPMENT.md#release) · [更新与恢复](docs/INSTALLATION.md#install) |
-| 兼容与安全 | [MQTT 范围](docs/PRINTERS.md#capabilities) · [安全说明](docs/MAINTENANCE.md#security) |
-
-<details>
-<summary>源码构建与各主板 OTA 清单</summary>
-
-CYD 构建：
-
-```sh
-npm ci --prefix web
-python -m pip install platformio -r scripts/requirements.txt
-python -m platformio run
-```
-
-界面文字使用 **OPPO Sans 4.0，字重 600**；日文假名和韩文缺字使用 Noto Sans CJK 补齐。详见[字体版权与许可](LICENSE-3RD-PARTY.md#oppo-sans-40)。
-
-S3/P4 使用 ESP-IDF 工具环境，按 [主板开发说明](boards/README.md#构建) 执行 `python boards/build.py s3` 或 `python boards/build.py p4`。生成字体已包含在仓库，普通构建无需原始 TTF。
-
-| 主板目录 | OTA 清单 |
-|---|---|
-| `esp32-2432s028r` | [ota.json](boards/esp32-2432s028r/ota.json) |
-| `esp32-s3-touch-lcd-2.8-v2` | [ota.json](boards/esp32-s3-touch-lcd-2.8-v2/ota.json) |
-| `esp32-p4-wifi6-touch-lcd-4.3` | [ota.json](boards/esp32-p4-wifi6-touch-lcd-4.3/ota.json) |
-
-</details>
-
-## 来源与许可
-
-原项目：[xperiments-in/xtouch](https://github.com/xperiments-in/xtouch)。保留上游版权，代码沿用 [上游许可证](LICENSE.md)，第三方组件见 [许可说明](LICENSE-3RD-PARTY.md)。
+保留上游版权，遵循[项目许可证](LICENSE.md)；字体、图标和其他组件见[第三方许可](LICENSE-3RD-PARTY.md)。

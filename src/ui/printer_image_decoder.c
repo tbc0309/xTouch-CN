@@ -1,87 +1,39 @@
-/* Row-addressable printer artwork. See scripts/generate_printer_images.py.
- * Flash scanlines are the fallback; PSRAM boards may cache a bounded set
- * of decoded images while the device picker is open.
- */
+/* Bounded RGB565/RGB565A8 artwork decoding for LVGL 9. */
 #include "printer_models.h"
+#if XTOUCH_SINGLE_PRINTER_LOGO
+void ui_printer_image_decoder_init(void){}
+void ui_printer_image_cache_begin(size_t budget){(void)budget;}
+void ui_printer_image_cache_end(void){}
+size_t ui_printer_image_cache_bytes(void){return 0;}
+#else
 #include "layout_shared.h"
+#include <src/image/lv_image_decoder_private.h>
 #include <string.h>
 #include <stdlib.h>
 #if defined(ESP_PLATFORM) && defined(XTOUCH_WAVESHARE)
 #include <esp_heap_caps.h>
 #endif
-static struct {const void *src;uint8_t *pixels;size_t bytes;uint32_t age;uint16_t w,h;} cache[6];
-static size_t cache_budget,cache_bytes;
-static uint32_t cache_clock;
-void ui_printer_image_cache_end(void){
-    for(unsigned i=0;i<6;++i){free(cache[i].pixels);memset(&cache[i],0,sizeof(cache[i]));}
-    cache_budget=cache_bytes=cache_clock=0;
+static uint16_t read16(const uint8_t *p){return p[0]|((uint16_t)p[1]<<8);}
+static const lv_img_dsc_t *packed_image(const void *src){
+ if(lv_img_src_get_type(src)!=LV_IMG_SRC_VARIABLE)return NULL;
+ const lv_img_dsc_t *image=src;
+ if(image->header.cf!=LV_IMG_CF_RAW||!image->data||image->data_size<10)return NULL;
+ const uint8_t *p=image->data;
+ if((memcmp(p,"XTP1",4)&&memcmp(p,"XTP2",4))||!p[4]||!p[5]||!p[6])return NULL;
+ unsigned table=8+p[6]*2+(p[5]+1)*2;
+ return table<=image->data_size&&image->header.w==p[4]&&image->header.h==p[5]?image:NULL;
 }
+typedef struct CachedImage {const void *src;lv_draw_buf_t buffer;uint8_t *pixels;size_t bytes;uint32_t age;unsigned references;} CachedImage;
+static CachedImage cache[6];static size_t cache_budget,cache_bytes;static uint32_t cache_clock;
+static void discard(CachedImage *c){cache_bytes-=c->bytes;free(c->pixels);memset(c,0,sizeof(*c));}
+void ui_printer_image_cache_end(void){cache_budget=0;for(unsigned i=0;i<6;i++)if(!cache[i].references)discard(&cache[i]);}
 void ui_printer_image_cache_begin(size_t budget){ui_printer_image_cache_end();cache_budget=budget;}
 size_t ui_printer_image_cache_bytes(void){return cache_bytes;}
-static lv_res_t image_read(lv_img_decoder_t *,lv_img_decoder_dsc_t *,lv_coord_t,lv_coord_t,lv_coord_t,uint8_t *);
-static uint8_t *cached_pixels(lv_img_decoder_t *decoder,lv_img_decoder_dsc_t *dsc){
-    if(!cache_budget)return NULL;
-    unsigned stride=dsc->header.cf==LV_IMG_CF_TRUE_COLOR_ALPHA?3:2;
-    size_t bytes=(size_t)dsc->header.w*dsc->header.h*stride;
-    if(bytes>cache_budget)return NULL;
-    for(unsigned i=0;i<6;++i)if(cache[i].src==dsc->src&&cache[i].w==dsc->header.w&&cache[i].h==dsc->header.h){cache[i].age=++cache_clock;return cache[i].pixels;}
-    unsigned slot=0;
-    for(unsigned i=0;i<6;++i)if(!cache[i].pixels||cache[i].age<cache[slot].age)slot=i;
-    while(cache_bytes+bytes>cache_budget&&cache_bytes){
-        unsigned oldest=slot;
-        for(unsigned i=0;i<6;++i)if(cache[i].pixels&&(!cache[oldest].pixels||cache[i].age<cache[oldest].age))oldest=i;
-        cache_bytes-=cache[oldest].bytes;free(cache[oldest].pixels);memset(&cache[oldest],0,sizeof(cache[oldest]));
-    }
-    if(cache[slot].pixels){cache_bytes-=cache[slot].bytes;free(cache[slot].pixels);memset(&cache[slot],0,sizeof(cache[slot]));}
-#if defined(ESP_PLATFORM) && defined(XTOUCH_WAVESHARE)
-    uint8_t *pixels=heap_caps_malloc(bytes,MALLOC_CAP_SPIRAM|MALLOC_CAP_8BIT);
-#else
-    uint8_t *pixels=malloc(bytes);
-#endif
-    if(!pixels)return NULL;
-    for(unsigned y=0;y<dsc->header.h;++y)if(image_read(decoder,dsc,0,y,dsc->header.w,pixels+(size_t)y*dsc->header.w*stride)!=LV_RES_OK){free(pixels);return NULL;}
-    cache[slot].src=dsc->src;cache[slot].pixels=pixels;cache[slot].bytes=bytes;cache[slot].w=dsc->header.w;cache[slot].h=dsc->header.h;cache[slot].age=++cache_clock;cache_bytes+=bytes;
-    return pixels;
+static lv_result_t image_info(lv_image_decoder_t *decoder,lv_image_decoder_dsc_t *dsc,lv_image_header_t *header){
+ (void)decoder;const lv_image_dsc_t *image=packed_image(dsc->src);if(!image)return LV_RESULT_INVALID;
+ *header=image->header;header->magic=LV_IMAGE_HEADER_MAGIC;header->cf=image->data[3]=='2'?LV_COLOR_FORMAT_RGB565A8:LV_COLOR_FORMAT_RGB565;
+ unsigned zoom=ui_layout_base_zoom();header->w=(header->w*zoom+127)/256;header->h=(header->h*zoom+127)/256;header->stride=header->w*2;return LV_RESULT_OK;
 }
-
-#if LV_COLOR_DEPTH != 16 || LV_COLOR_16_SWAP
-#error Printer artwork requires the configured native RGB565 color layout
-#endif
-
-static uint16_t read16(const uint8_t *p) { return p[0] | ((uint16_t)p[1] << 8); }
-
-static const lv_img_dsc_t *packed_image(const void *src)
-{
-    if (lv_img_src_get_type(src) != LV_IMG_SRC_VARIABLE) return NULL;
-    const lv_img_dsc_t *image = src;
-    if (image->header.cf != LV_IMG_CF_RAW || !image->data || image->data_size < 10) return NULL;
-    const uint8_t *p = image->data;
-    if ((memcmp(p,"XTP1",4)&&memcmp(p,"XTP2",4)) || !p[4] || !p[5] || !p[6]) return NULL;
-    unsigned table_end = 8 + p[6]*2 + (p[5]+1)*2;
-    if (table_end > image->data_size || image->header.w != p[4] || image->header.h != p[5]) return NULL;
-    return image;
-}
-
-static lv_res_t image_info(lv_img_decoder_t *decoder, const void *src, lv_img_header_t *header)
-{
-    (void)decoder;
-    const lv_img_dsc_t *image = packed_image(src);
-    if (!image) return LV_RES_INV;
-    *header = image->header;
-    header->cf = image->data[3]=='2'?LV_IMG_CF_TRUE_COLOR_ALPHA:LV_IMG_CF_TRUE_COLOR;
-    unsigned zoom=ui_layout_base_zoom();
-    header->w=(header->w*zoom+127)/256;header->h=(header->h*zoom+127)/256;
-    return LV_RES_OK;
-}
-
-static lv_res_t image_open(lv_img_decoder_t *decoder, lv_img_decoder_dsc_t *dsc)
-{
-    if (image_info(decoder, dsc->src, &dsc->header) != LV_RES_OK) return LV_RES_INV;
-    dsc->user_data = (void *)dsc->src;
-    dsc->img_data = cached_pixels(decoder,dsc);
-    return LV_RES_OK;
-}
-
 static lv_res_t image_read(lv_img_decoder_t *decoder, lv_img_decoder_dsc_t *dsc,
                           lv_coord_t x, lv_coord_t y, lv_coord_t len, uint8_t *out)
 {
@@ -134,13 +86,36 @@ static lv_res_t image_read(lv_img_decoder_t *decoder, lv_img_decoder_dsc_t *dsc,
     return written == (unsigned)len ? LV_RES_OK : LV_RES_INV;
 }
 
-void ui_printer_image_decoder_init(void)
-{
-    static lv_img_decoder_t *decoder;
-    if (decoder) return;
-    decoder = lv_img_decoder_create();
-    if (!decoder) return;
-    lv_img_decoder_set_info_cb(decoder, image_info);
-    lv_img_decoder_set_open_cb(decoder, image_open);
-    lv_img_decoder_set_read_line_cb(decoder, image_read);
+static lv_result_t image_open(lv_image_decoder_t *decoder,lv_image_decoder_dsc_t *dsc){
+ if(image_info(decoder,dsc,&dsc->header)!=LV_RESULT_OK)return LV_RESULT_INVALID;
+ CachedImage *c=NULL;
+ for(unsigned i=0;i<6;i++)if(cache[i].src==dsc->src&&cache[i].buffer.header.w==dsc->header.w&&cache[i].buffer.header.h==dsc->header.h){c=&cache[i];break;}
+ if(!c){
+  for(unsigned i=0;i<6;i++)if(!cache[i].references&&(!c||!cache[i].pixels||cache[i].age<c->age)){c=&cache[i];if(!c->pixels)break;}
+  if(!c)return LV_RESULT_INVALID;discard(c);
+  unsigned w=dsc->header.w,h=dsc->header.h,stride=dsc->header.cf==LV_COLOR_FORMAT_RGB565A8?3:2;size_t bytes=(size_t)w*h*stride;
+#if defined(ESP_PLATFORM) && defined(XTOUCH_WAVESHARE)
+  uint8_t *pixels=heap_caps_malloc(bytes,MALLOC_CAP_SPIRAM|MALLOC_CAP_8BIT);
+#else
+  uint8_t *pixels=malloc(bytes);
+#endif
+  uint8_t *row=malloc(w*stride);if(!pixels||!row){free(pixels);free(row);return LV_RESULT_INVALID;}
+  dsc->user_data=(void*)dsc->src;bool ok=true;
+  for(unsigned y=0;y<h;y++){
+   if(image_read(decoder,dsc,0,y,w,row)!=LV_RESULT_OK){ok=false;break;}
+   if(stride==2)memcpy(pixels+(size_t)y*w*2,row,w*2);
+   else for(unsigned x=0;x<w;x++){size_t at=(size_t)y*w+x;pixels[at*2]=row[x*3];pixels[at*2+1]=row[x*3+1];pixels[(size_t)w*h*2+at]=row[x*3+2];}
+  }
+  free(row);if(!ok){free(pixels);return LV_RESULT_INVALID;}
+  lv_draw_buf_init(&c->buffer,w,h,(lv_color_format_t)dsc->header.cf,w*2,pixels,bytes);c->src=dsc->src;c->pixels=pixels;c->bytes=bytes;cache_bytes+=bytes;
+ }
+ c->age=++cache_clock;c->references++;dsc->decoded=&c->buffer;dsc->user_data=c;return LV_RESULT_OK;
 }
+static void image_close(lv_image_decoder_t *decoder,lv_image_decoder_dsc_t *dsc){
+ (void)decoder;CachedImage *c=dsc->user_data;if(!c)return;if(c->references)c->references--;if(!c->references&&(!cache_budget||cache_bytes>cache_budget))discard(c);dsc->user_data=NULL;dsc->decoded=NULL;
+}
+void ui_printer_image_decoder_init(void){
+ static lv_image_decoder_t *decoder;if(decoder)return;decoder=lv_image_decoder_create();if(!decoder)return;
+ lv_image_decoder_set_info_cb(decoder,image_info);lv_image_decoder_set_open_cb(decoder,image_open);lv_image_decoder_set_close_cb(decoder,image_close);
+}
+#endif

@@ -97,7 +97,7 @@ inline bool merge(JsonObject account,JsonVariantConst previous,bool token) {
   return store(account,token,plain);
  }
  if(!strlen(account[sealed]|"")) {
-  account[field]=previous[field].as<String>();
+  account[field]=String(previous[field]|"");
   if(strlen(previous[sealed]|""))account[sealed]=previous[sealed];
  }
  const bool encrypted=XTouchCredentials::encrypted(account,token);

@@ -1,0 +1,706 @@
+{
+  "reference": {
+    "ref": "master",
+    "commit": "79df7ae309be398ed30c9f397c13c9911c2edc57",
+    "files": {
+      "src/libslic3r/Format/bbs_3mf.cpp": {
+        "sha256": "b5da58b9404d8bdb6b14f0920e63fe16e2a94175f78056cece44074011e0056c",
+        "functions": {
+          "_add_thumbnail_file_to_archive": {
+            "sha256": "666146b9c1b8c9e1424b381df0653b2bcc7e784c95bc1cc82801d858a088b993",
+            "line": 7085
+          },
+          "_add_relationships_file_to_archive": {
+            "sha256": "e47aa88018f1cc8c270e9788d73100997eac8fbd998c7705aca706d08818f6ec",
+            "line": 7189
+          },
+          "_add_file_to_archive": {
+            "sha256": "3a1bcab608824e682c4679e310eea810f0dccf47f956f7baa54006a1ce6915d0",
+            "line": 7041
+          }
+        },
+        "format_lines": [
+          "// Adds gcode files (\"Metadata/plate_1.gcode, plate_2.gcode, ...)",
+          "// add plate_N.gcode.md5 to file",
+          "<< \"\\\" Id=\\\"rel-4\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-middle\\\"/>\\n\";",
+          "<< \"\\\" Id=\\\"rel-5\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-small\\\"/>\\n\";",
+          "const std::string THUMBNAIL_FILE = \"Metadata/plate_1.png\";",
+          "if (!_add_thumbnail_file_to_archive(archive, *no_light_thumbnail_data[index], \"Metadata/plate_no_light\", index)) {",
+          "std::string dst_in_3mf = (boost::format(\"Metadata/plate_%1%.png\") % (i + 1)).str();",
+          "std::string dst_in_3mf = (boost::format(\"Metadata/plate_no_light_%1%.png\") % (i + 1)).str();",
+          "std::string target_file    = (boost::format(\"Metadata/plate_%1%.gcode.md5\") % (plate_data->plate_index + 1)).str();",
+          "std::string thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+          "stream << \" <Relationship Target=\\\"/Metadata/plate_1.png\"",
+          "stream << \"<Relationship Target=\\\"/Metadata/plate_1_small.png\"",
+          "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+          "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%_small.png\") % (export_plate_idx + 1)).str();",
+          "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-middle\")) {",
+          "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-small\")) {"
+        ],
+        "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/79df7ae309be398ed30c9f397c13c9911c2edc57/src/libslic3r/Format/bbs_3mf.cpp"
+      },
+      "src/libslic3r/miniz_extension.cpp": {
+        "sha256": "9986377846fc05ec3933338750410d22bbd2006b7ddba3fad4312c045eb76f81",
+        "functions": {},
+        "format_lines": [],
+        "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/79df7ae309be398ed30c9f397c13c9911c2edc57/src/libslic3r/miniz_extension.cpp"
+      },
+      "src/miniz/miniz.c": {
+        "sha256": "4ab5eacb3a9ec8df79a6bdf8c41fbbcd38229734b80aed4cbf1b981b3972723f",
+        "functions": {
+          "mz_zip_writer_add_mem_ex_v2": {
+            "sha256": "af83c77a4cf904317a6010ab184f82cde4addab1b1839f502b73851c21700bbc",
+            "line": 6131
+          },
+          "mz_zip_writer_add_file": {
+            "sha256": "f8bd45a8db27246c96282c89fddd8f0050d2ce0d60758554a7f305e73fa5caa2",
+            "line": 7036
+          },
+          "mz_zip_writer_finalize_archive": {
+            "sha256": "f2a4771d009499689fd30f49a2e54d5718c3d8acac4fc18de97520fc13dcbaa4",
+            "line": 7517
+          },
+          "mz_zip_writer_add_cfile": {
+            "sha256": "081f91a75d1fa7e2432ce32f610acfef4f1f9925547abb5fb49bf50d16d6bcda",
+            "line": 7029
+          }
+        },
+        "format_lines": [],
+        "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/79df7ae309be398ed30c9f397c13c9911c2edc57/src/miniz/miniz.c"
+      }
+    }
+  },
+  "reviewed_history": [
+    {
+      "ref": "v01.07.02.51",
+      "commit": "74fe72b2c9635149771b08d77cc1801a394dfec5",
+      "files": {
+        "src/libslic3r/Format/bbs_3mf.cpp": {
+          "sha256": "96218b9ea3000556814b4f3dc6d7456c4f95e890d9685a3a6cdc0f3e1c1866be",
+          "functions": {
+            "_add_thumbnail_file_to_archive": {
+              "sha256": "99cf7575dc127adda90adad8b18a1b942a97090a6de379fc27014dc414190c0e",
+              "line": 5830
+            },
+            "_add_relationships_file_to_archive": {
+              "sha256": "cc5228455ce5cc1eaadbc73d406c02194d39b045ba07e3378f6a41d574e7e213",
+              "line": 5888
+            },
+            "_add_file_to_archive": {
+              "sha256": "8d3beb6249cd426ab1f3bbaa6e14ed837a10acf4f6814b65645db65459db0913",
+              "line": 5786
+            }
+          },
+          "format_lines": [
+            "// Adds gcode files (\"Metadata/plate_1.gcode, plate_2.gcode, ...)",
+            "// add plate_N.gcode.md5 to file",
+            "<< \"\\\" Id=\\\"rel-4\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-middle\\\"/>\\n\";",
+            "<< \"\\\" Id=\\\"rel-5\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-small\\\"/>\\n\";",
+            "const std::string THUMBNAIL_FILE = \"Metadata/plate_1.png\";",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_%1%.png\") % (i + 1)).str();",
+            "std::string target_file    = (boost::format(\"Metadata/plate_%1%.gcode.md5\") % (plate_data->plate_index + 1)).str();",
+            "std::string thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-middle\")) {",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-small\")) {"
+          ],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/74fe72b2c9635149771b08d77cc1801a394dfec5/src/libslic3r/Format/bbs_3mf.cpp"
+        },
+        "src/libslic3r/miniz_extension.cpp": {
+          "sha256": "9986377846fc05ec3933338750410d22bbd2006b7ddba3fad4312c045eb76f81",
+          "functions": {},
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/74fe72b2c9635149771b08d77cc1801a394dfec5/src/libslic3r/miniz_extension.cpp"
+        },
+        "src/miniz/miniz.c": {
+          "sha256": "6dc0a7026db98e44c864f62cc5c5f113cc8e6035a51053dc2f7a2256095ab96c",
+          "functions": {
+            "mz_zip_writer_add_mem_ex_v2": {
+              "sha256": "af83c77a4cf904317a6010ab184f82cde4addab1b1839f502b73851c21700bbc",
+              "line": 6087
+            },
+            "mz_zip_writer_add_file": {
+              "sha256": "f8bd45a8db27246c96282c89fddd8f0050d2ce0d60758554a7f305e73fa5caa2",
+              "line": 6992
+            },
+            "mz_zip_writer_finalize_archive": {
+              "sha256": "f2a4771d009499689fd30f49a2e54d5718c3d8acac4fc18de97520fc13dcbaa4",
+              "line": 7473
+            },
+            "mz_zip_writer_add_cfile": {
+              "sha256": "081f91a75d1fa7e2432ce32f610acfef4f1f9925547abb5fb49bf50d16d6bcda",
+              "line": 6985
+            }
+          },
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/74fe72b2c9635149771b08d77cc1801a394dfec5/src/miniz/miniz.c"
+        }
+      }
+    },
+    {
+      "ref": "v01.08.03.89",
+      "commit": "c999c283ce6385bfde298d08f08e3c55acb733a1",
+      "files": {
+        "src/libslic3r/Format/bbs_3mf.cpp": {
+          "sha256": "f9dc7fa8b5e6b1a87cdca0bedaa6c9187cb1b26a9bba6f5157c72ecf8fd36186",
+          "functions": {
+            "_add_thumbnail_file_to_archive": {
+              "sha256": "666146b9c1b8c9e1424b381df0653b2bcc7e784c95bc1cc82801d858a088b993",
+              "line": 5883
+            },
+            "_add_relationships_file_to_archive": {
+              "sha256": "e47aa88018f1cc8c270e9788d73100997eac8fbd998c7705aca706d08818f6ec",
+              "line": 5987
+            },
+            "_add_file_to_archive": {
+              "sha256": "8d3beb6249cd426ab1f3bbaa6e14ed837a10acf4f6814b65645db65459db0913",
+              "line": 5839
+            }
+          },
+          "format_lines": [
+            "// Adds gcode files (\"Metadata/plate_1.gcode, plate_2.gcode, ...)",
+            "// add plate_N.gcode.md5 to file",
+            "<< \"\\\" Id=\\\"rel-4\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-middle\\\"/>\\n\";",
+            "<< \"\\\" Id=\\\"rel-5\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-small\\\"/>\\n\";",
+            "const std::string THUMBNAIL_FILE = \"Metadata/plate_1.png\";",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_%1%.png\") % (i + 1)).str();",
+            "std::string target_file    = (boost::format(\"Metadata/plate_%1%.gcode.md5\") % (plate_data->plate_index + 1)).str();",
+            "std::string thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "stream << \" <Relationship Target=\\\"/Metadata/plate_1.png\"",
+            "stream << \"<Relationship Target=\\\"/Metadata/plate_1_small.png\"",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%_small.png\") % (export_plate_idx + 1)).str();",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-middle\")) {",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-small\")) {"
+          ],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/c999c283ce6385bfde298d08f08e3c55acb733a1/src/libslic3r/Format/bbs_3mf.cpp"
+        },
+        "src/libslic3r/miniz_extension.cpp": {
+          "sha256": "9986377846fc05ec3933338750410d22bbd2006b7ddba3fad4312c045eb76f81",
+          "functions": {},
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/c999c283ce6385bfde298d08f08e3c55acb733a1/src/libslic3r/miniz_extension.cpp"
+        },
+        "src/miniz/miniz.c": {
+          "sha256": "6dc0a7026db98e44c864f62cc5c5f113cc8e6035a51053dc2f7a2256095ab96c",
+          "functions": {
+            "mz_zip_writer_add_mem_ex_v2": {
+              "sha256": "af83c77a4cf904317a6010ab184f82cde4addab1b1839f502b73851c21700bbc",
+              "line": 6087
+            },
+            "mz_zip_writer_add_file": {
+              "sha256": "f8bd45a8db27246c96282c89fddd8f0050d2ce0d60758554a7f305e73fa5caa2",
+              "line": 6992
+            },
+            "mz_zip_writer_finalize_archive": {
+              "sha256": "f2a4771d009499689fd30f49a2e54d5718c3d8acac4fc18de97520fc13dcbaa4",
+              "line": 7473
+            },
+            "mz_zip_writer_add_cfile": {
+              "sha256": "081f91a75d1fa7e2432ce32f610acfef4f1f9925547abb5fb49bf50d16d6bcda",
+              "line": 6985
+            }
+          },
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/c999c283ce6385bfde298d08f08e3c55acb733a1/src/miniz/miniz.c"
+        }
+      }
+    },
+    {
+      "ref": "v01.09.07.52",
+      "commit": "0e686206fc8101875e5a6568a977df3d5d3b89b4",
+      "files": {
+        "src/libslic3r/Format/bbs_3mf.cpp": {
+          "sha256": "c83e461ef5f54d8e33093969d6ff40a38b0d847e3afebd6ddb4531854dbe70b2",
+          "functions": {
+            "_add_thumbnail_file_to_archive": {
+              "sha256": "666146b9c1b8c9e1424b381df0653b2bcc7e784c95bc1cc82801d858a088b993",
+              "line": 5954
+            },
+            "_add_relationships_file_to_archive": {
+              "sha256": "e47aa88018f1cc8c270e9788d73100997eac8fbd998c7705aca706d08818f6ec",
+              "line": 6058
+            },
+            "_add_file_to_archive": {
+              "sha256": "8d3beb6249cd426ab1f3bbaa6e14ed837a10acf4f6814b65645db65459db0913",
+              "line": 5910
+            }
+          },
+          "format_lines": [
+            "// Adds gcode files (\"Metadata/plate_1.gcode, plate_2.gcode, ...)",
+            "// add plate_N.gcode.md5 to file",
+            "<< \"\\\" Id=\\\"rel-4\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-middle\\\"/>\\n\";",
+            "<< \"\\\" Id=\\\"rel-5\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-small\\\"/>\\n\";",
+            "const std::string THUMBNAIL_FILE = \"Metadata/plate_1.png\";",
+            "if (!_add_thumbnail_file_to_archive(archive, *no_light_thumbnail_data[index], \"Metadata/plate_no_light\", index)) {",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_%1%.png\") % (i + 1)).str();",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_no_light_%1%.png\") % (i + 1)).str();",
+            "std::string target_file    = (boost::format(\"Metadata/plate_%1%.gcode.md5\") % (plate_data->plate_index + 1)).str();",
+            "std::string thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "stream << \" <Relationship Target=\\\"/Metadata/plate_1.png\"",
+            "stream << \"<Relationship Target=\\\"/Metadata/plate_1_small.png\"",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%_small.png\") % (export_plate_idx + 1)).str();",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-middle\")) {",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-small\")) {"
+          ],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/0e686206fc8101875e5a6568a977df3d5d3b89b4/src/libslic3r/Format/bbs_3mf.cpp"
+        },
+        "src/libslic3r/miniz_extension.cpp": {
+          "sha256": "9986377846fc05ec3933338750410d22bbd2006b7ddba3fad4312c045eb76f81",
+          "functions": {},
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/0e686206fc8101875e5a6568a977df3d5d3b89b4/src/libslic3r/miniz_extension.cpp"
+        },
+        "src/miniz/miniz.c": {
+          "sha256": "4ab5eacb3a9ec8df79a6bdf8c41fbbcd38229734b80aed4cbf1b981b3972723f",
+          "functions": {
+            "mz_zip_writer_add_mem_ex_v2": {
+              "sha256": "af83c77a4cf904317a6010ab184f82cde4addab1b1839f502b73851c21700bbc",
+              "line": 6131
+            },
+            "mz_zip_writer_add_file": {
+              "sha256": "f8bd45a8db27246c96282c89fddd8f0050d2ce0d60758554a7f305e73fa5caa2",
+              "line": 7036
+            },
+            "mz_zip_writer_finalize_archive": {
+              "sha256": "f2a4771d009499689fd30f49a2e54d5718c3d8acac4fc18de97520fc13dcbaa4",
+              "line": 7517
+            },
+            "mz_zip_writer_add_cfile": {
+              "sha256": "081f91a75d1fa7e2432ce32f610acfef4f1f9925547abb5fb49bf50d16d6bcda",
+              "line": 7029
+            }
+          },
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/0e686206fc8101875e5a6568a977df3d5d3b89b4/src/miniz/miniz.c"
+        }
+      }
+    },
+    {
+      "ref": "v02.00.02.57",
+      "commit": "904dc26c24da1df94a18bf51f08a7714c088eb83",
+      "files": {
+        "src/libslic3r/Format/bbs_3mf.cpp": {
+          "sha256": "c41570b4ec4be646737c1ffb603c59c06c9b89a57d1a97e432b9eb2095795334",
+          "functions": {
+            "_add_thumbnail_file_to_archive": {
+              "sha256": "666146b9c1b8c9e1424b381df0653b2bcc7e784c95bc1cc82801d858a088b993",
+              "line": 6221
+            },
+            "_add_relationships_file_to_archive": {
+              "sha256": "e47aa88018f1cc8c270e9788d73100997eac8fbd998c7705aca706d08818f6ec",
+              "line": 6325
+            },
+            "_add_file_to_archive": {
+              "sha256": "8d3beb6249cd426ab1f3bbaa6e14ed837a10acf4f6814b65645db65459db0913",
+              "line": 6177
+            }
+          },
+          "format_lines": [
+            "// Adds gcode files (\"Metadata/plate_1.gcode, plate_2.gcode, ...)",
+            "// add plate_N.gcode.md5 to file",
+            "<< \"\\\" Id=\\\"rel-4\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-middle\\\"/>\\n\";",
+            "<< \"\\\" Id=\\\"rel-5\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-small\\\"/>\\n\";",
+            "const std::string THUMBNAIL_FILE = \"Metadata/plate_1.png\";",
+            "if (!_add_thumbnail_file_to_archive(archive, *no_light_thumbnail_data[index], \"Metadata/plate_no_light\", index)) {",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_%1%.png\") % (i + 1)).str();",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_no_light_%1%.png\") % (i + 1)).str();",
+            "std::string target_file    = (boost::format(\"Metadata/plate_%1%.gcode.md5\") % (plate_data->plate_index + 1)).str();",
+            "std::string thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "stream << \" <Relationship Target=\\\"/Metadata/plate_1.png\"",
+            "stream << \"<Relationship Target=\\\"/Metadata/plate_1_small.png\"",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%_small.png\") % (export_plate_idx + 1)).str();",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-middle\")) {",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-small\")) {"
+          ],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/904dc26c24da1df94a18bf51f08a7714c088eb83/src/libslic3r/Format/bbs_3mf.cpp"
+        },
+        "src/libslic3r/miniz_extension.cpp": {
+          "sha256": "9986377846fc05ec3933338750410d22bbd2006b7ddba3fad4312c045eb76f81",
+          "functions": {},
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/904dc26c24da1df94a18bf51f08a7714c088eb83/src/libslic3r/miniz_extension.cpp"
+        },
+        "src/miniz/miniz.c": {
+          "sha256": "4ab5eacb3a9ec8df79a6bdf8c41fbbcd38229734b80aed4cbf1b981b3972723f",
+          "functions": {
+            "mz_zip_writer_add_mem_ex_v2": {
+              "sha256": "af83c77a4cf904317a6010ab184f82cde4addab1b1839f502b73851c21700bbc",
+              "line": 6131
+            },
+            "mz_zip_writer_add_file": {
+              "sha256": "f8bd45a8db27246c96282c89fddd8f0050d2ce0d60758554a7f305e73fa5caa2",
+              "line": 7036
+            },
+            "mz_zip_writer_finalize_archive": {
+              "sha256": "f2a4771d009499689fd30f49a2e54d5718c3d8acac4fc18de97520fc13dcbaa4",
+              "line": 7517
+            },
+            "mz_zip_writer_add_cfile": {
+              "sha256": "081f91a75d1fa7e2432ce32f610acfef4f1f9925547abb5fb49bf50d16d6bcda",
+              "line": 7029
+            }
+          },
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/904dc26c24da1df94a18bf51f08a7714c088eb83/src/miniz/miniz.c"
+        }
+      }
+    },
+    {
+      "ref": "v02.05.00.66",
+      "commit": "b42ae2cbb69edb4c03786ea925e284d4ef44d62c",
+      "files": {
+        "src/libslic3r/Format/bbs_3mf.cpp": {
+          "sha256": "ad120825e37f6c5e7cf3ddf3939417390e6381191483e2fb20e6c95d07ae86cd",
+          "functions": {
+            "_add_thumbnail_file_to_archive": {
+              "sha256": "666146b9c1b8c9e1424b381df0653b2bcc7e784c95bc1cc82801d858a088b993",
+              "line": 6576
+            },
+            "_add_relationships_file_to_archive": {
+              "sha256": "e47aa88018f1cc8c270e9788d73100997eac8fbd998c7705aca706d08818f6ec",
+              "line": 6680
+            },
+            "_add_file_to_archive": {
+              "sha256": "3a1bcab608824e682c4679e310eea810f0dccf47f956f7baa54006a1ce6915d0",
+              "line": 6532
+            }
+          },
+          "format_lines": [
+            "// Adds gcode files (\"Metadata/plate_1.gcode, plate_2.gcode, ...)",
+            "// add plate_N.gcode.md5 to file",
+            "<< \"\\\" Id=\\\"rel-4\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-middle\\\"/>\\n\";",
+            "<< \"\\\" Id=\\\"rel-5\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-small\\\"/>\\n\";",
+            "const std::string THUMBNAIL_FILE = \"Metadata/plate_1.png\";",
+            "if (!_add_thumbnail_file_to_archive(archive, *no_light_thumbnail_data[index], \"Metadata/plate_no_light\", index)) {",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_%1%.png\") % (i + 1)).str();",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_no_light_%1%.png\") % (i + 1)).str();",
+            "std::string target_file    = (boost::format(\"Metadata/plate_%1%.gcode.md5\") % (plate_data->plate_index + 1)).str();",
+            "std::string thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "stream << \" <Relationship Target=\\\"/Metadata/plate_1.png\"",
+            "stream << \"<Relationship Target=\\\"/Metadata/plate_1_small.png\"",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%_small.png\") % (export_plate_idx + 1)).str();",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-middle\")) {",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-small\")) {"
+          ],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/b42ae2cbb69edb4c03786ea925e284d4ef44d62c/src/libslic3r/Format/bbs_3mf.cpp"
+        },
+        "src/libslic3r/miniz_extension.cpp": {
+          "sha256": "9986377846fc05ec3933338750410d22bbd2006b7ddba3fad4312c045eb76f81",
+          "functions": {},
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/b42ae2cbb69edb4c03786ea925e284d4ef44d62c/src/libslic3r/miniz_extension.cpp"
+        },
+        "src/miniz/miniz.c": {
+          "sha256": "4ab5eacb3a9ec8df79a6bdf8c41fbbcd38229734b80aed4cbf1b981b3972723f",
+          "functions": {
+            "mz_zip_writer_add_mem_ex_v2": {
+              "sha256": "af83c77a4cf904317a6010ab184f82cde4addab1b1839f502b73851c21700bbc",
+              "line": 6131
+            },
+            "mz_zip_writer_add_file": {
+              "sha256": "f8bd45a8db27246c96282c89fddd8f0050d2ce0d60758554a7f305e73fa5caa2",
+              "line": 7036
+            },
+            "mz_zip_writer_finalize_archive": {
+              "sha256": "f2a4771d009499689fd30f49a2e54d5718c3d8acac4fc18de97520fc13dcbaa4",
+              "line": 7517
+            },
+            "mz_zip_writer_add_cfile": {
+              "sha256": "081f91a75d1fa7e2432ce32f610acfef4f1f9925547abb5fb49bf50d16d6bcda",
+              "line": 7029
+            }
+          },
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/b42ae2cbb69edb4c03786ea925e284d4ef44d62c/src/miniz/miniz.c"
+        }
+      }
+    },
+    {
+      "ref": "v02.07.01.57",
+      "commit": "3f126b717ed1f10fee0f32f05ed9731808d0c8bb",
+      "files": {
+        "src/libslic3r/Format/bbs_3mf.cpp": {
+          "sha256": "e60656063798e92c1136e440024d2684f99b2be9e4b6f77a7de69a25c8a52877",
+          "functions": {
+            "_add_thumbnail_file_to_archive": {
+              "sha256": "666146b9c1b8c9e1424b381df0653b2bcc7e784c95bc1cc82801d858a088b993",
+              "line": 6716
+            },
+            "_add_relationships_file_to_archive": {
+              "sha256": "e47aa88018f1cc8c270e9788d73100997eac8fbd998c7705aca706d08818f6ec",
+              "line": 6820
+            },
+            "_add_file_to_archive": {
+              "sha256": "3a1bcab608824e682c4679e310eea810f0dccf47f956f7baa54006a1ce6915d0",
+              "line": 6672
+            }
+          },
+          "format_lines": [
+            "// Adds gcode files (\"Metadata/plate_1.gcode, plate_2.gcode, ...)",
+            "// add plate_N.gcode.md5 to file",
+            "<< \"\\\" Id=\\\"rel-4\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-middle\\\"/>\\n\";",
+            "<< \"\\\" Id=\\\"rel-5\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-small\\\"/>\\n\";",
+            "const std::string THUMBNAIL_FILE = \"Metadata/plate_1.png\";",
+            "if (!_add_thumbnail_file_to_archive(archive, *no_light_thumbnail_data[index], \"Metadata/plate_no_light\", index)) {",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_%1%.png\") % (i + 1)).str();",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_no_light_%1%.png\") % (i + 1)).str();",
+            "std::string target_file    = (boost::format(\"Metadata/plate_%1%.gcode.md5\") % (plate_data->plate_index + 1)).str();",
+            "std::string thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "stream << \" <Relationship Target=\\\"/Metadata/plate_1.png\"",
+            "stream << \"<Relationship Target=\\\"/Metadata/plate_1_small.png\"",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%_small.png\") % (export_plate_idx + 1)).str();",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-middle\")) {",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-small\")) {"
+          ],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/3f126b717ed1f10fee0f32f05ed9731808d0c8bb/src/libslic3r/Format/bbs_3mf.cpp"
+        },
+        "src/libslic3r/miniz_extension.cpp": {
+          "sha256": "9986377846fc05ec3933338750410d22bbd2006b7ddba3fad4312c045eb76f81",
+          "functions": {},
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/3f126b717ed1f10fee0f32f05ed9731808d0c8bb/src/libslic3r/miniz_extension.cpp"
+        },
+        "src/miniz/miniz.c": {
+          "sha256": "4ab5eacb3a9ec8df79a6bdf8c41fbbcd38229734b80aed4cbf1b981b3972723f",
+          "functions": {
+            "mz_zip_writer_add_mem_ex_v2": {
+              "sha256": "af83c77a4cf904317a6010ab184f82cde4addab1b1839f502b73851c21700bbc",
+              "line": 6131
+            },
+            "mz_zip_writer_add_file": {
+              "sha256": "f8bd45a8db27246c96282c89fddd8f0050d2ce0d60758554a7f305e73fa5caa2",
+              "line": 7036
+            },
+            "mz_zip_writer_finalize_archive": {
+              "sha256": "f2a4771d009499689fd30f49a2e54d5718c3d8acac4fc18de97520fc13dcbaa4",
+              "line": 7517
+            },
+            "mz_zip_writer_add_cfile": {
+              "sha256": "081f91a75d1fa7e2432ce32f610acfef4f1f9925547abb5fb49bf50d16d6bcda",
+              "line": 7029
+            }
+          },
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/3f126b717ed1f10fee0f32f05ed9731808d0c8bb/src/miniz/miniz.c"
+        }
+      }
+    },
+    {
+      "ref": "v02.08.02.61",
+      "commit": "926a7192574bcb9b3a732e1ec59a46d79cb45466",
+      "files": {
+        "src/libslic3r/Format/bbs_3mf.cpp": {
+          "sha256": "de4ee586cff56a48bf59585703f458edaa9d9d235c8741b7f4960b7d4da7f45c",
+          "functions": {
+            "_add_thumbnail_file_to_archive": {
+              "sha256": "666146b9c1b8c9e1424b381df0653b2bcc7e784c95bc1cc82801d858a088b993",
+              "line": 6956
+            },
+            "_add_relationships_file_to_archive": {
+              "sha256": "e47aa88018f1cc8c270e9788d73100997eac8fbd998c7705aca706d08818f6ec",
+              "line": 7060
+            },
+            "_add_file_to_archive": {
+              "sha256": "3a1bcab608824e682c4679e310eea810f0dccf47f956f7baa54006a1ce6915d0",
+              "line": 6912
+            }
+          },
+          "format_lines": [
+            "// Adds gcode files (\"Metadata/plate_1.gcode, plate_2.gcode, ...)",
+            "// add plate_N.gcode.md5 to file",
+            "<< \"\\\" Id=\\\"rel-4\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-middle\\\"/>\\n\";",
+            "<< \"\\\" Id=\\\"rel-5\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-small\\\"/>\\n\";",
+            "const std::string THUMBNAIL_FILE = \"Metadata/plate_1.png\";",
+            "if (!_add_thumbnail_file_to_archive(archive, *no_light_thumbnail_data[index], \"Metadata/plate_no_light\", index)) {",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_%1%.png\") % (i + 1)).str();",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_no_light_%1%.png\") % (i + 1)).str();",
+            "std::string target_file    = (boost::format(\"Metadata/plate_%1%.gcode.md5\") % (plate_data->plate_index + 1)).str();",
+            "std::string thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "stream << \" <Relationship Target=\\\"/Metadata/plate_1.png\"",
+            "stream << \"<Relationship Target=\\\"/Metadata/plate_1_small.png\"",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%_small.png\") % (export_plate_idx + 1)).str();",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-middle\")) {",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-small\")) {"
+          ],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/926a7192574bcb9b3a732e1ec59a46d79cb45466/src/libslic3r/Format/bbs_3mf.cpp"
+        },
+        "src/libslic3r/miniz_extension.cpp": {
+          "sha256": "9986377846fc05ec3933338750410d22bbd2006b7ddba3fad4312c045eb76f81",
+          "functions": {},
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/926a7192574bcb9b3a732e1ec59a46d79cb45466/src/libslic3r/miniz_extension.cpp"
+        },
+        "src/miniz/miniz.c": {
+          "sha256": "4ab5eacb3a9ec8df79a6bdf8c41fbbcd38229734b80aed4cbf1b981b3972723f",
+          "functions": {
+            "mz_zip_writer_add_mem_ex_v2": {
+              "sha256": "af83c77a4cf904317a6010ab184f82cde4addab1b1839f502b73851c21700bbc",
+              "line": 6131
+            },
+            "mz_zip_writer_add_file": {
+              "sha256": "f8bd45a8db27246c96282c89fddd8f0050d2ce0d60758554a7f305e73fa5caa2",
+              "line": 7036
+            },
+            "mz_zip_writer_finalize_archive": {
+              "sha256": "f2a4771d009499689fd30f49a2e54d5718c3d8acac4fc18de97520fc13dcbaa4",
+              "line": 7517
+            },
+            "mz_zip_writer_add_cfile": {
+              "sha256": "081f91a75d1fa7e2432ce32f610acfef4f1f9925547abb5fb49bf50d16d6bcda",
+              "line": 7029
+            }
+          },
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/926a7192574bcb9b3a732e1ec59a46d79cb45466/src/miniz/miniz.c"
+        }
+      }
+    },
+    {
+      "ref": "v02.08.04.61",
+      "commit": "f5e51a20bd328d4a043af9344825d7347270c2c9",
+      "files": {
+        "src/libslic3r/Format/bbs_3mf.cpp": {
+          "sha256": "b5da58b9404d8bdb6b14f0920e63fe16e2a94175f78056cece44074011e0056c",
+          "functions": {
+            "_add_thumbnail_file_to_archive": {
+              "sha256": "666146b9c1b8c9e1424b381df0653b2bcc7e784c95bc1cc82801d858a088b993",
+              "line": 7085
+            },
+            "_add_relationships_file_to_archive": {
+              "sha256": "e47aa88018f1cc8c270e9788d73100997eac8fbd998c7705aca706d08818f6ec",
+              "line": 7189
+            },
+            "_add_file_to_archive": {
+              "sha256": "3a1bcab608824e682c4679e310eea810f0dccf47f956f7baa54006a1ce6915d0",
+              "line": 7041
+            }
+          },
+          "format_lines": [
+            "// Adds gcode files (\"Metadata/plate_1.gcode, plate_2.gcode, ...)",
+            "// add plate_N.gcode.md5 to file",
+            "<< \"\\\" Id=\\\"rel-4\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-middle\\\"/>\\n\";",
+            "<< \"\\\" Id=\\\"rel-5\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-small\\\"/>\\n\";",
+            "const std::string THUMBNAIL_FILE = \"Metadata/plate_1.png\";",
+            "if (!_add_thumbnail_file_to_archive(archive, *no_light_thumbnail_data[index], \"Metadata/plate_no_light\", index)) {",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_%1%.png\") % (i + 1)).str();",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_no_light_%1%.png\") % (i + 1)).str();",
+            "std::string target_file    = (boost::format(\"Metadata/plate_%1%.gcode.md5\") % (plate_data->plate_index + 1)).str();",
+            "std::string thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "stream << \" <Relationship Target=\\\"/Metadata/plate_1.png\"",
+            "stream << \"<Relationship Target=\\\"/Metadata/plate_1_small.png\"",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%_small.png\") % (export_plate_idx + 1)).str();",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-middle\")) {",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-small\")) {"
+          ],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/f5e51a20bd328d4a043af9344825d7347270c2c9/src/libslic3r/Format/bbs_3mf.cpp"
+        },
+        "src/libslic3r/miniz_extension.cpp": {
+          "sha256": "9986377846fc05ec3933338750410d22bbd2006b7ddba3fad4312c045eb76f81",
+          "functions": {},
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/f5e51a20bd328d4a043af9344825d7347270c2c9/src/libslic3r/miniz_extension.cpp"
+        },
+        "src/miniz/miniz.c": {
+          "sha256": "4ab5eacb3a9ec8df79a6bdf8c41fbbcd38229734b80aed4cbf1b981b3972723f",
+          "functions": {
+            "mz_zip_writer_add_mem_ex_v2": {
+              "sha256": "af83c77a4cf904317a6010ab184f82cde4addab1b1839f502b73851c21700bbc",
+              "line": 6131
+            },
+            "mz_zip_writer_add_file": {
+              "sha256": "f8bd45a8db27246c96282c89fddd8f0050d2ce0d60758554a7f305e73fa5caa2",
+              "line": 7036
+            },
+            "mz_zip_writer_finalize_archive": {
+              "sha256": "f2a4771d009499689fd30f49a2e54d5718c3d8acac4fc18de97520fc13dcbaa4",
+              "line": 7517
+            },
+            "mz_zip_writer_add_cfile": {
+              "sha256": "081f91a75d1fa7e2432ce32f610acfef4f1f9925547abb5fb49bf50d16d6bcda",
+              "line": 7029
+            }
+          },
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/f5e51a20bd328d4a043af9344825d7347270c2c9/src/miniz/miniz.c"
+        }
+      }
+    },
+    {
+      "ref": "master",
+      "commit": "79df7ae309be398ed30c9f397c13c9911c2edc57",
+      "files": {
+        "src/libslic3r/Format/bbs_3mf.cpp": {
+          "sha256": "b5da58b9404d8bdb6b14f0920e63fe16e2a94175f78056cece44074011e0056c",
+          "functions": {
+            "_add_thumbnail_file_to_archive": {
+              "sha256": "666146b9c1b8c9e1424b381df0653b2bcc7e784c95bc1cc82801d858a088b993",
+              "line": 7085
+            },
+            "_add_relationships_file_to_archive": {
+              "sha256": "e47aa88018f1cc8c270e9788d73100997eac8fbd998c7705aca706d08818f6ec",
+              "line": 7189
+            },
+            "_add_file_to_archive": {
+              "sha256": "3a1bcab608824e682c4679e310eea810f0dccf47f956f7baa54006a1ce6915d0",
+              "line": 7041
+            }
+          },
+          "format_lines": [
+            "// Adds gcode files (\"Metadata/plate_1.gcode, plate_2.gcode, ...)",
+            "// add plate_N.gcode.md5 to file",
+            "<< \"\\\" Id=\\\"rel-4\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-middle\\\"/>\\n\";",
+            "<< \"\\\" Id=\\\"rel-5\\\" Type=\\\"http://schemas.bambulab.com/package/2021/cover-thumbnail-small\\\"/>\\n\";",
+            "const std::string THUMBNAIL_FILE = \"Metadata/plate_1.png\";",
+            "if (!_add_thumbnail_file_to_archive(archive, *no_light_thumbnail_data[index], \"Metadata/plate_no_light\", index)) {",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_%1%.png\") % (i + 1)).str();",
+            "std::string dst_in_3mf = (boost::format(\"Metadata/plate_no_light_%1%.png\") % (i + 1)).str();",
+            "std::string target_file    = (boost::format(\"Metadata/plate_%1%.gcode.md5\") % (plate_data->plate_index + 1)).str();",
+            "std::string thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "stream << \" <Relationship Target=\\\"/Metadata/plate_1.png\"",
+            "stream << \"<Relationship Target=\\\"/Metadata/plate_1_small.png\"",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%.png\") % (export_plate_idx + 1)).str();",
+            "thumbnail_file_str = (boost::format(\"Metadata/plate_%1%_small.png\") % (export_plate_idx + 1)).str();",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-middle\")) {",
+            "} else if (boost::starts_with(type, \"http://schemas.bambulab.com/\") && boost::ends_with(type, \"cover-thumbnail-small\")) {"
+          ],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/79df7ae309be398ed30c9f397c13c9911c2edc57/src/libslic3r/Format/bbs_3mf.cpp"
+        },
+        "src/libslic3r/miniz_extension.cpp": {
+          "sha256": "9986377846fc05ec3933338750410d22bbd2006b7ddba3fad4312c045eb76f81",
+          "functions": {},
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/79df7ae309be398ed30c9f397c13c9911c2edc57/src/libslic3r/miniz_extension.cpp"
+        },
+        "src/miniz/miniz.c": {
+          "sha256": "4ab5eacb3a9ec8df79a6bdf8c41fbbcd38229734b80aed4cbf1b981b3972723f",
+          "functions": {
+            "mz_zip_writer_add_mem_ex_v2": {
+              "sha256": "af83c77a4cf904317a6010ab184f82cde4addab1b1839f502b73851c21700bbc",
+              "line": 6131
+            },
+            "mz_zip_writer_add_file": {
+              "sha256": "f8bd45a8db27246c96282c89fddd8f0050d2ce0d60758554a7f305e73fa5caa2",
+              "line": 7036
+            },
+            "mz_zip_writer_finalize_archive": {
+              "sha256": "f2a4771d009499689fd30f49a2e54d5718c3d8acac4fc18de97520fc13dcbaa4",
+              "line": 7517
+            },
+            "mz_zip_writer_add_cfile": {
+              "sha256": "081f91a75d1fa7e2432ce32f610acfef4f1f9925547abb5fb49bf50d16d6bcda",
+              "line": 7029
+            }
+          },
+          "format_lines": [],
+          "url": "https://raw.githubusercontent.com/bambulab/BambuStudio/79df7ae309be398ed30c9f397c13c9911c2edc57/src/miniz/miniz.c"
+        }
+      }
+    }
+  ]
+}

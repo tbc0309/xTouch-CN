@@ -1,7 +1,7 @@
 #pragma once
 #include <stddef.h>
 #include <stdint.h>
-struct BoardAudioPins {int bclk,ws,dout,mclk,pa;};
+struct BoardAudioPins {int bclk,ws,dout,mclk,pa;bool paActiveHigh=true;};
 BoardAudioPins board_audio_pins();
 bool board_audio_codec_begin();
 void board_audio_codec_mute(bool mute);

@@ -24,7 +24,7 @@ static void page_event(lv_event_t *e)
     lv_event_code_t code = lv_event_get_code(e);
     if (code != LV_EVENT_DELETE && code != LV_EVENT_SCROLL_BEGIN && code != LV_EVENT_SCROLL && code != LV_EVENT_SCROLL_END) return;
     settings_gesture *g = lv_event_get_user_data(e);
-    if (lv_event_get_target(e) != g->page) return;
+    if (lv_event_get_target_obj(e) != g->page) return;
     if (code == LV_EVENT_DELETE) {
         settings_gesture **link=&pages;
         while(*link&&*link!=g)link=&(*link)->next;
@@ -49,8 +49,8 @@ static void control_event(lv_event_t *e)
         code != LV_EVENT_LONG_PRESSED && code != LV_EVENT_LONG_PRESSED_REPEAT) return;
     lv_indev_t *input = lv_indev_get_act();
     if (!input || lv_indev_get_type(input) != LV_INDEV_TYPE_POINTER) return;
-    lv_obj_t *target = lv_event_get_target(e);
-    if (target != lv_event_get_current_target(e)) return;
+    lv_obj_t *target = lv_event_get_target_obj(e);
+    if (target != lv_event_get_current_target_obj(e)) return;
     settings_gesture *g = lv_event_get_user_data(e);
     bool slider = lv_obj_check_type(target, &lv_slider_class);
     if (code == LV_EVENT_PRESSED) {
@@ -70,10 +70,15 @@ static void control_event(lv_event_t *e)
             else if (dx >= horizontal && dx > dy * 2) g->horizontal = true;
         } else if (dx >= horizontal || dy >= vertical) g->blocked = true;
     }
+    /* LVGL 9 also moves the knob from RELEASED, even without a drag.
+     * An undecided tap or vertical swipe must never commit a slider value. */
+    if (slider && code == LV_EVENT_RELEASED && !g->horizontal) {
+        lv_event_stop_processing(e); return;
+    }
     if (g->blocked) {
         // Let the widget clean up its pressed/drag state without releasing,
         // checking a switch, dispatching a click or saving a slider value.
-        if (code == LV_EVENT_RELEASED) lv_event_send(target, LV_EVENT_PRESS_LOST, input);
+        if (code == LV_EVENT_RELEASED) lv_obj_send_event(target, LV_EVENT_PRESS_LOST, input);
         lv_event_stop_processing(e);
     } else if (slider && code == LV_EVENT_PRESSING && !g->horizontal) {
         // Do not jump to the initial finger position before direction is known.

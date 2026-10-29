@@ -29,7 +29,11 @@
 #define memcpy_P memcpy
 #define PROGMEM
 #else
+#if defined(XTOUCH_NATIVE_IDF)
+#include "platform/idf/runtime.h"
+#else
 #include <Arduino.h>
+#endif
 #endif
 #include "zutil.h"
 #include "inftrees.h"

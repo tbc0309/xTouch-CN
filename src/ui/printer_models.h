@@ -1,5 +1,5 @@
 #pragma once
-#include <lvgl.h>
+#include "ui/lvgl_compat.h"
 #include <stdbool.h>
 #include <stddef.h>
 #ifdef __cplusplus

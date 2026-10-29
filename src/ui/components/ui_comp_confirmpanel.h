@@ -3,6 +3,7 @@
 
 #include "../ui.h"
 #include "../message_style.h"
+#include "../notices.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -25,9 +26,6 @@ extern "C"
     void ui_confirmPanel_state_changed(void);
     bool ui_notice_show(const char *text,unsigned timeout);
     bool ui_notice_show_kind(const char *text,unsigned timeout,ui_message_kind kind);
-    void ui_notice_hide(void);
-    bool ui_notice_visible(void);
-    void ui_notice_unavailable(void);
     void ui_confirmPanel_NOOP();
 #ifdef __cplusplus
 } /*extern "C"*/

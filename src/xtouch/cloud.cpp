@@ -1,4 +1,8 @@
+#include "cloud_memory.h"
+#include "features/network/task_budget.h"
+#include "cloud_cookies.h"
 #include "features/config.h"
+#include "features/network/limited_body.h"
 #include "cloud.h"
 #include "cloud_endpoints.h"
 #include <memory>
@@ -15,12 +19,7 @@
 #include "credentials.h"
 #include "lan_probe.h"
 #include "profile_schema.h"
-#if defined(XTOUCH_WAVESHARE)
 #include <esp_http_client.h>
-#else
-#include <WiFiClientSecure.h>
-#include <HTTPClient.h>
-#endif
 #include <mbedtls/base64.h>
 #include <time.h>
 #include <freertos/FreeRTOS.h>
@@ -50,13 +49,7 @@ portMUX_TYPE jobMux=portMUX_INITIALIZER_UNLOCKED;
 uint32_t jobFinished=0;
 const char *api(const char *region) {auto *endpoint=XTouchCloudEndpoints::get(region);return endpoint?endpoint->api:"";}
 void wipe(String &s) { for(size_t i=0;i<s.length();++i)s.setCharAt(i,0);s=""; }
-class LimitedBody : public Stream {
-public:
- String body; bool overflow=false;
- size_t write(uint8_t c) override { if(body.length()>=16384){overflow=true;return 0;}return body.concat((char)c)?1:0; }
- size_t write(const uint8_t *p,size_t n) override {size_t room=16384-body.length(),take=n<room?n:room;if(take<n)overflow=true;return take&&body.concat((const char *)p,take)?take:0; }
- int available() override{return 0;} int read()override{return -1;} int peek()override{return -1;} void flush()override{}
-};
+using LimitedBody=XTouchLimitedBody<16384>;
 bool uidFromToken(const String &token,String &uid) {
  int a=token.indexOf('.'),b=token.indexOf('.',a+1);if(a<1||b<=a+1||b-a>4096)return false;
  String payload=token.substring(a+1,b);payload.replace('-','+');payload.replace('_','/');while(payload.length()%4)payload+='=';
@@ -96,20 +89,19 @@ int request(const String &url,const String &token,const String &payload,String &
   if(webCsrf.isEmpty())return -13;
  }
  struct Response {
-  LimitedBody body;String cookie,mitigated,ray;
+  LimitedBody body;XTouchCloudCookies::Headers cookies;String mitigated,ray;
  } response;
  int status=0,code=-1;
-#if defined(XTOUCH_WAVESHARE)
  esp_http_client_config_t config={};config.url=url.c_str();config.cert_pem=xtouch_cloud_ca;
  config.timeout_ms=12000;config.keep_alive_enable=false;config.buffer_size=2048;config.buffer_size_tx=1024;
  config.method=payload.length()?HTTP_METHOD_POST:HTTP_METHOD_GET;config.user_data=&response;
  config.event_handler=[](esp_http_client_event_t *event)->esp_err_t {
   auto *r=static_cast<Response *>(event->user_data);
   if(event->event_id==HTTP_EVENT_ON_DATA && event->data_len>0){
-   r->body.write(static_cast<const uint8_t *>(event->data),event->data_len);
+   if(r->body.write(static_cast<const uint8_t *>(event->data),event->data_len)!=size_t(event->data_len))return ESP_FAIL;
    if(r->body.overflow)return ESP_FAIL;
   }else if(event->event_id==HTTP_EVENT_ON_HEADER && event->header_key && event->header_value){
-   if(!strcasecmp(event->header_key,"Set-Cookie"))r->cookie=event->header_value;
+   if(!strcasecmp(event->header_key,"Set-Cookie"))r->cookies.add(event->header_value);
    else if(!strcasecmp(event->header_key,"cf-mitigated"))r->mitigated=event->header_value;
    else if(!strcasecmp(event->header_key,"cf-ray"))r->ray=event->header_value;
   }
@@ -125,29 +117,24 @@ int request(const String &url,const String &token,const String &payload,String &
  if(token.length()){String bearer="Bearer "+token;esp_http_client_set_header(http,"Authorization",bearer.c_str());}
  if(payload.length())esp_http_client_set_post_field(http,payload.c_str(),payload.length());
  esp_err_t error=esp_http_client_perform(http);status=esp_http_client_get_status_code(http);
+ // IDF's body dispatcher does not propagate an event handler's return value.
+ if(response.body.failed&&!response.body.overflow&&error==ESP_OK)error=ESP_ERR_NO_MEM;
  responseStatus=status;lastReadError=error==ESP_OK?0:-int(error);
  reply=std::move(response.body.body);lastBodyBytes=reply.length();
  code=response.body.overflow?-11:error==ESP_OK?status:status>0?-14:-1;
  esp_http_client_cleanup(http);
-#else
- // Retain CYD's compact transport so its dual-OTA partition still fits.
- WiFiClientSecure tls;tls.setCACert(xtouch_cloud_ca);tls.setHandshakeTimeout(6);tls.setTimeout(6);
- HTTPClient http;http.setConnectTimeout(6000);http.setTimeout(12000);http.setReuse(false);
- if(!http.begin(tls,url))return -1;
- const char *keys[]={"Set-Cookie","cf-mitigated","cf-ray"};http.collectHeaders(keys,3);
- http.addHeader("Accept","application/json");clientHeaders([&](const char *key,const char *value){http.addHeader(key,value);});
- if(website&&webCsrf.length()){http.addHeader("Cookie","bbl_csrf_token="+webCsrf);if(payload.length())http.addHeader("x-bbl-csrf-token",webCsrf);}
- if(token.length())http.addHeader("Authorization","Bearer "+token);
- code=payload.length()?http.POST((uint8_t *)payload.c_str(),payload.length()):http.GET();
- status=code;responseStatus=status;
- if(xtouch_cloud_has_body(code,http.getSize())){
-  int got=http.writeToStream(&response.body);reply=std::move(response.body.body);lastBodyBytes=reply.length();lastReadError=got<0?got:0;
-  if(got<0||response.body.overflow)code=response.body.overflow?-11:-14;
- }
- response.cookie=http.header("Set-Cookie");response.mitigated=http.header("cf-mitigated");response.ray=http.header("cf-ray");http.end();
-#endif
- if(website&&url.endsWith("/api/csrf")){
-  int start=response.cookie.indexOf("bbl_csrf_token=");if(start>=0){int end=response.cookie.indexOf(';',start);String value=response.cookie.substring(start+15,end<0?response.cookie.length():end);if(value.length()<256)webCsrf=value;}
+ if(website&&url.endsWith("/api/csrf")&&!response.cookies.csrf.empty())webCsrf=response.cookies.csrf.c_str();
+ /* The website TFA endpoint can deliver the session only as Set-Cookie.
+    Use it solely after a successful response from that exact endpoint. */
+ if(code==200&&website&&url.endsWith("/api/sign-in/tfa")&&!response.cookies.token.empty()){
+  DynamicJsonDocument auth(6144);
+  bool valid=reply.isEmpty()||!deserializeJson(auth,reply);
+  if(valid&&(auth.isNull()||auth.is<JsonObject>())){
+   if(auth.isNull())auth.to<JsonObject>();
+   if(!(auth["accessToken"]|"")[0]&&!(auth["token"]|"")[0]&&!(auth["data"]["accessToken"]|"")[0]&&!(auth["data"]["token"]|"")[0]){
+    auth["token"]=response.cookies.token.c_str();reply="";serializeJson(auth,reply);
+   }
+  }
  }
  if(xtouch_cloud_challenge(status,reply.c_str(),response.mitigated.c_str(),response.ray.c_str())){
   challengeStatus=status;
@@ -160,7 +147,9 @@ String executeJob() {
  DynamicJsonDocument input(6144);deserializeJson(input,jobInput);wipe(jobInput);
  String mode=input["action"]|"",region=input["region"]|"cn",token=input["token"]|"";
  if(mode=="validate_lan")return XTouchLanProbe::run(input.as<JsonVariantConst>());
- DynamicJsonDocument out(4096);
+ // Output pools are allocated by each action after HTTPS releases its TLS buffers.
+ // Do not hold an unused 4 KiB JSON pool during the request on memory-limited boards.
+ DynamicJsonDocument out(0);
  String body,reply;int code=-1;
  String remembered;
 #if XTOUCH_FEATURE_CLOUD_LOGIN
@@ -175,7 +164,7 @@ String executeJob() {
   // The official website proxy and API can have different edge protections.
   // Both routes use this account's region and token; never cross regions.
   if(code==-12||code==404)code=request(String(endpoint->api)+"/v1/iot-service/api/user/bind",token,"",reply);
-  out=DynamicJsonDocument(min((size_t)16384,max((size_t)2048,reply.length()*2)));
+  XTouchCloudMemory::output(out,min((size_t)16384,max((size_t)2048,reply.length()*2)));
   DynamicJsonDocument data(min((size_t)24576,max((size_t)2048,reply.length()*2)));
   if(code==200&&!deserializeJson(data,reply)) {
    JsonArray devices=out.createNestedArray("devices");unsigned count=0;
@@ -190,6 +179,7 @@ String executeJob() {
   code=XTouchCloudToken::validate(input,out,region,token,reply,request);
  }
 #endif
+if(!out.capacity())XTouchCloudMemory::output(out);
 #if XTOUCH_FEATURE_CLOUD_LOGIN
  if(remembered.length() && (out["ok"].as<bool>() || !strcmp(out["error"]|"","verification_required") || !strcmp(out["error"]|"","two_factor_required")))out["passwordEnc"]=remembered;
 #endif
@@ -275,13 +265,13 @@ bool xtouch_cloud_job_start(JsonVariantConst r) {
 #endif
  if(!accountAction&&!lan&&(!r["token"].is<const char *>()||!strlen(r["token"])||strlen(r["token"])>2048))return false;
  wipe(jobOutput);serializeJson(r,jobInput);running=true;pending=true;
- // The main loop releases printer TLS before the worker is started by its next poll.
+ // The main loop applies the board transport policy, then starts this deferred worker.
  return true;
 }
 String xtouch_cloud_job_result(){
  if(pending&&running) {
   pending=false;
-  if(xTaskCreatePinnedToCore(job,"xt-cloud",12288,nullptr,1,nullptr,0)!=pdPASS){running=false;wipe(jobInput);jobOutput="{\"ok\":false,\"error\":\"out_of_memory\"}";}
+  if(xTaskCreatePinnedToCore(job,"xt-cloud",XTouchNetworkBudgets::CloudWorkerStackBytes,nullptr,1,nullptr,0)!=pdPASS){running=false;wipe(jobInput);jobOutput="{\"ok\":false,\"error\":\"out_of_memory\"}";}
  }
  if(running)return "{\"busy\":true}";
  if(jobFinished&&millis()-jobFinished>120000)wipe(jobOutput);

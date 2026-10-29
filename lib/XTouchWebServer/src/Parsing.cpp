@@ -19,11 +19,10 @@
   Modified 8 May 2015 by Hristo Gochkov (proper post and file upload handling)
 */
 
-#include <Arduino.h>
-#include <esp32-hal-log.h>
+#include "platform/idf/runtime.h"
+#include "platform/idf/log.h"
 #include <esp_heap_caps.h>
-#include "WiFiServer.h"
-#include "WiFiClient.h"
+#include "platform/idf/socket.h"
 #include "XTouchWebServer.h"
 #include "detail/mimetable.h"
 #include "detail/RequestLimits.h"
@@ -83,11 +82,13 @@ static char* readBytesWithTimeout(WiFiClient& client, size_t maxLength, size_t& 
 }
 
 // Bound network-controlled lines before allocating strings or multipart buffers.
-static bool xtouchReadHttpLine(WiFiClient &client,String &line,size_t limit,uint32_t deadline){
+static bool xtouchReadHttpLine(WiFiClient &client,String &line,size_t limit,uint32_t deadline,uint32_t *remaining=nullptr){
  line="";
  while(int32_t(deadline-millis())>0){
   while(client.available()){
+   if(remaining&&!*remaining)return false;
    int c=client.read();if(c<0)break;
+   if(remaining)--*remaining;
    if(c=='\n'){if(line.endsWith("\r"))line.remove(line.length()-1);return true;}
    if(line.length()>=limit)return false;line+=(char)c;
   }
@@ -198,9 +199,10 @@ bool XTouchWebServer::_parseRequest(WiFiClient& client) {
         uint32_t parsedLength=0;
         for(size_t i=0;i<headerValue.length();++i){
           char digit=headerValue[i];
-          if(digit<'0'||digit>'9'||parsedLength>xtouchHttpUploadLimit/10U)return false;
+          if(digit<'0'||digit>'9')return false;
+          if(parsedLength>xtouchHttpUploadLimit/10U){send(413,"text/plain","Request too large");return false;}
           parsedLength=parsedLength*10U+(digit-'0');
-          if(parsedLength>xtouchHttpUploadLimit)return false;
+          if(parsedLength>xtouchHttpUploadLimit){send(413,"text/plain","Request too large");return false;}
         }
         _clientContentLength = parsedLength;
       } else if (headerName.equalsIgnoreCase(F("Transfer-Encoding"))){
@@ -212,11 +214,14 @@ bool XTouchWebServer::_parseRequest(WiFiClient& client) {
 
     if (_currentHandler && _currentHandler->canUpload(_currentUri) &&
         _uploadGuard && !_uploadGuard()) {
-      client.stop();
+      // handleClient drains queued bytes before closing rejected requests.
       return false;
     }
-    const int bodyLimit=(isForm&&_currentHandler&&_currentHandler->canUpload(_currentUri))?xtouchHttpUploadLimit:(_currentUri=="/api/config"?xtouchHttpConfigBodyLimit:xtouchHttpBodyLimit);
+    const int bodyLimit=isEncoded?xtouchHttpFormBodyLimit:(isForm&&_currentHandler&&_currentHandler->canUpload(_currentUri))?xtouchHttpUploadLimit:(_currentUri=="/api/config"?xtouchHttpConfigBodyLimit:xtouchHttpBodyLimit);
     if(_clientContentLength<0||_clientContentLength>bodyLimit){send(413,"text/plain","Request too large");return false;}
+    if(!isForm && _clientContentLength>0 && _currentHandler && _bodyGuard && !_bodyGuard()){
+      return false;
+    }
     // Reserve space before buffering: realloc and String conversion coexist
     // with the printer TLS session until the authenticated handler is entered.
     if(!isForm && _clientContentLength>0 &&
@@ -235,7 +240,7 @@ bool XTouchWebServer::_parseRequest(WiFiClient& client) {
       _currentRaw->status = RAW_WRITE;
 
       while (_currentRaw->totalSize < _clientContentLength) {
-        _currentRaw->currentSize = client.readBytes(_currentRaw->buf, HTTP_RAW_BUFLEN);
+        _currentRaw->currentSize = client.readBytes(_currentRaw->buf, std::min(size_t(HTTP_RAW_BUFLEN),size_t(_clientContentLength)-_currentRaw->totalSize));
         _currentRaw->totalSize += _currentRaw->currentSize;
         if (_currentRaw->currentSize == 0) {
           _currentRaw->status = RAW_ABORTED;
@@ -260,7 +265,7 @@ bool XTouchWebServer::_parseRequest(WiFiClient& client) {
           if (searchStr != "") searchStr += '&';
           searchStr += plainBuf;
         }
-        _parseArguments(searchStr);
+        if(!_parseArguments(searchStr)){free(plainBuf);return false;}
         if(!isEncoded){
           //plain post json or other data
           RequestArgument& arg = _currentArgs[_currentArgCount++];
@@ -277,11 +282,11 @@ bool XTouchWebServer::_parseRequest(WiFiClient& client) {
         free(plainBuf);
       } else {
         // No content - but we can still have arguments in the URL.
-        _parseArguments(searchStr);
+        if(!_parseArguments(searchStr))return false;
       }
     } else {
       // it IS a form
-      _parseArguments(searchStr);
+      if(!_parseArguments(searchStr))return false;
       if (!_parseForm(client, boundaryStr, _clientContentLength)) {
         return false;
       }
@@ -308,7 +313,7 @@ bool XTouchWebServer::_parseRequest(WiFiClient& client) {
         _hostHeader = headerValue;
       }
     }
-    _parseArguments(searchStr);
+    if(!_parseArguments(searchStr))return false;
   }
   client.flush();
 
@@ -328,7 +333,7 @@ bool XTouchWebServer::_collectHeader(const char* headerName, const char* headerV
   return false;
 }
 
-void XTouchWebServer::_parseArguments(String data) {
+bool XTouchWebServer::_parseArguments(String data) {
   log_v("args: %s", data.c_str());
   if (_currentArgs)
     delete[] _currentArgs;
@@ -336,7 +341,7 @@ void XTouchWebServer::_parseArguments(String data) {
   if (data.length() == 0) {
     _currentArgCount = 0;
     _currentArgs = new RequestArgument[1];
-    return;
+    return true;
   }
   _currentArgCount = 1;
 
@@ -346,6 +351,11 @@ void XTouchWebServer::_parseArguments(String data) {
       break;
     ++i;
     ++_currentArgCount;
+    if(_currentArgCount>WEBSERVER_MAX_POST_ARGS){
+      _currentArgCount=0;
+      send(413,"text/plain","Request too large");
+      return false;
+    }
   }
   log_v("args count: %d", _currentArgCount);
 
@@ -374,7 +384,7 @@ void XTouchWebServer::_parseArguments(String data) {
   }
   _currentArgCount = iarg;
   log_v("args count: %d", _currentArgCount);
-
+  return true;
 }
 
 void XTouchWebServer::_uploadWriteByte(uint8_t b){
@@ -391,7 +401,8 @@ int XTouchWebServer::_uploadReadByte(WiFiClient& client) {
   int res = client.read();
 
   if (res < 0) {
-    while(!client.available() && client.connected())
+    const uint32_t started=millis();
+    while(!client.available() && client.connected() && uint32_t(millis()-started)<HTTP_MAX_POST_WAIT)
       delay(2);
 
     res = client.read();
@@ -401,17 +412,24 @@ int XTouchWebServer::_uploadReadByte(WiFiClient& client) {
 }
 
 bool XTouchWebServer::_parseForm(WiFiClient& client, String boundary, uint32_t len){
-  (void) len;
-  if(boundary.isEmpty()||boundary.length()>70)return false;
+  auto aborted=[&](){
+    _parseFormUploadAborted();
+    _currentUpload.reset();
+    if(_postArgs){delete[] _postArgs;_postArgs=nullptr;}
+    _postArgsLen=0;
+    send(400,"application/json","{\"error\":\"upload_aborted\"}");
+    return false;
+  };
+  if(!len||boundary.isEmpty()||boundary.length()>70)return aborted();
+  for(size_t i=0;i<boundary.length();++i)
+    if(uint8_t(boundary[i])<32||uint8_t(boundary[i])>126)return aborted();
   log_v("Parse Form: Boundary: %s Length: %d", boundary.c_str(), len);
   String line;
-  int retry = 0;
-  do {
-    line = client.readStringUntil('\r');
-    ++retry;
-  } while (line.length() == 0 && retry < 3);
-
-  client.readStringUntil('\n');
+  uint32_t remaining=len;
+  size_t fieldBytes=0;
+  // File bytes stream to the updater; auxiliary fields total at most 1 KiB.
+  auto readLine=[&](size_t limit=1024){return xtouchReadHttpLine(client,line,limit,millis()+HTTP_MAX_POST_WAIT,&remaining);};
+  if(!readLine())return aborted();
   //start reading the form
   if (line == ("--"+boundary)){
    if(_postArgs) delete[] _postArgs;
@@ -424,8 +442,7 @@ bool XTouchWebServer::_parseForm(WiFiClient& client, String boundary, uint32_t l
       String argFilename;
       bool argIsFile = false;
 
-      line = client.readStringUntil('\r');
-      client.readStringUntil('\n');
+      if(!readLine())return aborted();
       if (line.length() > 19 && line.substring(0, 19).equalsIgnoreCase(F("Content-Disposition"))){
         int nameStart = line.indexOf('=');
         if (nameStart != -1){
@@ -442,28 +459,32 @@ bool XTouchWebServer::_parseForm(WiFiClient& client, String boundary, uint32_t l
             if (argFilename == F("blob") && hasArg(FPSTR(filename)))
               argFilename = arg(FPSTR(filename));
           }
+          if(argName.isEmpty()||argName.length()>128||argFilename.length()>256)return aborted();
           log_v("PostArg Name: %s", argName.c_str());
           using namespace mime;
           argType = FPSTR(mimeTable[txt].mimeType);
-          line = client.readStringUntil('\r');
-          client.readStringUntil('\n');
-          if (line.length() > 12 && line.substring(0, 12).equalsIgnoreCase(FPSTR(Content_Type))){
-            argType = line.substring(line.indexOf(':')+2);
-            //skip next line
-            client.readStringUntil('\r');
-            client.readStringUntil('\n');
+          size_t partHeaders=0;
+          while(true){
+            if(!readLine()||(partHeaders+=line.length())>8192)return aborted();
+            if(line.isEmpty())break;
+            if(line.indexOf(':')<0)return aborted();
+            if(line.length()>12&&line.substring(0,12).equalsIgnoreCase(FPSTR(Content_Type)))
+              argType=line.substring(line.indexOf(':')+1);
           }
+          argType.trim();
           log_v("PostArg Type: %s", argType.c_str());
           if (!argIsFile){
             while(1){
-              line = client.readStringUntil('\r');
-              client.readStringUntil('\n');
-              if (line.startsWith("--"+boundary)) break;
+              if(!readLine())return aborted();
+              if(line=="--"+boundary||line=="--"+boundary+"--")break;
+              if(fieldBytes+argValue.length()+line.length()+(argValue.length()?1:0)>xtouchHttpFormBodyLimit)return aborted();
               if (argValue.length() > 0) argValue += "\n";
               argValue += line;
             }
             log_v("PostArg Value: %s", argValue.c_str());
 
+            if(_postArgsLen>=WEBSERVER_MAX_POST_ARGS)return aborted();
+            fieldBytes+=argValue.length();
             RequestArgument& arg = _postArgs[_postArgsLen++];
             arg.key = argName;
             arg.value = argValue;
@@ -473,8 +494,9 @@ bool XTouchWebServer::_parseForm(WiFiClient& client, String boundary, uint32_t l
               break;
             } else if (_postArgsLen >= WEBSERVER_MAX_POST_ARGS) {
               log_e("Too many PostArgs (max: %d) in request.", WEBSERVER_MAX_POST_ARGS);
-              return false;
+              return aborted();
             }
+            continue;
           } else {
             _currentUpload.reset(new HTTPUpload());
             _currentUpload->status = UPLOAD_FILE_START;
@@ -489,15 +511,16 @@ bool XTouchWebServer::_parseForm(WiFiClient& client, String boundary, uint32_t l
             _currentUpload->status = UPLOAD_FILE_WRITE;
 
             int fastBoundaryLen = 4 /* \r\n-- */ + boundary.length() + 1 /* \0 */;
-            char fastBoundary[75]; // RFC 2046: at most 70 boundary bytes plus CRLF/markers.
+            char fastBoundary[75]={}; // RFC 2046: at most 70 boundary bytes plus CRLF/markers.
             snprintf(fastBoundary, fastBoundaryLen, "\r\n--%s", boundary.c_str());
             int boundaryPtr = 0;
             while ( true ) {
-                int ret = _uploadReadByte(client);
+                int ret = remaining?_uploadReadByte(client):-1;
                 if (ret < 0) {
                     // Unexpected, we should have had data available per above
-                    return _parseFormUploadAborted();
+                    return aborted();
                 }
+                --remaining;
                 char in = (char) ret;
                 if (in == fastBoundary[ boundaryPtr ]) {
                     // The input matched the current expected character, advance and possibly exit this file
@@ -532,18 +555,21 @@ bool XTouchWebServer::_parseForm(WiFiClient& client, String boundary, uint32_t l
                 _currentUpload->filename.c_str(),
                 _currentUpload->type.c_str(),
                 (int)_currentUpload->totalSize);
-            if (!client.connected()) return _parseFormUploadAborted();
-            line = client.readStringUntil('\r');
-            client.readStringUntil('\n');
+            if(!readLine())return aborted();
             if (line == "--") {     // extra two dashes mean we reached the end of all form fields
                 log_v("Done Parsing POST");
                 break;
             }
+            if(!line.isEmpty())return aborted();
             continue;
           }
         }
       }
+      return aborted();
     }
+
+    // Consume declared epilogue bytes rather than treating them as another request.
+    while(remaining){if(_uploadReadByte(client)<0)return aborted();--remaining;}
 
     int iarg;
     int totalArgs = ((WEBSERVER_MAX_POST_ARGS - _postArgsLen) < _currentArgCount)?(WEBSERVER_MAX_POST_ARGS - _postArgsLen):_currentArgCount;
@@ -568,7 +594,7 @@ bool XTouchWebServer::_parseForm(WiFiClient& client, String boundary, uint32_t l
     return true;
   }
   log_e("Error: line: %s", line.c_str());
-  return false;
+  return aborted();
 }
 
 String XTouchWebServer::urlDecode(const String& text)
@@ -603,6 +629,7 @@ String XTouchWebServer::urlDecode(const String& text)
 }
 
 bool XTouchWebServer::_parseFormUploadAborted(){
+  if(!_currentUpload)return false;
   _currentUpload->status = UPLOAD_FILE_ABORTED;
   if(_currentHandler && _currentHandler->canUpload(_currentUri))
     _currentHandler->upload(*this, _currentUri, *_currentUpload);

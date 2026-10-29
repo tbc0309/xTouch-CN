@@ -1,49 +1,87 @@
+if(NOT IDF_VERSION_MAJOR EQUAL 6 OR NOT IDF_VERSION_MINOR EQUAL 1)
+ message(FATAL_ERROR "xTouch requires the supported ESP-IDF 6.1.x baseline; activate its environment before configuring")
+endif()
+if(IDF_TARGET STREQUAL "esp32")
+ set(XTOUCH_CYD ON)
+ set(XTOUCH_FEATURE_CAMERA OFF CACHE BOOL "Printer camera")
+ set(XTOUCH_FEATURE_PRINT_PREVIEW OFF CACHE BOOL "Task preview")
+endif()
 option(XTOUCH_FEATURE_CLOUD_TOKEN "Include Access Token entry and validation" ON)
 option(XTOUCH_FEATURE_CLOUD_LOGIN "Include account password/code authentication" ON)
 get_filename_component(ROOT "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
-option(XTOUCH_FEATURE_XIAOMI_BLE "Include Xiaomi BLE thermometer support (S3/P4)" ON)
+option(XTOUCH_TEST_AUTOMATION "Enable laboratory automation probes; never for release" OFF)
+option(XTOUCH_TEST_PROVISIONING_ONLY "Build only provisioning automation probes" OFF)
+if(XTOUCH_TEST_PROVISIONING_ONLY AND NOT XTOUCH_TEST_AUTOMATION)
+ message(FATAL_ERROR "Provisioning probes require XTOUCH_TEST_AUTOMATION")
+endif()
+option(XTOUCH_TEST_DEFER_BLE "Defer CYD BLE initialization for same-image display diagnosis" OFF)
+option(XTOUCH_FEATURE_XIAOMI_BLE "Include Xiaomi BLE thermometer support" ON)
+option(XTOUCH_FEATURE_EXTERNAL_CHAMBER "Include CYD wired DS18B20 chamber adapter" OFF)
+if(XTOUCH_FEATURE_EXTERNAL_CHAMBER AND NOT XTOUCH_BOARD STREQUAL "esp32-2432s028r")
+ message(FATAL_ERROR "External chamber adapter supports only the CYD GPIO22 port")
+endif()
 option(XTOUCH_FEATURE_AUDIO "Include speaker support" ON)
 option(XTOUCH_FEATURE_DEEP_SLEEP "Include optional deep sleep" ON)
 option(XTOUCH_FEATURE_INDICATOR "Include controllable status LED support" ON)
 option(XTOUCH_FEATURE_CAMERA "Include printer camera" ON)
 option(XTOUCH_FEATURE_PRINT_PREVIEW "Include task previews" ON)
-option(XTOUCH_ERROR_DETAILS "Include bilingual error descriptions and extra glyphs" OFF)
+if(XTOUCH_CYD)
+ set(XTOUCH_ERROR_DETAILS OFF)
+else()
+ set(XTOUCH_ERROR_DETAILS ON)
+endif()
 option(XTOUCH_FEATURE_BLE_PROVISIONING "Include optional BLE Wi-Fi provisioning" OFF)
-option(XTOUCH_P4_C6_PREINITIALIZED_BT "Factory C6 firmware initializes the BLE controller at boot" ON)
 set(RADIO_SOURCES "")
 set(RADIO_REQUIRES "")
-if(XTOUCH_FEATURE_XIAOMI_BLE)
+if(XTOUCH_FEATURE_XIAOMI_BLE OR XTOUCH_FEATURE_BLE_PROVISIONING)
  list(APPEND RADIO_REQUIRES bt)
 endif()
 if(IDF_TARGET STREQUAL "esp32p4")
- list(APPEND RADIO_REQUIRES espressif__esp_hosted)
+ list(APPEND RADIO_REQUIRES espressif__esp_hosted espressif__esp_wifi_remote)
 endif()
 if(XTOUCH_FEATURE_BLE_PROVISIONING)
- if(IDF_TARGET STREQUAL "esp32p4" AND XTOUCH_P4_C6_PREINITIALIZED_BT)
-  message(FATAL_ERROR "Hosted 3 BLE provisioning requires a managed-controller C6 image; build with --c6-managed-bt")
- endif()
- if(NOT IDF_TARGET MATCHES "^(esp32p4|esp32s3)$")
-  message(FATAL_ERROR "BLE provisioning supports S3 and P4")
- endif()
- if(NOT CONFIG_BT_NIMBLE_ENABLED)
-  message(FATAL_ERROR "BLE provisioning requires NimBLE enabled in sdkconfig")
+ if(NOT IDF_TARGET STREQUAL "esp32s3")
+  message(FATAL_ERROR "BLE provisioning supports ESP32-S3 boards")
  endif()
  list(APPEND RADIO_SOURCES "${ROOT}/boards/common/ble_provisioning.cpp")
 endif()
 file(GLOB_RECURSE UI "${ROOT}/src/ui/*.c")
 include("${ROOT}/boards/common/ui_asset_profile.cmake")
 file(GLOB_RECURSE FEATURES "${ROOT}/src/features/*.c" "${ROOT}/src/features/*.cpp")
+if(NOT XTOUCH_FEATURE_EXTERNAL_CHAMBER)
+ list(FILTER FEATURES EXCLUDE REGEX "/external_chamber/")
+endif()
 if(NOT XTOUCH_FEATURE_XIAOMI_BLE)
  list(FILTER FEATURES EXCLUDE REGEX "/xiaomi_ble/")
 endif()
 set(AUDIO_SOURCES "")
 set(AUDIO_REQUIRES "")
 if(XTOUCH_FEATURE_AUDIO)
- list(APPEND AUDIO_SOURCES "${ROOT}/boards/common/audio_output.cpp" "${ROOT}/boards/${XTOUCH_BOARD}/audio.cpp")
+ if(XTOUCH_CYD)
+  list(APPEND AUDIO_SOURCES "${ROOT}/boards/${XTOUCH_BOARD}/audio.cpp")
+  list(APPEND AUDIO_REQUIRES esp_driver_dac esp_driver_gptimer)
+ else()
+  list(APPEND AUDIO_SOURCES "${ROOT}/boards/common/audio_output.cpp" "${ROOT}/boards/${XTOUCH_BOARD}/audio.cpp")
+ endif()
  list(APPEND AUDIO_REQUIRES esp_driver_i2s)
  if(XTOUCH_BOARD MATCHES "[Pp]4")
   list(APPEND AUDIO_REQUIRES espressif__esp_codec_dev)
  endif()
+ if(XTOUCH_BOARD MATCHES "[Pp]4" OR XTOUCH_BOARD STREQUAL "lcdwiki-es3c35p")
+  list(APPEND AUDIO_SOURCES "${ROOT}/boards/common/es8311_output.cpp")
+ endif()
+endif()
+set(BOARD_REQUIRES "")
+idf_build_get_property(BOARD_PROJECT_DIR PROJECT_DIR)
+# Requirements are expanded in a separate CMake scope without XTOUCH_BOARD.
+if(EXISTS "${BOARD_PROJECT_DIR}/xtouch_board_support/CMakeLists.txt")
+ list(APPEND BOARD_REQUIRES xtouch_board_support)
+endif()
+set(INDICATOR_SOURCES "")
+if(XTOUCH_FEATURE_INDICATOR AND EXISTS "${ROOT}/boards/${XTOUCH_BOARD}/indicator.cpp")
+ list(APPEND INDICATOR_SOURCES "${ROOT}/boards/${XTOUCH_BOARD}/indicator.cpp")
+else()
+ list(APPEND INDICATOR_SOURCES "${ROOT}/boards/common/indicator_none.cpp")
 endif()
 set(POWER_SOURCES "")
 set(POWER_REQUIRES "")
@@ -53,6 +91,7 @@ endif()
 if(XTOUCH_FEATURE_DEEP_SLEEP AND XTOUCH_BOARD MATCHES "[Pp]4")
  list(APPEND POWER_SOURCES "${ROOT}/boards/${XTOUCH_BOARD}/touch_wake.cpp")
 endif()
+file(GLOB NATIVE_PLATFORM "${ROOT}/src/platform/idf/*.cpp")
 file(GLOB CORE "${ROOT}/src/xtouch/*.c" "${ROOT}/src/xtouch/*.cpp")
 file(GLOB_RECURSE WEB "${ROOT}/lib/XTouchWebServer/src/*.cpp")
 set(DEPS "${ROOT}/boards/.deps")
@@ -64,43 +103,78 @@ if(XTOUCH_UI_HIDPI_ASSETS)
   list(FILTER LARGE_FONTS EXCLUDE REGEX "/ui_font_(xlcd|xlcdmin|actions|xperiments).c$")
   file(GLOB SHARED_LARGE "${ROOT}/resources/ui-assets/generated/large/*.c")
   list(APPEND UI ${LARGE_FONTS} ${SHARED_LARGE})
-  if(NOT XTOUCH_ERROR_DETAILS)
     list(FILTER UI EXCLUDE REGEX "/ui_font_text_14.c$")
     list(APPEND UI "${ROOT}/resources/ui-assets/fonts/large/compact/ui_font_text_14.c")
-  endif()
-endif()
-
-# Extra glyphs are linked only when the optional description catalog is enabled.
-if(XTOUCH_ERROR_DETAILS AND XTOUCH_BOARD MATCHES "[Ss]3")
- set(S3_ERROR_FONT "${ROOT}/resources/ui-assets/fonts/small/ui_font_error_14.c")
- list(FILTER UI EXCLUDE REGEX "/ui_font_text_14.c$")
- list(APPEND UI "${S3_ERROR_FONT}")
 endif()
 
 set(CAMERA_FONT "${ROOT}/resources/ui-assets/fonts/small/ui_font_camera_14.c")
 if(XTOUCH_UI_HIDPI_ASSETS)
  set(CAMERA_FONT "")
 endif()
-# Arduino WiFiGeneric.h exposes network_provisioning types even with BLE off.
-# Keep that SDK header dependency; the application BLE worker remains optional.
-idf_component_register(SRCS ${UI} ${CORE} ${FEATURES} ${AUDIO_SOURCES} ${POWER_SOURCES} ${RADIO_SOURCES} ${WEB} "${ROOT}/src/main.cpp"
+if(XTOUCH_CYD)
+ # Keep src/ui/printer_models.c (model metadata); remove only pixel artwork.
+ list(FILTER UI EXCLUDE REGEX "/(images|generated/large)/printer_models.c$")
+ # Replace matching text fonts in both legacy and generated resource folders.
+ list(FILTER UI EXCLUDE REGEX "/ui_font_(text_14|text_24|text_28|portal_title_22|project_16|native).c$")
+ file(GLOB CYD_FONTS "${ROOT}/resources/ui-assets/fonts/cyd-zh-en/*.c")
+ if(NOT CYD_FONTS)
+  message(FATAL_ERROR "Generate CYD Chinese/English fonts with scripts/generate_cyd_resources.py")
+ endif()
+ list(APPEND UI ${CYD_FONTS} "${ROOT}/resources/ui-assets/generated/cyd/bambu_logo.c")
+endif()
+set(MEDIA_REQUIRES "")
+set(JPEG_SOURCES "")
+if(XTOUCH_FEATURE_CAMERA OR XTOUCH_FEATURE_PRINT_PREVIEW)
+ list(APPEND JPEG_SOURCES "${DEPS}/JPEGDEC/src/JPEGDEC.cpp" "${DEPS}/JPEGDEC/src/jpeg.inl")
+endif()
+if(NOT XTOUCH_CYD)
+ list(APPEND MEDIA_REQUIRES esp_driver_usb_serial_jtag espressif__network_provisioning espressif__esp-dsp espressif__esp_h264)
+endif()
+# Native targets use IDF drivers and application-owned portable utilities.
+idf_component_register(SRCS ${NATIVE_PLATFORM} ${UI} ${CORE} ${FEATURES} ${AUDIO_SOURCES} ${INDICATOR_SOURCES} ${POWER_SOURCES} ${RADIO_SOURCES} ${WEB} "${ROOT}/src/main.cpp"
   "${ROOT}/boards/common/board.cpp" ${CAMERA_FONT}
   "${ROOT}/boards/${XTOUCH_BOARD}/display.cpp"
-  "${DEPS}/PubSubClient/src/PubSubClient.cpp" "${DEPS}/JPEGDEC/src/JPEGDEC.cpp" "${DEPS}/JPEGDEC/src/jpeg.inl"
+  ${JPEG_SOURCES}
   INCLUDE_DIRS "${ROOT}/src" "${ROOT}/boards/common" "${ROOT}/resources"
-  "${ROOT}/lib/XTouchWebServer/src" "${DEPS}/ArduinoJson/src" "${DEPS}/PubSubClient/src" "${DEPS}/JPEGDEC/src"
-  REQUIRES ${RADIO_REQUIRES} ${POWER_REQUIRES} ${AUDIO_REQUIRES} esp_http_client arduino-esp32 esp_pm lvgl esp_lcd esp_driver_gpio esp_driver_ledc esp_driver_i2c esp_driver_spi esp_driver_sdmmc esp_timer esp_hw_support esp_mm esp_wifi esp_netif lwip mbedtls app_update nvs_flash spiffs espressif__network_provisioning espressif__esp-dsp espressif__esp_h264)
-if(XTOUCH_FEATURE_BLE_PROVISIONING OR XTOUCH_FEATURE_XIAOMI_BLE)
- target_compile_definitions(${COMPONENT_LIB} PRIVATE XTOUCH_P4_C6_PREINITIALIZED_BT=$<BOOL:${XTOUCH_P4_C6_PREINITIALIZED_BT}>)
-endif()
+  "${ROOT}/lib/XTouchWebServer/src" "${DEPS}/ArduinoJson/src" "${DEPS}/JPEGDEC/src"
+  REQUIRES ${BOARD_REQUIRES} ${RADIO_REQUIRES} ${POWER_REQUIRES} ${AUDIO_REQUIRES} esp_http_client espressif__mqtt http_parser fatfs sdmmc esp-tls esp_event esp_driver_uart esp_pm lvgl esp_lcd esp_driver_gpio esp_driver_ledc esp_driver_i2c esp_driver_spi esp_driver_sdmmc esp_timer esp_hw_support esp_mm esp_wifi esp_netif lwip mbedtls app_update nvs_flash spiffs ${MEDIA_REQUIRES})
 if(XTOUCH_FEATURE_BLE_PROVISIONING)
+ if(NOT CONFIG_BT_NIMBLE_ENABLED)
+  message(FATAL_ERROR "BLE provisioning requires NimBLE enabled in sdkconfig")
+ endif()
+ if(NOT CONFIG_BT_NIMBLE_ROLE_PERIPHERAL OR NOT CONFIG_BT_NIMBLE_GATT_SERVER)
+  message(FATAL_ERROR "BLE provisioning needs the peripheral/GATT-server SDK profile; use a clean configuration for this module selection")
+ endif()
  include("${ROOT}/boards/common/ble_transport.cmake")
 endif()
 
-target_compile_definitions(${COMPONENT_LIB} PUBLIC XTOUCH_WAVESHARE=1 LV_CONF_INCLUDE_SIMPLE=1)
+target_compile_definitions(${COMPONENT_LIB} PUBLIC XTOUCH_NATIVE_IDF=1 LV_CONF_INCLUDE_SIMPLE=1)
+set(PORTAL_CHECK_ARGS "")
+if(XTOUCH_CYD)
+ list(APPEND PORTAL_CHECK_ARGS --zh-en)
+endif()
+add_custom_target(xtouch_check_portal_assets
+ COMMAND "${PYTHON}" "${ROOT}/scripts/check_portal_assets.py" ${PORTAL_CHECK_ARGS}
+ VERBATIM)
+add_dependencies(${COMPONENT_LIB} xtouch_check_portal_assets)
+if(XTOUCH_TEST_AUTOMATION)
+ target_compile_definitions(${COMPONENT_LIB} PRIVATE XTOUCH_TEST_AUTOMATION=1)
+ if(XTOUCH_TEST_PROVISIONING_ONLY)
+  target_compile_definitions(${COMPONENT_LIB} PRIVATE XTOUCH_TEST_PROVISIONING_ONLY=1)
+ endif()
+ if(XTOUCH_CYD AND XTOUCH_TEST_DEFER_BLE)
+  target_compile_definitions(${COMPONENT_LIB} PRIVATE XTOUCH_TEST_DEFER_BLE=1)
+ endif()
+endif()
+if(XTOUCH_CYD)
+ set(XTOUCH_BOARD_DEFINITIONS XTOUCH_BOARD_CYD=1 __XTOUCH_SCREEN_28__=1 XTOUCH_LANGUAGES_ZH_EN=1 XTOUCH_SINGLE_PRINTER_LOGO=1 XTOUCH_UI_PICTURE_PICKER=0)
+else()
+ set(XTOUCH_BOARD_DEFINITIONS XTOUCH_WAVESHARE=1)
+endif()
+target_compile_definitions(${COMPONENT_LIB} PUBLIC ${XTOUCH_BOARD_DEFINITIONS})
 include("${ROOT}/boards/${XTOUCH_BOARD}/display_config.cmake" OPTIONAL)
 if(XTOUCH_BOARD MATCHES "[Pp]4")
- include("${ROOT}/boards/${XTOUCH_BOARD}/hosted_lifecycle.cmake")
+
  include("${ROOT}/boards/${XTOUCH_BOARD}/sdmmc_interrupt.cmake")
 endif()
 foreach(FEATURE CLOUD_TOKEN CLOUD_LOGIN AUDIO DEEP_SLEEP INDICATOR CAMERA PRINT_PREVIEW BLE_PROVISIONING)
@@ -116,16 +190,16 @@ target_compile_definitions(${COMPONENT_LIB} PRIVATE PNG_MAX_BUFFERED_PIXELS=4128
 endif()
 if(XTOUCH_BOARD MATCHES "[Ss]3")
   target_compile_definitions(${COMPONENT_LIB} PUBLIC XTOUCH_BOARD_S3=1)
-else()
+elseif(XTOUCH_BOARD MATCHES "[Pp]4")
   target_compile_definitions(${COMPONENT_LIB} PUBLIC XTOUCH_BOARD_P4=1)
 endif()
 
 idf_component_get_property(LVGL_LIB lvgl COMPONENT_LIB)
+target_compile_definitions(${LVGL_LIB} PUBLIC XTOUCH_NATIVE_IDF=1 ${XTOUCH_BOARD_DEFINITIONS})
 target_include_directories(${LVGL_LIB} PUBLIC "${ROOT}/resources")
-target_compile_definitions(${LVGL_LIB} PUBLIC XTOUCH_WAVESHARE=1)
 
 target_compile_options(${COMPONENT_LIB} PRIVATE $<$<COMPILE_LANGUAGE:C>:-fcommon>)
-if(XTOUCH_BOARD MATCHES "[Ss]3")
+if(XTOUCH_BOARD MATCHES "[Ss]3" AND (XTOUCH_FEATURE_CAMERA OR XTOUCH_FEATURE_PRINT_PREVIEW))
   target_sources(${COMPONENT_LIB} PRIVATE "${DEPS}/JPEGDEC/src/s3_simd_420.S" "${DEPS}/JPEGDEC/src/s3_simd_444.S" "${DEPS}/JPEGDEC/src/s3_simd_dequant.S")
   if(XTOUCH_FEATURE_PRINT_PREVIEW)
    target_sources(${COMPONENT_LIB} PRIVATE "${ROOT}/lib/PNGdec/src/s3_simd_rgb565.S")
@@ -140,19 +214,10 @@ target_compile_options(${COMPONENT_LIB} PRIVATE -Wno-error=misleading-indentatio
 file(GLOB PNG_ZLIB_SOURCES "${ROOT}/lib/PNGdec/src/*.c")
 set_source_files_properties(${PNG_ZLIB_SOURCES} PROPERTIES COMPILE_OPTIONS "-Wno-error=implicit-fallthrough")
 
-idf_component_get_property(ARDUINO_LIB espressif__arduino-esp32 COMPONENT_LIB)
-target_compile_options(${ARDUINO_LIB} PRIVATE -Wno-error=missing-field-initializers)
-
-target_compile_options(${COMPONENT_LIB} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-std=gnu++17>)
-
-if(XTOUCH_BOARD MATCHES "[Pp]4")
-  target_compile_options(${ARDUINO_LIB} PRIVATE $<$<COMPILE_LANGUAGE:C>:-Wno-error=discarded-qualifiers>)
-endif()
-
 if(TRUE) # The shared adapter is a no-op at the original design resolution.
   set(P4_HEADER "${ROOT}/boards/common/display_scale.h")
   foreach(UI_FILE ${UI})
-    if(NOT UI_FILE MATCHES "/fonts/" AND NOT UI_FILE MATCHES "/images/" AND NOT UI_FILE MATCHES "/text_fit.c$" AND NOT UI_FILE MATCHES "/resources/ui-assets/")
+    if(NOT UI_FILE MATCHES "/fonts/" AND NOT UI_FILE MATCHES "/images/" AND NOT UI_FILE MATCHES "/text_fit.c$" AND NOT UI_FILE MATCHES "/dialog_text.c$" AND NOT UI_FILE MATCHES "/resources/ui-assets/")
       set_property(SOURCE ${UI_FILE} APPEND PROPERTY COMPILE_OPTIONS "-include" "${P4_HEADER}")
     endif()
   endforeach()
@@ -173,11 +238,23 @@ else()
  target_compile_definitions(${LVGL_LIB} PUBLIC XTOUCH_UI_HIDPI_ASSETS=0)
 endif()
 
-include("${ROOT}/boards/common/sdmmc_transport.cmake")
+
 
 # Optimize rendering and codecs while leaving configuration/network parsing on
 # the SDK defaults: ArduinoJson 6.21.6 is not clean under GCC 15 -O2 diagnostics.
-target_compile_options(${LVGL_LIB} PRIVATE -O2)
+if(XTOUCH_CYD)
+ # Keep the full UI inside the unchanged 4 MB board's dual OTA slots.
+ target_compile_options(${LVGL_LIB} PRIVATE -Os)
+ # Optimize RGB565 pixel loops without expanding the entire toolkit.
+ # Keep the DMA/RAM budget fixed and validate the final OTA capacity.
+ set_property(SOURCE
+  "${DEPS}/lvgl/src/draw/sw/blend/lv_draw_sw_blend_to_rgb565.c"
+  "${DEPS}/lvgl/src/draw/sw/lv_draw_sw_fill.c"
+  "${DEPS}/lvgl/src/draw/sw/lv_draw_sw_letter.c"
+  TARGET_DIRECTORY ${LVGL_LIB} APPEND PROPERTY COMPILE_OPTIONS -O2)
+else()
+ target_compile_options(${LVGL_LIB} PRIVATE -O2)
+endif()
 set_property(SOURCE ${UI} "${ROOT}/boards/${XTOUCH_BOARD}/display.cpp"
  "${ROOT}/src/features/camera/camera.cpp" "${ROOT}/src/features/camera/camera_rtsp.cpp"
  "${DEPS}/JPEGDEC/src/JPEGDEC.cpp" "${ROOT}/lib/PNGdec/src/PNGdec.cpp"
@@ -185,11 +262,6 @@ set_property(SOURCE ${UI} "${ROOT}/boards/${XTOUCH_BOARD}/display.cpp"
 
 include("${ROOT}/boards/common/ui_build_options.cmake")
 xtouch_ui_build_options(${COMPONENT_LIB})
-
-# esp-modbus 2.1.4 uses strncpy(..., strlen(source)); GCC 15 diagnoses it at -O2.
-# Keep the upstream warning visible without failing unrelated firmware builds.
-idf_component_get_property(MODBUS_LIB espressif__esp-modbus COMPONENT_LIB)
-target_compile_options(${MODBUS_LIB} PRIVATE -Wno-error=stringop-truncation)
 
 # ArduinoJson 6.21.6 rebases its pool after realloc and triggers GCC 15 -O2
 # diagnostics in inline headers. Retain diagnostics while allowing this pinned library.
@@ -199,8 +271,8 @@ include("${ROOT}/boards/common/camera_decoder.cmake")
 
 # One optional implementation for both receivers; CYD retains its current build.
 if(XTOUCH_FEATURE_XIAOMI_BLE)
- if(NOT IDF_TARGET MATCHES "^(esp32s3|esp32p4)$" OR NOT CONFIG_BT_NIMBLE_ENABLED OR NOT CONFIG_BT_NIMBLE_ROLE_OBSERVER)
-  message(FATAL_ERROR "Xiaomi BLE requires S3/P4 with NimBLE observer sdkconfig")
+ if(NOT IDF_TARGET MATCHES "^(esp32|esp32s3|esp32p4)$" OR NOT CONFIG_BT_NIMBLE_ENABLED OR NOT CONFIG_BT_NIMBLE_ROLE_OBSERVER)
+  message(FATAL_ERROR "Xiaomi BLE requires native IDF with NimBLE observer sdkconfig")
  endif()
  if(XTOUCH_FEATURE_BLE_PROVISIONING)
   message(FATAL_ERROR "Xiaomi BLE and BLE provisioning cannot own NimBLE simultaneously")
@@ -208,3 +280,30 @@ if(XTOUCH_FEATURE_XIAOMI_BLE)
  target_include_directories(${COMPONENT_LIB} PRIVATE "${ROOT}/src/features/xiaomi_ble")
  target_compile_definitions(${COMPONENT_LIB} PUBLIC XTOUCH_FEATURE_XIAOMI_BLE=1)
 endif()
+
+# No Arduino headers or component are visible to native firmware.
+target_compile_options(${COMPONENT_LIB} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-include${ROOT}/src/platform/idf/json.h>)
+
+target_compile_options(${COMPONENT_LIB} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-std=gnu++17>)
+
+# Inventory application frames on every build. Review warnings do not disable
+# features or replace task-lifetime high-water measurements through SDK calls.
+target_compile_options(${COMPONENT_LIB} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-fstack-usage>")
+add_custom_command(TARGET ${COMPONENT_LIB} POST_BUILD
+ COMMAND ${PYTHON} "${ROOT}/scripts/check_stack_usage.py" "${CMAKE_BINARY_DIR}"
+ --report "${CMAKE_BINARY_DIR}/stack-usage.json"
+ VERBATIM)
+
+idf_build_get_property(XTOUCH_COMPONENTS BUILD_COMPONENTS)
+foreach(COMPONENT_NAME IN LISTS XTOUCH_COMPONENTS)
+ if(COMPONENT_NAME MATCHES "[Aa]rduino|PubSubClient")
+  message(FATAL_ERROR "S3/P4 native firmware must not link ${COMPONENT_NAME}")
+ endif()
+endforeach()
+
+if(IDF_TARGET STREQUAL "esp32p4" AND CONFIG_ESP_HOSTED_DFLT_TASK_STACK LESS 8192)
+ message(FATAL_ERROR "Native P4 RPC requires CONFIG_ESP_HOSTED_DFLT_TASK_STACK >= 8192")
+endif()
+
+# Project message bus and remaining source-level LVGL 8 names on LVGL 9.
+target_compile_options(${COMPONENT_LIB} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-include${ROOT}/src/ui/lvgl_compat.h>")

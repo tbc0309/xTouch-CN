@@ -4,7 +4,7 @@
 #ifndef _XLCD_DEVICE
 #define _XLCD_DEVICE
 
-#include <Arduino.h>
+#include "platform/idf/runtime.h"
 #include "cloud.h"
 #include "features/power/idle_policy.h"
 #include "ui/filament_actions.h"
@@ -321,8 +321,7 @@ void xtouch_device_onNozzleDown(lv_msg_t *m)
     xtouch_device_pushall();
 }
 
-/* Standard single-extruder AMS/external-spool protocol, matching Bambu Studio.
-   https://github.com/bambulab/BambuStudio/blob/master/src/slic3r/GUI/DeviceManager.cpp */
+/* Standard single-extruder AMS and external-spool protocol. */
 
 static unsigned xtouch_filament_pending_printer;
 static unsigned long xtouch_filament_sent_at;

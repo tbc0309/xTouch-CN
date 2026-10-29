@@ -1,11 +1,10 @@
 #ifndef _XLCD_SD
 #define _XLCD_SD
 
-#include "FS.h"
+#include "platform/idf/filesystem.h"
 #include "card_fs.h"
 #include <ArduinoJson.h>
-#include <Arduino.h>
-
+#include "platform/idf/runtime.h"
 bool xtouch_filesystem_exist(fs::FS &fs, const char *path)
 {
     return fs.exists(path);

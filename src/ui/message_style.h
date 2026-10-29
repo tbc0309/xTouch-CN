@@ -15,18 +15,19 @@ static inline void ui_message_caption(lv_obj_t *label,ui_message_kind kind){
   {"お知らせ","警告","エラー","確認"},{"안내","주의","오류","확인"}};
  unsigned lang=xtouch_language_get();if(lang>=8)lang=2;
  lv_obj_clean(label);lv_obj_set_style_text_align(label,LV_TEXT_ALIGN_LEFT,0);
- int size=lv_obj_get_style_text_font(label,0)->line_height;
- const lv_font_t *font=lv_obj_get_style_text_font(label,0);
+ int size=lv_obj_get_style_text_font(label,(lv_part_t)(0))->line_height;
+ const lv_font_t *font=lv_obj_get_style_text_font(label,(lv_part_t)(0));
  int badgeSize=size*3/4,gap=size/4;
  if(gap<3)gap=3;
  /* Measure the active font so the badge gap follows its actual glyph bounds. */
  char heading[128],prefix[48]={0};unsigned spaces=0;
- lv_area_t titleInk=ui_layout_ink(font,titles[lang][kind]);
- lv_point_t advance;
- do{
-  prefix[spaces++]=' ';prefix[spaces]=0;
-  lv_txt_get_size(&advance,prefix,font,lv_obj_get_style_text_letter_space(label,0),0,LV_COORD_MAX,LV_TEXT_FLAG_EXPAND);
- }while(spaces<sizeof(prefix)-1&&advance.x+titleInk.x1<badgeSize+gap);
+ lv_font_glyph_dsc_t space;
+ int advance=1;
+ if(lv_font_get_glyph_dsc(font,&space,' ',0))advance=space.adv_w+lv_obj_get_style_text_letter_space(label,LV_PART_MAIN);
+ if(advance<1)advance=1;
+ spaces=(badgeSize+gap+advance-1)/advance;
+ if(spaces>=sizeof(prefix))spaces=sizeof(prefix)-1;
+ memset(prefix,' ',spaces);prefix[spaces]=0;
  snprintf(heading,sizeof(heading),"%s%s:\n",prefix,titles[lang][kind]);
  lv_label_ins_text(label,0,heading);
  lv_obj_t *badge=lv_obj_create(label);lv_obj_remove_style_all(badge);
@@ -35,7 +36,7 @@ static inline void ui_message_caption(lv_obj_t *label,ui_message_kind kind){
  lv_obj_clear_flag(badge,LV_OBJ_FLAG_CLICKABLE|LV_OBJ_FLAG_SCROLLABLE);lv_obj_add_flag(badge,LV_OBJ_FLAG_IGNORE_LAYOUT);
  lv_obj_set_pos(badge,0,size/8);
  lv_obj_t *symbol=lv_label_create(badge);lv_label_set_text(symbol,kind==UI_MESSAGE_INFO?"i":kind==UI_MESSAGE_CONFIRM?"?":"!");
- lv_obj_set_style_text_color(symbol,lv_color_white(),0);ui_text_scale(symbol,ui_text_source(lv_obj_get_style_text_font(label,0)),170*ui_layout_base_zoom()/256);
+ lv_obj_set_style_text_color(symbol,lv_color_white(),0);lv_obj_set_style_text_opa(symbol,LV_OPA_COVER,0);ui_text_scale(symbol,ui_text_source(lv_obj_get_style_text_font(label,(lv_part_t)(0))),170*ui_layout_base_zoom()/256);
  ui_layout_ink_place(symbol,0,0,size*3/4,size*3/4);
 }
 

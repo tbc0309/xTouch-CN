@@ -1,11 +1,9 @@
 #if XTOUCH_FEATURE_XIAOMI_BLE
 #include "xiaomi_ble.h"
 #endif
-#include <Arduino.h>
-#ifndef XTOUCH_WAVESHARE
-// HTTP parsing, validated storage writes and SD mirroring share the loop task.
-SET_LOOP_TASK_STACK_SIZE(12288);
-#endif
+#include "platform/idf/runtime.h"
+#include "platform/idf/ota_health.h"
+#include "features/xiaomi_ble/display_preferences.h"
 #include <cmath>
 using std::isfinite;
 #include "xtouch/message_adapter.h"
@@ -32,24 +30,21 @@ using std::isfinite;
 #endif
 #include "features/sound/events.h"
 #include "features/diagnostics/loop_timing.h"
+#include "features/network/job_pump.h"
 XTouchLoopTiming xtouch_loop_timing={};
 #include "features/diagnostics/mqtt_timing.h"
 XTouchMqttTiming xtouch_mqtt_timing={};
 #include "features/indicator/indicator.h"
 #include "../boards/common/network_hooks.h"
 
-#if defined(XTOUCH_WAVESHARE)
 #include "screen.h"
-#elif defined(__XTOUCH_SCREEN_28__)
-#include "devices/2.8/screen.h"
-#endif
 
 #include "xtouch/settings.h"
 #include "xtouch/net.h"
 #include "xtouch/firmware.h"
 #include "xtouch/ota_request.h"
 #include "xtouch/mqtt.h"
-#include "xtouch/sensors/chamber.h"
+#include "features/external_chamber/sensor.h"
 #include "xtouch/events.h"
 #include "xtouch/connection.h"
 #include "xtouch/coldboot.h"
@@ -74,7 +69,7 @@ static void xtouch_screen_protection_poll(){
 #endif
 
 void xtouch_portal_release_transport() {
-  xtouch_pubSubClient.disconnect();xtouch_wiFiClientSecure.stop();
+  xtouch_pubSubClient.disconnect();
   xtouch_mqtt_hasStatus=false;xtouch_mqtt_nextAttempt=millis()+3000;
 }
 
@@ -156,6 +151,7 @@ void setup()
 
   { DynamicJsonDocument bootConfig=xtouch_load_config(); }
   xtouch_portal_begin();
+    xtouch_ota_confirm_local_startup();
   while (WiFi.status() != WL_CONNECTED || xtouch_portal_provisioning()) {
     xtouch_gui_poll(); xtouch_portal_loop(); xtouch_sdcard_poll(false); delay(5);
   }
@@ -196,23 +192,23 @@ void loop()
   }
   if(xtouch_ota_take_request()) {
     // Check after returning from the touch event, with printer TLS buffers freed.
-    xtouch_pubSubClient.disconnect();xtouch_wiFiClientSecure.stop();xtouch_mqtt_hasStatus=false;
+    xtouch_pubSubClient.disconnect();xtouch_mqtt_hasStatus=false;
     loadScreen(-1);xtouch_firmware_checkOnlineFirmwareUpdate(true);
     uint32_t shown=millis();while(millis()-shown<1800){xtouch_gui_poll();delay(5);}
     loadScreen(4);xtouch_mqtt_nextAttempt=millis();
   }
   {XTouchLoopScope timing(XTOUCH_PHASE_PORTAL);xtouch_portal_loop();}
   xtouch_runtime_config_apply();
+  xtouch_environment_display_poll();
   xtouch_settings_poll();
 #ifdef XTOUCH_WAVESHARE
   xtouch_camera_poll();
 #endif
   xtouch_device_filament_poll();
-  if (xtouch_portal_maintenance()) {
-    if (xtouch_pubSubClient.connected()) xtouch_pubSubClient.disconnect();
-    xtouch_wiFiClientSecure.stop();
-    if (xtouch_cloud_job_pending()) xtouch_cloud_job_result();
-  } else {XTouchLoopScope timing(XTOUCH_PHASE_MQTT);xtouch_mqtt_loop();}
+  xtouch_network_job_pump(xtouch_portal_maintenance(),xtouch_cloud_job_pending(),
+    []{if(xtouch_pubSubClient.connected())xtouch_pubSubClient.disconnect();},
+    []{XTouchLoopScope timing(XTOUCH_PHASE_MQTT);xtouch_mqtt_loop();},
+    []{xtouch_cloud_job_result();});
   {XTouchLoopScope timing(XTOUCH_PHASE_PREVIEW);xtouch_print_preview_poll();}
   static bool clockReady = false;
   if (!clockReady && time(NULL) > 1577836800 && lv_disp_get_inactive_time(NULL) >= 3000 && !ui_scroll_busy(3000)) {
@@ -240,4 +236,14 @@ void loop()
 
   delay(xtouch_screen_touchFromPowerOff?20:2);
 
+}
+
+#include <nvs_flash.h>
+#include <esp_ota_ops.h>
+extern "C" void app_main(){
+    printf("[BOOT] main task core=%d\n", int(xPortGetCoreID()));
+    esp_err_t error=nvs_flash_init();
+    if(error!=ESP_OK){printf("[BOOT] NVS initialization failed: %s\n",esp_err_to_name(error));return;}
+    setup();
+    for(;;)loop();
 }

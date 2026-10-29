@@ -64,16 +64,15 @@ struct Assembler {
   if(end){bool ok=emit(data,size);reset();return ok;}return true;
  }
 };
-template<class Stop,class Yield> bool i420(const uint8_t *src,unsigned w,unsigned h,uint16_t *out,unsigned cw,unsigned ch,Stop stop,Yield yield,unsigned visibleWidth=0,unsigned visibleHeight=0){
+template<class Stop,class Yield> bool i420(const uint8_t *src,unsigned w,unsigned h,uint16_t *out,unsigned cw,unsigned ch,uint16_t *columns,size_t columnCapacity,Stop stop,Yield yield,unsigned visibleWidth=0,unsigned visibleHeight=0){
  if(!src||!out||!w||!h||w>1920||h>1088||(w&1)||(h&1)||!cw||!ch)return false;
  if(!visibleWidth)visibleWidth=w;
  if(!visibleHeight)visibleHeight=h;
  if(visibleWidth>w||visibleHeight>h)return false;
  auto f=CameraFrame::fit(visibleWidth,visibleHeight,cw,ch);const uint8_t *u=src+w*h,*v=u+w*h/4;
- // Coordinate maps are small internal-stack data; source pixels remain in PSRAM.
+ // Reuse the caller-owned session workspace; no per-frame allocation or stack map.
  // Compute divisions once per column/row rather than twice per output pixel.
- if(cw>1024)return false;
- uint16_t columns[1024];
+ if(!columns||columnCapacity<unsigned(f.width))return false;
  for(unsigned x=0;x<unsigned(f.width);++x)columns[x]=x*visibleWidth/f.width;
  std::memset(out,0,size_t(cw)*ch*sizeof(uint16_t));
  for(unsigned y=0;y<unsigned(f.height);++y){

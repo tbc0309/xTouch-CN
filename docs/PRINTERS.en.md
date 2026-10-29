@@ -1,90 +1,63 @@
-# Printers, AMS and control compatibility
+# Printer, AMS and command compatibility
 
 [简体中文](PRINTERS.md) | English | [Documentation](README.en.md)
 
-[Status and filament](#capabilities) · [Nozzles, AMS and drying](#ams) · [Control permissions](#authorization) · [Models and display](#models)
+Model recognition, status parsing and command permissions are separate capabilities. Recognizing a model or displaying artwork does not prove every mechanical action was tested. Features require valid reports, accessories and firmware permissions. Unknown values are not invented or borrowed from another device.
 
 <a id="capabilities"></a>
+## Status and controls
 
-## Status and filament controls
-
-Available functions depend on the printer model, firmware, connected accessories and connection permissions. Both LAN and Bambu account connections display reported printer status.
-
-| Function | Details |
+| Category | Scope |
 |---|---|
-| Printing | Progress, remaining time, layers, pause, resume and cancel |
-| Temperatures | Actual and target nozzle/bed temperatures; valid chamber readings |
-| Fans and speed | Supported fan percentages and print speed modes |
-| AMS | Material, color, valid remaining percentage, humidity and enclosure temperature |
-| Filament | Load, unload, RFID refresh and supported AMS drying |
-| Motion | Idle homing, stepped movement and extrusion/retraction |
+| Print | Progress, time, layers; pause/resume/cancel where supported |
+| Temperatures/fans | Actual/target readings, valid chamber temperature, supported fans/speed modes |
+| Filament | AMS/external sources, material, color, valid amount and environmental readings |
+| Manual | Idle homing/steps, guarded extrusion/retraction, load/unload and RFID reread |
+| Faults | HMS, print errors and supported confirm/retry/done actions |
 
-Invalid or missing readings are not shown as zero. Humidity levels and percentages are different readings. Remaining filament is shown only when reported by the printer.
-
-### Filament operation
-
-1. Select an AMS slot or external spool on the filament page. Blue marks your selection; green marks the loaded source. Selecting a slot does not change filament.
-2. Choose Load, Unload or Refresh and confirm the source. Select the same slot again to deselect it.
-3. Unload applies only to the loaded source. RFID refresh applies only to AMS RFID filament, not external spools or filament without RFID.
-
-Loading may unload the current filament, heat the nozzle and move the print head. Set nozzle temperature first when no valid material temperature is available. Related manual controls are unavailable while printing, paused, preparing, or while the AMS is busy or reading a tag.
-
-Swipe to select additional AMS units; the external spool entry stays on the right. Hold an AMS name to view details.
-
-| Load confirmation | Unload confirmation | RFID confirmation |
-|---|---|---|
-| ![Load](images/filament-load-confirm.png) | ![Unload](images/filament-unload-confirm.png) | ![RFID refresh](images/filament-rfid-confirm.png) |
+A sent command is not a completed action. Check reported/physical feedback; timed-out mechanical commands are not automatically repeated. Humidity levels differ from percentages. Remaining filament is shown only when reported.
 
 <a id="ams"></a>
+## AMS and nozzles
 
-## Nozzles, AMS and drying
+Blue outlines indicate selection; green marks the loaded source. Tap again to deselect and long-press AMS names for details. Check confirmation before loading, unloading or rereading RFID. External sources do not offer AMS RFID reread.
 
-### Nozzles and chamber temperature
+Loading may unload, heat and move the printer. Conflicting controls are disabled while printing, preparing, paused, AMS-busy or reading tags. Multiple AMS units can be browsed horizontally; external entries remain separate.
 
-Tap a temperature card to open the keypad, select the parameter on the left and confirm with the green key. Nozzle targets accept integers from 0–300°C; zero turns heating off.
+### Dual nozzles and chamber heating
 
-The More menu offers supported T0/T1 selection, indexed 10 mm extrusion/retraction, nozzle rack and chamber heating. Extrusion/retraction requires the selected nozzle to be at least 170°C. Motion controls require an idle printer and a valid state.
+T0/T1, external paths and tool storage follow reported bindings. Ambiguous sources disable related controls. Nozzle input is 0–300℃, with 0 off; extrusion/retraction requires at least 170℃. Active chamber heating is offered only on supported heated models: X1E up to 60℃, other adapted heated models up to 65℃. P1S has no active chamber-heating control.
 
-The H2C rack page shows positions, diameters and types, with refresh, acknowledgement, home and raise A/B actions. A complete automatic hotend exchange is not provided.
+H2C storage exposes protocol-defined position/type/diameter and selected maintenance actions, not complete automatic hotend exchange. New duct/bed fields alone do not establish control support.
 
-Active chamber heating requires a supported heater and valid target telemetry: up to 60°C for X1E and 65°C for other supported heated models. P1S has no active chamber heater; its invalid placeholder readings are hidden.
+### Drying
 
-### AMS and drying
-
-Supported AMS units show a Drying entry on the filament page. Set temperature and duration, then confirm Start drying.
-
-| Accessory | Drying temperature | Duration |
+| Accessory | Temperature | Duration |
 |---|---|---|
-| AMS 2 Pro | 45–65°C | 1–24 hours |
-| AMS HT | 45–85°C | 1–24 hours |
-| AMS / AMS Lite | No drying control | — |
+| AMS 2 Pro | 45–65℃ | 1–24 hours |
+| AMS HT | 45–85℃ | 1–24 hours |
+| AMS/AMS Lite | No drying control | — |
 
-Drying cannot start while printing, preparing or paused. Stop is available during checking, drying and cooling. Tray rotation, custom cooling temperatures, automatic drying and shared feed-route reassignment are not provided.
-
-Dual nozzles and dual external spools follow the reported source bindings. Ambiguous sources disable related controls. New airflow systems, new bed controls and other unsupported capabilities have no independent controls. Full physical compatibility for H2C rack actions, dual nozzles, dual external spools and Pro/HT drying is not yet confirmed.
+Starting requires confirmation after editing parameters. Busy states restrict starts; checking/drying/cooling can request stop. Spool rotation, automatic drying and shared-feed reassignment are not offered. New AMS, dual-nozzle and tool-storage behavior depends on protocol versions, not every firmware combination is validated.
 
 <a id="authorization"></a>
+## Connections and permissions
 
-## LAN and cloud authorization
+LAN uses its address, serial and access code. Cloud uses its own account, region and serial. An account Token is not a command signature. The official signed cloud-command channel is not implemented; some commands require LAN-only and developer modes.
 
-**Some controls require LAN mode and developer mode.**
+For `84033543` or `HMS 0500-0500-0001-0007`, check printer permissions and the matching LAN entry. Replacing a Token does not remove this restriction. Permissions vary by model/firmware; one test does not establish all-printer behavior. Closing a local alert does not clear the printer/mobile authorization fault.
 
-A Bambu account Access Token connects the account, retrieves printers and subscribes to status. It does not guarantee permission for every control command. This version does not support the official signed cloud-command channel.
+CYD has limited internal memory. During cloud account verification it temporarily releases MQTT resources for HTTPS and reconnects afterwards. A brief offline indication does not mean the print stopped. Wait for current status before issuing controls and avoid repeatedly refreshing the account.
 
-For `84033543` or authorization HMS `0500-0500-0001-0007`, use the printer's LAN profile and check its LAN/developer-mode settings. Replacing the Token does not remove command authorization restrictions.
+## Cameras and thumbnails
 
-Light, temperature, fan, motion, pause/resume/cancel and AMS permissions can vary by model and firmware. Follow printer feedback and actual state. An accepted request does not mean a mechanical action has finished.
+Camera protocols are independent of MQTT. S3/P4/ES3C35P support local JPEG cameras; RTSPS/H.264 has decoding/memory limits. See [camera guidance](../boards/CAMERA.md). Local camera credentials may associate by the same serial; this exception does not allow borrowing status, temperature, tasks, faults or thumbnails.
 
-[Notifications and faults](USER-GUIDE.en.md#notifications) · [Online code lookup](https://tbc0309.github.io/xTouch-CN/errors.html)
+LAN thumbnails use the current task file and plate. Cloud thumbnails use the same account, serial and task API. An unknown MQTT plate may be resolved by that cloud response; an explicitly reported plate must match. Unknown never defaults to plate 1 or uses another LAN device's task. Missing thumbnails fall back to model art on S3/P4/ES3C35P. CYD uses green Bambu printing artwork and the original idle xTouch logo.
 
 <a id="models"></a>
+## Model recognition
 
-## Models and display
+Resources/parsers include codes for X1/X1 Carbon/X1E, P1P/P1S, A1/A1 mini, P2S, X2D, A2L and H2C/H2D/H2D Pro/H2S. Models come from reports/account records. Unknown models keep a logo rather than guessed capabilities. See the [artwork manifest](../resources/printer-images/source.json) and [model parser](../src/ui/printer_models.h).
 
-The home page uses the model reported by the printer. Until a valid model is received, or for an unknown model, it shows the xTouch logo. Artwork covers X1 / X1 Carbon / X1E, P1P / P1S, A1 / A1 mini, P2S, X2D, A2L, H2C, H2D, H2D Pro and H2S. Artwork recognition does not imply complete control compatibility.
-
-Printer artwork appears while a job thumbnail is unavailable; ESP32-2432S028R always uses printer artwork. See [Camera support](../boards/CAMERA.md) for camera and thumbnail requirements.
-
-Tap the home printer card to cycle between up to two printers; with three or more it opens the printer picker. Holding always opens the picker. Long names scroll. Switching clears the previous printer's filament selection and fault notifications.
-
-Remaining filament of 10% or less is red; 11–20% is yellow. Unknown remaining amounts have no percentage.
+Cloud, LAN, legacy/new fields, accessory versions and mechanical actions need separate validation. Feature descriptions do not override printer permissions or physical safety restrictions.

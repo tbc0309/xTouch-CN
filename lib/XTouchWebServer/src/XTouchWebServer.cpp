@@ -21,18 +21,16 @@
 */
 
 
-#include <Arduino.h>
-#include <esp32-hal-log.h>
-#include <libb64/cencode.h>
+#include "platform/idf/runtime.h"
+#include "platform/idf/log.h"
+#include "platform/idf/base64.h"
 #include "esp_random.h"
-#include "WiFiServer.h"
-#include "WiFiClient.h"
+#include "platform/idf/socket.h"
+#include "platform/idf/socket.h"
 #include "XTouchWebServer.h"
-#include "FS.h"
+#include "platform/idf/filesystem.h"
 #include "detail/RequestHandlersImpl.h"
-#include "MD5Builder.h"
-
-
+#include "platform/idf/digest.h"
 static const char AUTHORIZATION_HEADER[] = "Authorization";
 static const char qop_auth[] PROGMEM = "qop=auth";
 static const char qop_auth_quoted[] PROGMEM = "qop=\"auth\"";
@@ -119,7 +117,7 @@ String XTouchWebServer::_extractParam(String& authReq,const String& param,const 
   return authReq.substring(_begin+param.length(),authReq.indexOf(delimit,_begin+param.length()));
 }
 
-static String md5str(String &in){
+static String md5str(const String &in){
   MD5Builder md5 = MD5Builder();
   md5.begin();
   md5.add(in);
@@ -286,6 +284,9 @@ void XTouchWebServer::handleClient() {
 
     _currentStatus = HC_WAIT_READ;
     _statusChange = millis();
+    // Parser guards can send a response before the routed handler runs.
+    _contentLength = CONTENT_LENGTH_NOT_SET;
+    _chunked = false;
   }
 
   bool keepCurrentClient = false;
@@ -306,12 +307,24 @@ void XTouchWebServer::handleClient() {
           _contentLength = CONTENT_LENGTH_NOT_SET;
           _handleRequest();
 
-// Fix for issue with Chrome based browsers: https://github.com/espressif/arduino-esp32/issues/3652
-//           if (_currentClient.connected()) {
-//             _currentStatus = HC_WAIT_CLOSE;
-//             _statusChange = millis();
-//             keepCurrentClient = true;
-//           }
+        } else {
+          _finalizeResponse();
+          // A rejected request may still have an unread body in the TCP queue.
+          // Closing with unread bytes resets the socket and discards our reply.
+          // Drain without allocating, bounded so a slow sender cannot hold the UI.
+          const uint32_t drainStarted = millis();
+          uint32_t quietSince = drainStarted;
+          uint8_t discarded[256];
+          while (millis() - drainStarted < 100) {
+            if (_currentClient.available()) {
+              _currentClient.read(discarded, sizeof(discarded));
+              quietSince = millis();
+            } else if (millis() - quietSince >= 10) {
+              break;
+            } else {
+              delay(1);
+            }
+          }
         }
       } else { // !_currentClient.available()
         // Browsers may preconnect without sending a request. Do not let an

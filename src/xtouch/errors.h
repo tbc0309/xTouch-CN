@@ -9,8 +9,8 @@ unsigned xtouch_errors_deviceActions(const char *key,const char *serial);
 const char *xtouch_errors_getHMSError(const char *key);
 const char *xtouch_errors_getDeviceError(const char *key);
 /* Description pointers refer to flash-resident catalog data. */
-const char *xtouch_errors_getHMSErrorDescription(uint64_t code, bool chinese);
-const char *xtouch_errors_getDeviceErrorDescription(uint32_t code, bool chinese);
+const char *xtouch_errors_getHMSErrorDescription(uint64_t code);
+const char *xtouch_errors_getDeviceErrorDescription(uint32_t code);
 #ifdef XTOUCH_ERROR_SELFTEST
 bool xtouch_errors_selftest(void);
 #endif

@@ -23,13 +23,21 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**XTOUCH (please complete the following information):**
- - FW: [e.g. 1.0.0]
+**Controller / 控制屏**
+- Firmware version and download/build source / 固件版本及下载或构建来源:
+- Exact board model / 完整主板型号: CYD / Waveshare S3 V2 / P4 / LCDWIKI ES3C35P / other
+- Display resource profile and optional modules, if customized / 自定义资源档位及模块:
+- Did the device reboot, or only lose printer status? / 是设备重启，还是仅打印机状态失联？
 
-**Printers (please complete the following information):**
- - Device: [e.g. P1S]
- - FW Version [e.g. xx.xx.xx]
--  AMS units:[e.g. 1]
+**Printer / 打印机**
+- Model and firmware version / 型号和固件版本:
+- Connection / 连接方式: LAN / cloud Token / account login
+- AMS model/count, if relevant / 相关 AMS 型号及数量:
+
+**Privacy / 隐私**
+Remove passwords, Access Tokens, access codes, account identifiers and private addresses from logs and screenshots. Do not attach configuration backups or raw authenticated cloud responses.
+
+请遮盖日志和截图中的密码、Token、访问码、账号标识及私人地址。不要上传配置备份或包含认证资料的云端原始响应。
 
 **Additional context**
 Add any other context about the problem here.

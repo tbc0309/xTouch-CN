@@ -1,8 +1,7 @@
 #pragma once
-#include <Arduino.h>
-#include <Stream.h>
-#if defined(XTOUCH_WAVESHARE)
+#include "platform/idf/runtime.h"
 #include <esp_http_client.h>
+#include "platform/idf/heap_buffer.h"
 #include <algorithm>
 
 // Streaming GET transport. IDF owns TLS and decodes chunk framing; callers keep
@@ -13,11 +12,11 @@ class XTouchHttpClient : public Stream {
     const char *ca=nullptr;
     int timeout=2000,connectTimeout=6000,status=0;int64_t length=-1;
     bool redirects=false,done=true,failed=false;unsigned redirectLimit=5;
-    uint8_t buffer[1024];size_t cursor=0,count=0;
+    NativeHeapBuffer buffer;size_t cursor=0,count=0;
     int fill(){
         if(cursor<count)return int(count-cursor);
         if(done||!handle)return 0;
-        int n=esp_http_client_read(handle,reinterpret_cast<char*>(buffer),sizeof(buffer));
+        int n=esp_http_client_read(handle,reinterpret_cast<char*>(buffer.data()),buffer.size());
         cursor=0;count=n>0?size_t(n):0;
         if(n<=0){done=true;failed=n<0||!esp_http_client_is_complete_data_received(handle);}
         return int(count);
@@ -38,6 +37,7 @@ public:
         else if(!strcasecmp(name,"Accept"))accept=value;
     }
     int GET(){
+        if(!buffer.ensure(1024))return -int(ESP_ERR_NO_MEM);
         for(unsigned hop=0;hop<=redirectLimit;++hop){
             end();location="";
             esp_http_client_config_t config={};config.url=url.c_str();config.cert_pem=ca;
@@ -66,22 +66,15 @@ public:
     int getSize()const{return length>INT_MAX?-1:(length==0&&handle&&esp_http_client_is_chunked_response(handle)?-1:int(length));}
     Stream *getStreamPtr(){return this;}
     bool connected()const{return handle&&!done;}
+    bool complete()const{return done&&!failed;}
     int available()override{return fill();}
-    int read()override{return fill()?buffer[cursor++]:-1;}
-    int peek()override{return fill()?buffer[cursor]:-1;}
-    size_t readBytes(uint8_t *dest,size_t wanted){size_t n=0;while(n<wanted&&fill()){size_t take=std::min(wanted-n,count-cursor);memcpy(dest+n,buffer+cursor,take);cursor+=take;n+=take;}return n;}
-    int writeToStream(Stream *sink){int total=0;while(fill()){size_t n=count-cursor;if(sink->write(buffer+cursor,n)!=n)return -1;total+=n;cursor=count;}return failed?-1:total;}
+    int read()override{return fill()?buffer.data()[cursor++]:-1;}
+    int peek()override{return fill()?buffer.data()[cursor]:-1;}
+    size_t readBytes(uint8_t *dest,size_t wanted){size_t n=0;while(n<wanted&&fill()){size_t take=std::min(wanted-n,count-cursor);memcpy(dest+n,buffer.data()+cursor,take);cursor+=take;n+=take;}return n;}
+    int writeToStream(Stream *sink){int total=0;while(fill()){size_t n=count-cursor;if(sink->write(buffer.data()+cursor,n)!=n)return -1;total+=n;cursor=count;}return failed?-1:total;}
     size_t write(uint8_t)override{return 0;}
     void flush()override{}
     void end(){if(handle){esp_http_client_close(handle);esp_http_client_cleanup(handle);handle=nullptr;}done=true;cursor=count=0;}
 };
-#else
-#include <HTTPClient.h>
-#include <WiFiClientSecure.h>
-class XTouchHttpClient : public HTTPClient {
-    WiFiClientSecure tls;WiFiClient plain;
-public:
-    bool begin(const String &url,const char *ca=nullptr){if(url.startsWith("https://")){if(!ca)return false;tls.setCACert(ca);tls.setHandshakeTimeout(6);return HTTPClient::begin(tls,url);}return HTTPClient::begin(plain,url);}
-    void setFollowRedirects(bool enabled){HTTPClient::setFollowRedirects(enabled?HTTPC_STRICT_FOLLOW_REDIRECTS:HTTPC_DISABLE_FOLLOW_REDIRECTS);}
-};
-#endif
+
+static_assert(sizeof(XTouchHttpClient)<=512,"HTTP workspaces must not consume the caller task stack");

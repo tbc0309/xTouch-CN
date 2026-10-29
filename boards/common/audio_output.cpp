@@ -1,13 +1,13 @@
 #include "features/config.h"
 #if XTOUCH_FEATURE_AUDIO
 #include "audio_output.h"
-#include <Arduino.h>
+#include "platform/idf/runtime.h"
 #include <driver/i2s_std.h>
 static i2s_chan_handle_t tx;
 static bool active;
 bool board_audio_begin(){
  if(tx)return true;
- auto pins=board_audio_pins();if(pins.pa>=0){pinMode(pins.pa,OUTPUT);digitalWrite(pins.pa,LOW);}
+ auto pins=board_audio_pins();if(pins.pa>=0){gpio_set_direction(gpio_num_t(pins.pa),GPIO_MODE_OUTPUT);gpio_set_level(gpio_num_t(pins.pa),!pins.paActiveHigh);}
  i2s_chan_config_t channel=I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_AUTO,I2S_ROLE_MASTER);channel.dma_desc_num=4;channel.dma_frame_num=128;
  // Do not replay the last DMA buffer when the worker finishes a short tone.
  channel.auto_clear_after_cb=true;
@@ -27,8 +27,8 @@ bool board_audio_begin(){
 bool board_audio_active(bool enabled){
  if(!tx)return false;if(active==enabled)return true;
  auto pins=board_audio_pins();
- if(enabled){if(i2s_channel_enable(tx)!=ESP_OK)return false;active=true;board_audio_codec_mute(false);if(pins.pa>=0)digitalWrite(pins.pa,HIGH);}
- else {board_audio_codec_mute(true);if(pins.pa>=0)digitalWrite(pins.pa,LOW);i2s_channel_disable(tx);active=false;}
+ if(enabled){if(i2s_channel_enable(tx)!=ESP_OK)return false;active=true;board_audio_codec_mute(false);if(pins.pa>=0)gpio_set_level(gpio_num_t(pins.pa),pins.paActiveHigh);}
+ else {board_audio_codec_mute(true);if(pins.pa>=0)gpio_set_level(gpio_num_t(pins.pa),!pins.paActiveHigh);i2s_channel_disable(tx);active=false;}
  return true;
 }
 bool board_audio_write(const int16_t *samples,size_t count){size_t written=0;return tx&&active&&i2s_channel_write(tx,samples,count*sizeof(int16_t),&written,100)==ESP_OK&&written==count*sizeof(int16_t);}

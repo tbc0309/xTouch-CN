@@ -171,11 +171,17 @@ void ui_filament_report_status(unsigned status) {
 }
 void ui_filament_report_rejection(uint32_t error, bool authorization) {
     char prompt[240];
-    if(error==84033543UL)snprintf(prompt,sizeof(prompt),"%s",XTOUCH_TEXT_CONTROL_AUTH_ERROR);
+    const char *advice=XTOUCH_TEXT_CONTROL_AUTH_ERROR;
+    const char *hint=strchr(advice,'\n');
+    if(error==84033543UL){
+        authorization=true;
+        snprintf(prompt,sizeof(prompt),"%.*s\n#%06X %s#",hint?(int)(hint-advice):(int)strlen(advice),advice,
+                 (unsigned)UI_COLOR_WARNING,hint?hint+1:advice);
+    }
     else {
         if(error)snprintf(prompt,sizeof(prompt),XTOUCH_TEXT_CONTROL_ERROR,(unsigned)error);
         else snprintf(prompt,sizeof(prompt),"%s",xtouch_local("控制请求被拒绝","Control request rejected."));
-        if(authorization){const char *hint=strchr(XTOUCH_TEXT_CONTROL_AUTH_ERROR,'\n');size_t n=strlen(prompt);snprintf(prompt+n,sizeof(prompt)-n,"\n%s",hint?hint+1:XTOUCH_TEXT_CONTROL_AUTH_ERROR);}
+        if(authorization){size_t n=strlen(prompt);snprintf(prompt+n,sizeof(prompt)-n,"\n#%06X %s#",(unsigned)UI_COLOR_WARNING,hint?hint+1:advice);}
     }
     ui_notice_show_kind(prompt,authorization?4000:0,authorization?UI_MESSAGE_WARNING:UI_MESSAGE_ERROR);
 }
@@ -229,18 +235,16 @@ void ui_filament_refresh(lv_obj_t *component) {
         if (action == 2) {
             lv_obj_set_style_bg_opa(button, split ? LV_OPA_TRANSP : LV_OPA_COVER, 0);
             lv_obj_set_style_bg_opa(button, split ? LV_OPA_TRANSP : LV_OPA_COVER, LV_STATE_PRESSED);
-            lv_label_set_text(button, split ? "" : "n");
-            if (split)
-                lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
-            else
-                lv_obj_clear_flag(label, LV_OBJ_FLAG_HIDDEN);
+            lv_label_set_text(button, "");
+            lv_obj_add_flag(label, LV_OBJ_FLAG_HIDDEN);
             lv_obj_invalidate(button);
         }
         if (strcmp(lv_label_get_text(label), caption))
             lv_label_set_text(label, caption);
+        if(action!=2)ui_layout_button_text(button);
     }
 }
-static void refresh_event(lv_event_t *e) { ui_filament_refresh(lv_event_get_target(e)); }
+static void refresh_event(lv_event_t *e) { ui_filament_refresh(lv_event_get_target_obj(e)); }
 static void reread_click(lv_event_t *e) {
     if (ui_ams_drying_available()) {
         lv_indev_t *input = lv_indev_get_act();
@@ -249,7 +253,7 @@ static void reread_click(lv_event_t *e) {
         lv_point_t point;
         lv_indev_get_point(input, &point);
         lv_area_t area;
-        lv_obj_get_coords(lv_event_get_target(e), &area);
+        lv_obj_get_coords(lv_event_get_target_obj(e), &area);
         if (point.x >= area.x1 + lv_area_get_width(&area) / 2) {
             ui_ams_details_show(ui_ams_selected_unit());
             return;
@@ -258,34 +262,43 @@ static void reread_click(lv_event_t *e) {
     ui_filament_request_action(UI_FILAMENT_REREAD);
 }
 static void draw_reread(lv_event_t *e) {
-    if (!ui_ams_drying_available())
-        return;
-    lv_obj_t *button = lv_event_get_target(e);
+    lv_obj_t *button = lv_event_get_target_obj(e);
     lv_area_t a;
-    lv_obj_get_coords(button, &a);
+    ui_layout_native_bounds(button, &a);
     lv_draw_ctx_t *ctx = lv_event_get_draw_ctx(e);
     unsigned width = lv_area_get_width(&a);
     bool ready = ui_filament_allowed(UI_FILAMENT_REREAD, ui_filament_selected());
+    if(!ui_ams_drying_available()){
+        const char *text=lv_label_get_text(lv_obj_get_child(button,0));
+        lv_draw_label_dsc_t d;lv_draw_label_dsc_init(&d);
+        d.color=lv_obj_get_style_text_color(button,LV_PART_MAIN);
+        d.font=ui_layout_canvas_font(&ui_font_xlcdmin,"n");
+        lv_area_t icon=ui_layout_ink(d.font,"n");int ih=lv_area_get_height(&icon);
+        const lv_font_t *font=ui_layout_canvas_font(LV_FONT_DEFAULT,text);
+        lv_area_t ink=ui_layout_ink(font,text);int th=lv_area_get_height(&ink),gap=LV_MAX(2,font->line_height/5);
+        int top=a.y1+(lv_area_get_height(&a)-ih-gap-th)/2;
+        ui_layout_draw_native_text(ctx,&d,(lv_area_t){a.x1,top,a.x2,top+ih-1},"n",true);
+        d.font=font;ui_layout_draw_native_text(ctx,&d,(lv_area_t){a.x1,top+ih+gap,a.x2,top+ih+gap+th-1},text,true);
+        return;
+    }
+    int gap=LV_MAX(2,lv_disp_get_hor_res(NULL)*4/320);
     for (unsigned side = 0; side < 2; side++) {
         lv_area_t cell = a;
-        cell.x1 = a.x1 + side * (width / 2 + 2);
-        cell.x2 = side ? a.x2 : a.x1 + width / 2 - 3;
+        cell.x1 = side ? a.x1+(width+gap)/2 : a.x1;
+        cell.x2 = side ? a.x2 : a.x1+(width-gap)/2-1;
         lv_draw_rect_dsc_t r;
         lv_draw_rect_dsc_init(&r);
         r.bg_opa = LV_OPA_COVER;
         r.bg_color = lv_color_hex(0x555555);
-        r.radius = 6;
-        lv_draw_rect(ctx, &r, &cell);
+        r.radius = lv_disp_get_ver_res(NULL)*6/240;
+        ui_layout_native_rect(ctx, &r, &cell);
         lv_draw_label_dsc_t label;
         lv_draw_label_dsc_init(&label);
-        label.font = LV_FONT_DEFAULT;
+        const char *text=side ? xtouch_local("烘干", "Dry") : xtouch_local("重读", "RFID");
+        label.font = ui_layout_canvas_font(LV_FONT_DEFAULT,text);
         label.align = LV_TEXT_ALIGN_CENTER;
         label.color = lv_color_hex(side ? UI_COLOR_BLUE : ready ? 0xFFFFFF : 0x777777);
-        cell.y1 += 14;
-        lv_draw_label(ctx, &label, &cell,
-                      side ? (xtouch_local("烘干", "Dry"))
-                           : (xtouch_local("重读", "RFID")),
-                      NULL);
+        ui_layout_draw_native_text(ctx,&label,cell,text,true);
     }
 }
 void ui_filament_bind(lv_obj_t *component) {

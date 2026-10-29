@@ -52,6 +52,7 @@ bool ui_notice_show_kind(const char *text,unsigned timeout,ui_message_kind kind)
  if(!lv_obj_has_flag(ui_hmsComponent,LV_OBJ_FLAG_HIDDEN))return false;
  if(timeout&&!lv_obj_has_flag(ui_confirmComponent,LV_OBJ_FLAG_HIDDEN))return false;
  if(timeout){
+  timeout=10000;
   if(noticeBox){const char *body=strchr(lv_label_get_text(noticeLabel),'\n');if(body&&noticeKind==kind&&!strcmp(body+1,text))return true;}
  if(kind==UI_MESSAGE_WARNING||kind==UI_MESSAGE_ERROR)xtouch_sound_event(kind==UI_MESSAGE_ERROR?XTOUCH_SOUND_ERROR:XTOUCH_SOUND_WARNING,lv_tick_get());
   ui_notice_hide();noticeKind=kind;noticeBox=lv_obj_create(lv_layer_top());noticeLabel=lv_label_create(noticeBox);lv_label_set_text(noticeLabel,text);ui_message_caption(noticeLabel,kind);ui_layout_notice(noticeBox,noticeLabel);lv_obj_add_event_cb(noticeBox,notice_clicked,LV_EVENT_CLICKED,NULL);noticeTimer=lv_timer_create(notice_timeout,timeout,NULL);printf("[NOTICE] show timeout=%u\n",timeout);return true;
@@ -76,7 +77,7 @@ void ui_confirmPanel_hide()
 void ui_event_comp_confirmPanel_confirmPanelNO(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_confirmPanel = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {
@@ -86,7 +87,7 @@ void ui_event_comp_confirmPanel_confirmPanelNO(lv_event_t *e)
 void ui_event_comp_confirmPanel_confirmPanelYES(lv_event_t *e)
 {
     lv_event_code_t event_code = lv_event_get_code(e);
-    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *target = lv_event_get_target_obj(e);
     lv_obj_t **comp_confirmPanel = lv_event_get_user_data(e);
     if (event_code == LV_EVENT_CLICKED)
     {

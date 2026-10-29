@@ -1,6 +1,6 @@
-"""Build large-screen MDI icons and the official SVG logo at native sizes.
-Small-screen glyphs retain the original xTouch fonts. Logo paths come from
-https://xperiments.in/. MDI mappings and adjusted masters live beside generated assets. Normal firmware builds use generated files.
+"""Generate native-size display assets from local masters.
+See resources/ui-assets/NOTICE.md for asset provenance and licensing.
+Normal firmware builds use the generated files.
 """
 from pathlib import Path
 import re,subprocess,shutil,xml.etree.ElementTree as ET,tempfile,json

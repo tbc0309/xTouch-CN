@@ -1,3 +1,4 @@
+#include "../settings_dropdown.h"
 #include "xtouch/ota_request.h"
 #include "features/config.h"
 #include "xtouch/portal.h"
@@ -23,7 +24,7 @@ static lv_obj_t *volumeValue;
 
 #if XTOUCH_FEATURE_AUDIO
 static void sound_setting_event(lv_event_t *e){
- bool enabled=lv_obj_has_state(lv_event_get_target(e),LV_STATE_CHECKED);
+ bool enabled=lv_obj_has_state(lv_event_get_target_obj(e),LV_STATE_CHECKED);
  if((uintptr_t)lv_event_get_user_data(e))xTouchConfig.xTouchWarningSound=enabled;
  else xTouchConfig.xTouchTouchSound=enabled;
  lv_msg_send(XTOUCH_SETTINGS_AUDIO,NULL);lv_msg_send(XTOUCH_SETTINGS_SAVE,NULL);
@@ -44,7 +45,7 @@ static lv_obj_t *sound_setting(lv_obj_t *parent,const char *title,bool checked,u
 }
 static void sound_volume_event(lv_event_t *e){
  if(lv_event_get_code(e)==LV_EVENT_VALUE_CHANGED){
-  xTouchConfig.xTouchSoundVolume=lv_slider_get_value(lv_event_get_target(e));volumeDirty=true;
+  xTouchConfig.xTouchSoundVolume=lv_slider_get_value(lv_event_get_target_obj(e));volumeDirty=true;
   lv_label_set_text_fmt(volumeValue,"%u%%",(unsigned)xTouchConfig.xTouchSoundVolume);lv_msg_send(XTOUCH_SETTINGS_AUDIO,NULL);
  }else if(lv_event_get_code(e)==LV_EVENT_RELEASED&&volumeDirty){volumeDirty=false;lv_msg_send(XTOUCH_SETTINGS_SAVE,NULL);}
 }
@@ -159,15 +160,6 @@ void ui_event_comp_settingsComponent_onChamberFan(lv_event_t *e)
     }
 }
 
-void ui_event_comp_settingsComponent_onChamberTemp(lv_event_t *e)
-{
-    lv_event_code_t event_code = lv_event_get_code(e);
-    if (event_code == LV_EVENT_VALUE_CHANGED)
-    {
-        onSettingsChamberSensor(e);
-    }
-}
-
 static lv_obj_t *settings_heading(lv_obj_t *parent,const char *text){
  lv_obj_t *title=lv_label_create(parent);lv_obj_set_size(title,LV_PCT(100),LV_SIZE_CONTENT);lv_label_set_text(title,text);lv_obj_set_style_bg_color(title,lv_color_hex(0x333333),0);lv_obj_set_style_bg_opa(title,LV_OPA_COVER,0);lv_obj_set_style_radius(title,6,0);lv_obj_set_style_pad_left(title,16,0);lv_obj_set_style_pad_right(title,16,0);lv_obj_set_style_pad_ver(title,12,0);return title;
 }
@@ -176,7 +168,11 @@ static lv_obj_t *settings_heading(lv_obj_t *parent,const char *text){
 
 static void onLanguageChanged(lv_event_t *e)
 {
-    xtouch_language_request(lv_dropdown_get_selected(lv_event_get_target(e)));
+    #if XTOUCH_LANGUAGES_ZH_EN
+    xtouch_language_request(lv_dropdown_get_selected(lv_event_get_target_obj(e)) ? 2 : 0);
+#else
+    xtouch_language_request(lv_dropdown_get_selected(lv_event_get_target_obj(e)));
+#endif
 }
 
 lv_obj_t *ui_settingsComponent_create(lv_obj_t *comp_parent)
@@ -227,31 +223,15 @@ lv_obj_t *ui_settingsComponent_create(lv_obj_t *comp_parent)
     lv_obj_set_style_radius(cui_settingsTitle, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(cui_settingsTitle, lv_color_hex(0x000), LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    lv_obj_t *languageRow = lv_obj_create(cui_settingsComponent);
-    lv_obj_remove_style_all(languageRow);
-    lv_obj_set_size(languageRow, lv_pct(100), 48);
-    lv_obj_set_style_bg_color(languageRow,lv_color_hex(0x222222),0);
-    lv_obj_set_style_bg_opa(languageRow,LV_OPA_COVER,0);
-    lv_obj_set_style_radius(languageRow,6,0);
-    lv_obj_set_style_pad_left(languageRow,16,0);
-    lv_obj_set_style_pad_right(languageRow,16,0);
-    lv_obj_set_flex_flow(languageRow, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(languageRow, LV_FLEX_ALIGN_SPACE_BETWEEN,
-                         LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_t *languageLabel = lv_label_create(languageRow);
-    lv_label_set_text(languageLabel, XTOUCH_TEXT_LANGUAGE);
-    lv_obj_t *languageSelect = lv_dropdown_create(languageRow);
-    lv_obj_set_size(languageSelect,132,34);
-    lv_obj_set_style_bg_color(languageSelect,lv_color_hex(0x333333),0);
-    lv_obj_set_style_text_color(languageSelect,lv_color_white(),0);
-    lv_obj_set_style_border_width(languageSelect,0,0);
-    lv_obj_set_style_pad_ver(languageSelect,6,0);
-    lv_obj_t *languageList=lv_dropdown_get_list(languageSelect);
-    lv_obj_set_style_bg_color(languageList,lv_color_hex(0x333333),0);
-    lv_obj_set_style_text_color(languageList,lv_color_white(),0);
-    lv_obj_set_style_bg_color(languageList,lv_color_hex(0x555555),LV_PART_SELECTED|LV_STATE_CHECKED);
+    lv_obj_t *languageSelect;
+    lv_obj_t *languageRow=ui_settings_dropdown_row(cui_settingsComponent,XTOUCH_TEXT_LANGUAGE,NULL,&languageSelect);
+#if XTOUCH_LANGUAGES_ZH_EN
+    lv_dropdown_set_options(languageSelect, "简体中文\nEnglish");
+    lv_dropdown_set_selected(languageSelect, xtouch_language_get()==0 ? 0 : 1);
+#else
     lv_dropdown_set_options(languageSelect, "简体中文\n繁體中文\nEnglish\nFrançais\nDeutsch\nРусский\n日本語\n한국어");
     lv_dropdown_set_selected(languageSelect, xtouch_language_get());
+#endif
     ui_layout_dropdown(languageSelect);
     lv_obj_add_event_cb(languageSelect, onLanguageChanged, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_t *cui_screenTitle;
@@ -602,52 +582,8 @@ lv_obj_t *ui_settingsComponent_create(lv_obj_t *comp_parent)
         }
     }
 
-    lv_obj_t *cui_settings_chamberSensor;
-    cui_settings_chamberSensor = lv_obj_create(cui_settingsComponent);
-    lv_obj_set_width(cui_settings_chamberSensor, lv_pct(100));
-    lv_obj_set_height(cui_settings_chamberSensor, LV_SIZE_CONTENT); /// 50
-    lv_obj_set_flex_flow(cui_settings_chamberSensor, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(cui_settings_chamberSensor, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_scrollbar_mode(cui_settings_chamberSensor, LV_SCROLLBAR_MODE_OFF);
-    lv_obj_set_style_bg_color(cui_settings_chamberSensor, lv_color_hex(0x222222), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(cui_settings_chamberSensor, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_border_width(cui_settings_chamberSensor, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_left(cui_settings_chamberSensor, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_right(cui_settings_chamberSensor, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_top(cui_settings_chamberSensor, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_bottom(cui_settings_chamberSensor, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
-
-    lv_obj_t *cui_settings_chamberSensorLabel;
-    cui_settings_chamberSensorLabel = lv_label_create(cui_settings_chamberSensor);
-    lv_obj_set_width(cui_settings_chamberSensorLabel, LV_SIZE_CONTENT);  /// 1
-    lv_obj_set_height(cui_settings_chamberSensorLabel, LV_SIZE_CONTENT); /// 1
-    lv_label_set_text(cui_settings_chamberSensorLabel, XTOUCH_TEXT_CHAMBER_TEMP);
-    lv_obj_set_scrollbar_mode(cui_settings_chamberSensorLabel, LV_SCROLLBAR_MODE_OFF);
-
-    // lv_obj_t *ui_settingsTFTInvertSwitch;
-    ui_settings_chamberSensorSwitch = lv_switch_create(cui_settings_chamberSensor);
-    lv_obj_set_width(ui_settings_chamberSensorSwitch, 50);
-    lv_obj_set_height(ui_settings_chamberSensorSwitch, 25);
-
-    lv_obj_set_style_bg_color(ui_settings_chamberSensorSwitch, lv_color_hex(0x2AFF00), LV_PART_INDICATOR | LV_STATE_CHECKED);
-    lv_obj_set_style_bg_opa(ui_settings_chamberSensorSwitch, 255, LV_PART_INDICATOR | LV_STATE_CHECKED);
-
-    lv_obj_set_style_bg_color(ui_settings_chamberSensorSwitch, lv_color_hex(0x2AFF00), LV_PART_KNOB | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(ui_settings_chamberSensorSwitch, 255, LV_PART_KNOB | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_color(ui_settings_chamberSensorSwitch, lv_color_hex(0x000000), LV_PART_KNOB | LV_STATE_CHECKED);
-    lv_obj_set_style_bg_opa(ui_settings_chamberSensorSwitch, 255, LV_PART_KNOB | LV_STATE_CHECKED);
-
-    if (!xtouch_bblp_is_p1Series())
-    {
-        lv_obj_add_flag(cui_settings_chamberSensor, LV_OBJ_FLAG_HIDDEN);
-    }
-    else
-    {
-        if (xTouchConfig.xTouchChamberSensorEnabled)
-        {
-            lv_obj_add_state(ui_settings_chamberSensorSwitch, LV_STATE_CHECKED);
-        }
-    }
+    lv_obj_t *environmentLabel;
+    lv_obj_t *environmentRow=ui_environment_setting_create(cui_settingsComponent,&environmentLabel,&ui_settings_environmentSelect);
 
     lv_obj_t *cui_settings_ota;
     cui_settings_ota = lv_obj_create(cui_settingsComponent);
@@ -711,6 +647,8 @@ lv_obj_t *ui_settingsComponent_create(lv_obj_t *comp_parent)
     lv_obj_set_style_pad_top(cui_reseDeviceButton, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_bottom(cui_reseDeviceButton, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(cui_reseDeviceButton, lv_color_hex(0x000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_height(cui_reseDeviceButton,40);
+    ui_layout_key(cui_reseDeviceButton);
 
     // This device has no browser: show the complete project URL as a single line.
     lv_obj_t *projectRow = lv_obj_create(cui_settingsComponent);
@@ -738,7 +676,7 @@ lv_obj_t *ui_settingsComponent_create(lv_obj_t *comp_parent)
     lv_label_set_long_mode(projectUrl, LV_LABEL_LONG_CLIP);
     lv_label_set_text(projectUrl, lv_disp_get_hor_res(NULL)<=480 ? "tbc0309/xTouch-CN" : "github.com/tbc0309/xTouch-CN");
     lv_obj_add_event_cb(projectRow,ui_layout_project_event,LV_EVENT_SIZE_CHANGED,NULL);
-    lv_obj_update_layout(projectRow);lv_event_send(projectRow,LV_EVENT_SIZE_CHANGED,NULL);
+    lv_obj_update_layout(projectRow);lv_obj_send_event(projectRow,LV_EVENT_SIZE_CHANGED,NULL);
 
     lv_obj_t *manageButton=lv_btn_create(cui_settingsComponent);
     lv_obj_set_size(manageButton,LV_PCT(100),40);ui_layout_setup_button(manageButton,true);
@@ -757,12 +695,11 @@ lv_obj_t *ui_settingsComponent_create(lv_obj_t *comp_parent)
 #endif
     lv_obj_t *standbyTitle=settings_heading(cui_settingsComponent,xtouch_local("待机","Standby"));
     lv_obj_t *printerTitle=settings_heading(cui_settingsComponent,xtouch_local("打印机","Printer"));
-    if(lv_obj_has_flag(cui_settings_auxFan,LV_OBJ_FLAG_HIDDEN)&&lv_obj_has_flag(cui_settings_chamberFan,LV_OBJ_FLAG_HIDDEN)&&lv_obj_has_flag(cui_settings_chamberSensor,LV_OBJ_FLAG_HIDDEN))lv_obj_add_flag(printerTitle,LV_OBJ_FLAG_HIDDEN);
     lv_obj_t *ordered[]={cui_settingsTitle,cui_screenTitle,languageRow,cui_settingsBackLightPanel,cui_screenInvertSetting,cui_settingsTFTFlip,standbyTitle,cui_settingsTFTOFFPanel,cui_screenWOPSetting,
 #if XTOUCH_FEATURE_AUDIO
     soundTitle,touchSoundRow,warningSoundRow,volumeRow,
 #endif
-    printerTitle,cui_settings_auxFan,cui_settings_chamberFan,cui_settings_chamberSensor,cui_deviceTitle,cui_settings_ota,cui_reseDeviceButton,projectRow,manageButton,wifiButton
+    printerTitle,cui_settings_auxFan,cui_settings_chamberFan,environmentRow,cui_deviceTitle,cui_settings_ota,cui_reseDeviceButton,projectRow,manageButton,wifiButton
 #if XTOUCH_FEATURE_BLE_PROVISIONING
     ,bleButton
 #endif
@@ -795,9 +732,9 @@ lv_obj_t *ui_settingsComponent_create(lv_obj_t *comp_parent)
     children[UI_COMP_SETTINGSCOMPONENT_CHAMBERFAN] = cui_settings_chamberFan;
     children[UI_COMP_SETTINGSCOMPONENT_CHAMBERFAN_LABEL] = cui_settings_chamberFanLabel;
     children[UI_COMP_SETTINGSCOMPONENT_CHAMBERFAN_SWITCH] = ui_settings_chamberFanSwitch;
-    children[UI_COMP_SETTINGSCOMPONENT_CHAMBER_TEMP] = cui_settings_chamberSensor;
-    children[UI_COMP_SETTINGSCOMPONENT_CHAMBER_TEMP_LABEL] = cui_settings_chamberSensorLabel;
-    children[UI_COMP_SETTINGSCOMPONENT_CHAMBER_TEMP_SWITCH] = ui_settings_chamberSensorSwitch;
+    children[UI_COMP_SETTINGSCOMPONENT_ENVIRONMENT] = environmentRow;
+    children[UI_COMP_SETTINGSCOMPONENT_ENVIRONMENT_LABEL] = environmentLabel;
+    children[UI_COMP_SETTINGSCOMPONENT_ENVIRONMENT_SELECT] = ui_settings_environmentSelect;
     children[UI_COMP_SETTINGSCOMPONENT_OTA] = cui_settings_ota;
     children[UI_COMP_SETTINGSCOMPONENT_OTA_LABEL] = cui_settings_otaLabel;
     children[UI_COMP_SETTINGSCOMPONENT_OTA_SWITCH] = ui_settings_otaSwitch;
@@ -815,7 +752,6 @@ lv_obj_t *ui_settingsComponent_create(lv_obj_t *comp_parent)
 
     lv_obj_add_event_cb(ui_settings_auxFanSwitch, ui_event_comp_settingsComponent_onAuxFan, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_event_cb(ui_settings_chamberFanSwitch, ui_event_comp_settingsComponent_onChamberFan, LV_EVENT_VALUE_CHANGED, NULL);
-    lv_obj_add_event_cb(ui_settings_chamberSensorSwitch, ui_event_comp_settingsComponent_onChamberTemp, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_event_cb(ui_settingsTFTFlipSwitch, ui_event_comp_settingsComponent_onTFTFlip, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_event_cb(ui_settings_otaSwitch, ui_event_comp_settingsComponent_onOTA, LV_EVENT_VALUE_CHANGED, NULL);
 

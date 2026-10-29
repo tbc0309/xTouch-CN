@@ -17,12 +17,3 @@ new='iNegative = -iPositive;'
 if old in text:codec.write_text(text.replace(old,new),'utf-8')
 elif new not in text:raise SystemExit('JPEGDEC refinement patch context changed; review required')
 print('Pinned source dependencies ready')
-
-# Arduino 3.3.12 wraps Hosted with 2.x dependency metadata. The host adapter
-# supports Hosted 3.0.10; pin that dependency without editing the global SDK.
-manifest=root/'.deps/espressif__arduino-esp32/idf_component.yml'
-text=manifest.read_text('utf-8')
-import re
-text,count=re.subn(r'(  espressif/esp_hosted:\n(?:(?!  [^ ]).+\n)*?    version: )[^\n]+',r'\g<1>==3.0.10',text)
-if count!=1:raise SystemExit('Arduino Hosted dependency changed; review compatibility patch')
-manifest.write_text(text,'utf-8')

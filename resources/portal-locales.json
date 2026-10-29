@@ -2429,16 +2429,6 @@
     "キーの認証に失敗しました",
     "키 인증에 실패했습니다"
   ],
-  "Thermometer (Xiaomi BLE)": [
-    "温湿度计（Xiaomi BLE）",
-    "溫濕度計（Xiaomi BLE）",
-    "Thermometer (Xiaomi BLE)",
-    "Thermomètre (Xiaomi BLE)",
-    "Thermometer (Xiaomi BLE)",
-    "Термогигрометр (Xiaomi BLE)",
-    "温湿度計（Xiaomi BLE）",
-    "온습도계 (Xiaomi BLE)"
-  ],
   "Home display": [
     "首页显示",
     "首頁顯示",
@@ -2728,5 +2718,135 @@
     "Умный термогигрометр Mijia 3 Pro",
     "Mijia スマート温湿度計 3 Pro",
     "Mijia 스마트 온습도계 3 Pro"
+  ],
+  "Deep sleep disconnects the network. Press {button} or RESET to restart.": [
+    "深睡会断网。按 {button} 或复位键启动。",
+    "深睡會斷網。按 {button} 或重設鍵啟動。",
+    "Deep sleep disconnects the network. Press {button} or RESET to restart.",
+    "Le sommeil profond coupe le réseau. Appuyez sur {button} ou RESET pour redémarrer.",
+    "Tiefschlaf trennt das Netzwerk. Zum Neustart {button} oder RESET drücken.",
+    "Глубокий сон отключает сеть. Для запуска нажмите {button} или RESET.",
+    "ディープスリープ中はネットワークが切断されます。{button} または RESET で起動します。",
+    "최대 절전 모드에서는 네트워크가 끊깁니다. {button} 또는 RESET을 눌러 시작하세요."
+  ],
+  "Internal memory + PSRAM": [
+    "内部内存 + PSRAM",
+    "內部記憶體 + PSRAM",
+    "Internal memory + PSRAM",
+    "Mémoire interne + PSRAM",
+    "Interner Speicher + PSRAM",
+    "Внутренняя память + PSRAM",
+    "内部メモリ + PSRAM",
+    "내부 메모리 + PSRAM"
+  ],
+  "Internal memory": [
+    "内部内存",
+    "內部記憶體",
+    "Internal memory",
+    "Mémoire interne",
+    "Interner Speicher",
+    "Внутренняя память",
+    "内部メモリ",
+    "내부 메모리"
+  ],
+  "xTouch free internal memory + PSRAM": [
+    "xTouch 可用内部内存 + PSRAM",
+    "xTouch 可用內部記憶體 + PSRAM",
+    "xTouch free internal memory + PSRAM",
+    "Mémoire interne libre xTouch + PSRAM",
+    "Freier interner xTouch-Speicher + PSRAM",
+    "Свободная внутренняя память xTouch + PSRAM",
+    "xTouch空き内部メモリ + PSRAM",
+    "xTouch 사용 가능 내부 메모리 + PSRAM"
+  ],
+  "xTouch free internal memory": [
+    "xTouch 可用内部内存",
+    "xTouch 可用內部記憶體",
+    "xTouch free internal memory",
+    "Mémoire interne libre xTouch",
+    "Freier interner xTouch-Speicher",
+    "Свободная внутренняя память xTouch",
+    "xTouch空き内部メモリ",
+    "xTouch 사용 가능 내부 메모리"
+  ],
+  "Connecting to Wi-Fi. Please wait.": [
+    "正在连接 Wi-Fi，请稍候。",
+    "正在連接 Wi-Fi，請稍候。",
+    "Connecting to Wi-Fi. Please wait.",
+    "Connexion au Wi-Fi. Veuillez patienter.",
+    "WLAN-Verbindung wird hergestellt. Bitte warten.",
+    "Подключение к Wi-Fi. Подождите.",
+    "Wi-Fiに接続中です。お待ちください。",
+    "Wi-Fi에 연결 중입니다. 잠시 기다려 주세요."
+  ],
+  "Wi-Fi connected. Setup hotspot closes within 10 seconds. Device address: ": [
+    "配网成功，热点将在10秒内关闭。设备地址：",
+    "配網成功，熱點將在10秒內關閉。裝置位址：",
+    "Wi-Fi connected. Setup hotspot closes within 10 seconds. Device address: ",
+    "Wi-Fi connecté. Le point d’accès se ferme sous 10 secondes. Adresse : ",
+    "WLAN verbunden. Der Hotspot schließt innerhalb von 10 Sekunden. Geräteadresse: ",
+    "Wi-Fi подключён. Точка доступа отключится в течение 10 секунд. Адрес: ",
+    "Wi-Fiに接続しました。設定用APは10秒以内に終了します。アドレス：",
+    "Wi-Fi 연결 완료. 설정 핫스팟이 10초 이내에 종료됩니다. 기기 주소: "
+  ],
+  "Connection failed. Check the network and password, then retry.": [
+    "连接失败，请检查网络和密码后重试。",
+    "連接失敗，請檢查網路和密碼後重試。",
+    "Connection failed. Check the network and password, then retry.",
+    "Échec de connexion. Vérifiez le réseau et le mot de passe, puis réessayez.",
+    "Verbindung fehlgeschlagen. Netzwerk und Passwort prüfen und erneut versuchen.",
+    "Не удалось подключиться. Проверьте сеть и пароль и повторите.",
+    "接続できませんでした。ネットワークとパスワードを確認して再試行してください。",
+    "연결하지 못했습니다. 네트워크와 비밀번호를 확인한 후 다시 시도하세요."
+  ],
+  "Connection timed out. Reconnect to the setup hotspot and check.": [
+    "连接超时，请重新连接设备热点后检查。",
+    "連接逾時，請重新連接裝置熱點後檢查。",
+    "Connection timed out. Reconnect to the setup hotspot and check.",
+    "Délai de connexion dépassé. Reconnectez-vous au point d’accès et vérifiez.",
+    "Zeitüberschreitung. Erneut mit dem Geräte-Hotspot verbinden und prüfen.",
+    "Время подключения истекло. Подключитесь к точке доступа устройства и проверьте.",
+    "接続がタイムアウトしました。設定用APに再接続して確認してください。",
+    "연결 시간이 초과되었습니다. 설정 핫스팟에 다시 연결하여 확인하세요."
+  ],
+  "Bluetooth thermometer": [
+    "蓝牙温湿度计",
+    "藍牙溫濕度計",
+    "Bluetooth thermometer",
+    "Thermomètre Bluetooth",
+    "Bluetooth-Thermometer",
+    "Bluetooth-термогигрометр",
+    "Bluetooth温湿度計",
+    "블루투스 온습도계"
+  ],
+  "Thermometer (Xiaomi BLE)": [
+    "温湿度计（Xiaomi BLE）",
+    "溫濕度計（Xiaomi BLE）",
+    "Thermometer (Xiaomi BLE)",
+    "Thermomètre (Xiaomi BLE)",
+    "Thermometer (Xiaomi BLE)",
+    "Термогигрометр (Xiaomi BLE)",
+    "温湿度計（Xiaomi BLE）",
+    "온습도계 (Xiaomi BLE)"
+  ],
+  "Maximum {n} accounts.": [
+    "最多 {n} 个账号。",
+    "最多 {n} 個帳號。",
+    "Maximum {n} accounts.",
+    "Maximum {n} comptes.",
+    "Maximal {n} Konten.",
+    "Не более {n} аккаунтов.",
+    "最大 {n} アカウント。",
+    "최대 {n}개 계정."
+  ],
+  "Maximum {n} devices.": [
+    "最多 {n} 台设备。",
+    "最多 {n} 台裝置。",
+    "Maximum {n} devices.",
+    "Maximum {n} appareils.",
+    "Maximal {n} Geräte.",
+    "Не более {n} устройств.",
+    "最大 {n} 台のデバイス。",
+    "최대 {n}개 기기."
   ]
 }

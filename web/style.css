@@ -7,6 +7,14 @@
   --accent: #087f79;
   --border: #dce4e9;
 }
+.installer-heading {display:flex;align-items:center;justify-content:space-between;gap:16px}
+.test-channel-toggle {display:inline-flex;align-items:center;gap:7px;margin:0;cursor:pointer;font-size:14px;font-weight:600;white-space:nowrap}
+.test-channel-toggle input {width:17px;height:17px;margin:0;accent-color:#bd3939}
+#usb-install-card {border:2px solid var(--border)}
+#usb-install-card.test-channel {border-color:#c33c3c;animation:test-channel-outline 2.4s ease-in-out infinite}
+.test-channel-note {padding:10px 12px;background:#fff0ef;color:#a52c2c;border-radius:8px;font-size:13px}
+@keyframes test-channel-outline {0%,100%{border-color:#c33c3c;box-shadow:0 0 0 0 #c33c3c20}50%{border-color:#ed7777;box-shadow:0 0 0 4px #c33c3c26}}
+@media(prefers-reduced-motion:reduce){#usb-install-card.test-channel{animation:none;box-shadow:0 0 0 3px #c33c3c26}}
 * {
   box-sizing: border-box;
 }

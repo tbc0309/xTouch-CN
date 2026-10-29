@@ -1,5 +1,5 @@
 #pragma once
-#include <Arduino.h>
+#include "platform/idf/runtime.h"
 #include <ArduinoJson.h>
 
 // One active account and one bounded API job. Remembered passwords use the device vault.

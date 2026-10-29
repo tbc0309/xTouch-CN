@@ -30,7 +30,6 @@ extern "C"
 
 #define _UI_ROLLER_PROPERTY_SELECTED 0
 #define _UI_ROLLER_PROPERTY_SELECTED_WITH_ANIM 1
-    void _ui_roller_set_property(lv_obj_t *target, int id, int val);
 
 #define _UI_SLIDER_PROPERTY_VALUE 0
 #define _UI_SLIDER_PROPERTY_VALUE_WITH_ANIM 1
@@ -38,13 +37,9 @@ extern "C"
 
     void _ui_screen_change(lv_obj_t *target, lv_scr_load_anim_t fademode, int spd, int delay);
 
-    void _ui_arc_increment(lv_obj_t *target, int val);
-
     void _ui_bar_increment(lv_obj_t *target, int val, int anm);
 
     void _ui_slider_increment(lv_obj_t *target, int val, int anm);
-
-    void _ui_keyboard_set_target(lv_obj_t *keyboard, lv_obj_t *textarea);
 
 #define _UI_MODIFY_FLAG_ADD 0
 #define _UI_MODIFY_FLAG_REMOVE 1
@@ -99,8 +94,6 @@ extern "C"
     int32_t _ui_anim_callback_get_image_angle(lv_anim_t *a);
 
     int32_t _ui_anim_callback_get_image_frame(lv_anim_t *a);
-
-    void _ui_arc_set_text_value(lv_obj_t *trg, lv_obj_t *src, const char *prefix, const char *postfix);
 
     void _ui_slider_set_text_value(lv_obj_t *trg, lv_obj_t *src, const char *prefix, const char *postfix);
 

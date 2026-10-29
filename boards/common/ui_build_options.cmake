@@ -1,5 +1,7 @@
 # Shared by ESP-IDF firmware and native LVGL previews.
 function(xtouch_ui_build_options TARGET)
+option(XTOUCH_FEATURE_EXTERNAL_CHAMBER "Include CYD wired DS18B20 chamber adapter" OFF)
+target_compile_definitions(${TARGET} PUBLIC XTOUCH_FEATURE_EXTERNAL_CHAMBER=$<BOOL:${XTOUCH_FEATURE_EXTERNAL_CHAMBER}>)
 # Port geometry is selected once; pages use shared design units.
 if(XTOUCH_DISPLAY_WIDTH AND XTOUCH_DISPLAY_HEIGHT)
  target_compile_definitions(${TARGET} PUBLIC XTOUCH_DISPLAY_WIDTH=${XTOUCH_DISPLAY_WIDTH} XTOUCH_DISPLAY_HEIGHT=${XTOUCH_DISPLAY_HEIGHT})

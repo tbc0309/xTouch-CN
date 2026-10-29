@@ -14,6 +14,8 @@ const words = {
   accountHint: ['粘贴已有 Token；此页面不验证 Token、不获取设备。导入后在设备后台验证并关联打印机。', 'Paste an existing Token. This page does not validate Tokens or fetch devices. Verify and link printers in the device portal after importing.'],
   region: ['区域', 'Region'], china: ['中国区', 'China'], global: ['国际区', 'Global'], token: ['Access Token', 'Access Token'], guide: ['获取教程', 'Guide'],
   preferences: ['显示与时间', 'Display and time'], language: ['屏幕语言', 'Screen language'], portalLanguage: ['后台语言', 'Portal language'], brightness: ['亮度（0–255）', 'Brightness (0–255)'], volume: ['音量（0–100%）', 'Volume (0–100%)'], standby: ['联网待机（分钟，0 为关闭）', 'Standby (minutes; 0 disables)'],
+  targetBoard: ['目标主板', 'Controller board'], boardHint: ['请选择实际主板。标准 CYD 固件仅提供简体中文和英语，最多20台设备、10个账号。', 'Select your controller. Standard CYD firmware provides Simplified Chinese and English only, with up to 20 devices and 10 accounts.'],
+  es3Board: ['LCDWIKI ES3C35P', 'LCDWIKI ES3C35P'],
   ntp: ['NTP 服务器', 'NTP server'], custom: ['自定义', 'Custom'], ntpCustom: ['自定义 NTP 地址', 'Custom NTP address'], zone: ['时区', 'Time zone'], autoZone: ['首次访问设备后台时自动同步', 'Set automatically on first device portal visit'],
   export: ['生成与下载', 'Generate and download'], download: ['下载后台导入配置', 'Download portal configuration'], sd: ['下载 TF 卡配置包', 'Download SD configuration package'], preview: ['预览结构（凭据已隐藏）', 'Preview structure (credentials hidden)'],
   exported: ['已生成配置，请在设备上验证连接。', 'Configuration generated. Verify connections on the device.'], invalid: ['请检查标记的输入项。名称仅限英文、数字和符号。', 'Check the marked fields. Names accept ASCII letters, numbers and symbols.'], byteLimit: ['超过允许的 UTF-8 字节数。', 'Exceeds the allowed UTF-8 byte length.'], duplicate: ['存在重复的序列号和地址。', 'Duplicate serial number and address.'], limit: ['已达到数量上限。', 'The item limit has been reached.'],
@@ -50,7 +52,7 @@ export function sdZip(files) {
   e.setUint32(0,0x06054b50,true);e.setUint16(8,directory.length,true);e.setUint16(10,directory.length,true);e.setUint32(12,size,true);e.setUint32(16,offset,true);
   return new Blob([...chunks,...directory,end],{type:'application/zip'});
 }
-export function initConfigGenerator(root, initialLanguage = 'en', headingTag = 'h2') {
+export function initConfigGenerator(root, initialLanguage = 'en', headingTag = 'h2', initialBoard = 'cyd') {
   if (!root) return;
   let language=initialLanguage, sequence=0;
   const t=key=>words[key][language==='en'?1:0];
@@ -62,6 +64,17 @@ export function initConfigGenerator(root, initialLanguage = 'en', headingTag = '
   screenLanguage.value='en';
   const portalLanguage=select('portalLanguage',Object.fromEntries(languageMetadata.map(row=>[row.code,row.name])));
   portalLanguage.value='en';
+  const board=select('board',{cyd:'CYD · ESP32-2432S028R',s3:'Waveshare S3 V2',p4:'Waveshare P4',es3c35p:'es3Board'});
+  board.value=['cyd','s3','p4','es3c35p'].includes(initialBoard)?initialBoard:'cyd';
+  function boardLanguages() {
+    const available=languageMetadata.filter(row=>board.value!=='cyd'||['zh','en'].includes(row.code));
+    for(const control of [screenLanguage,portalLanguage]) {
+      const previous=control.value;
+      control.replaceChildren(...available.map(row=>node('option',{value:row.code},row.name)));
+      control.value=available.some(row=>row.code===previous)?previous:'en';
+    }
+  }
+  boardLanguages();
   const brightness=input('backlight',{type:'number',min:0,max:255,value:200,required:''});
   const volume=input('soundVolume',{type:'number',min:0,max:100,value:20,required:''});
   const standby=input('tftOff',{type:'number',min:0,max:240,value:15,required:''});
@@ -96,8 +109,9 @@ export function initConfigGenerator(root, initialLanguage = 'en', headingTag = '
     zone.value=selected;
   }
   function removeButton(container) { return button('remove',()=>{container.remove();status.textContent='';updatePreview();}); }
+  function profileLimits() { return board.value === "cyd" ? {devices:20, accounts:10} : {devices:100, accounts:50}; }
   function addPrinter() {
-    if(printers.children.length>=100){status.textContent=t('limit');return;}
+    if(printers.children.length>=profileLimits().devices){status.textContent=t('limit');return;}
     const box=node('fieldset',{class:'generator-item'}),name=input('name',{required:'',maxlength:63,pattern:'[ -~]*',value:'Printer '+(printers.children.length+1)});
     const model=select('printerModel',models),serial=input('serialNumber',{required:'',maxlength:31,pattern:String.raw`[A-Za-z0-9_\-]+`});
     const host=input('host',{required:'',maxlength:63,pattern:String.raw`[A-Za-z0-9_.\-]+`,placeholder:'printer.local'}),code=input('accessCode',{required:'',type:'password',minlength:8,maxlength:8,pattern:'[!-~]{8}'});
@@ -105,7 +119,7 @@ export function initConfigGenerator(root, initialLanguage = 'en', headingTag = '
     box.controls={name,model,serial,host,code};printers.append(box);refreshLanguage();name.focus();updatePreview();
   }
   function addAccount() {
-    if(accounts.children.length>=50){status.textContent=t('limit');return;}
+    if(accounts.children.length>=profileLimits().accounts){status.textContent=t('limit');return;}
     const box=node('fieldset',{class:'generator-item'}),name=input('name',{maxlength:63,pattern:'[ -~]*',value:'Bambu '+(accounts.children.length+1)}),region=select('region',{'cn':'china','global':'global'});
     const token=input('token',{type:'password',required:'',maxlength:2048,pattern:'[!-~]+'});
     box.accountId='account-'+(++sequence);
@@ -113,10 +127,10 @@ export function initConfigGenerator(root, initialLanguage = 'en', headingTag = '
     box.controls={name,region,token};accounts.append(box);refreshLanguage();name.focus();updatePreview();
   }
   const help=node('a',{href:'https://github.com/tbc0309/xTouch-CN/blob/main/docs/INSTALLATION.md#token',target:'_blank',rel:'noopener noreferrer',text:'guide'});
-  const controls=node('div',{class:'grid'},field('language',screenLanguage),field('portalLanguage',portalLanguage),field('brightness',brightness),field('volume',volume),field('standby',standby),field('ntp',ntp),field('zone',zone),customField);
+  const controls=node('div',{class:'grid'},field('targetBoard',board),field('language',screenLanguage),field('portalLanguage',portalLanguage),field('brightness',brightness),field('volume',volume),field('standby',standby),field('ntp',ntp),field('zone',zone),customField);
   form.append(card('wifi',node('div',{class:'grid'},field('ssid',ssid),field('password',password))),
     node('section',{class:'card'},heading('printers',button('addPrinter',addPrinter)),node('p',{class:'subtle',text:'printerHint'}),printers),
-    node('section',{class:'card'},heading('accounts',button('addAccount',addAccount)),node('p',{class:'subtle',text:'accountHint'}),help,accounts),card('preferences',controls));
+    node('section',{class:'card'},heading('accounts',button('addAccount',addAccount)),node('p',{class:'subtle',text:'accountHint'}),help,accounts),card('preferences',node('p',{class:'subtle',text:'boardHint'}),controls));
   function configuration() {
     return {ssid:ssid.value,pwd:password.value,activePrinter:0,
       printers:[...printers.children].map(box=>{const c=box.controls;return {name:c.name.value,printerModel:c.model.value,serialNumber:c.serial.value,mode:'lan',host:c.host.value,accessCode:c.code.value,accessCodeEncrypted:false};}),
@@ -130,6 +144,7 @@ export function initConfigGenerator(root, initialLanguage = 'en', headingTag = '
     preview.textContent=JSON.stringify(masked,null,2);
   }
   function valid() {
+    if(printers.children.length>profileLimits().devices || accounts.children.length>profileLimits().accounts){status.textContent=t("limit");return false;}
     for(const el of form.querySelectorAll('input,select')){el.setCustomValidity('');el.removeAttribute('aria-invalid');}
     for(const [el,limit] of [[ssid,32],[password,64]])if(encoder.encode(el.value).length>limit)el.setCustomValidity(t('byteLimit'));
     if(ntp.value==='custom'&&!/^(?=.{1,127}$)[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?$/.test(customNtp.value))customNtp.setCustomValidity(t('invalid'));
@@ -153,6 +168,7 @@ export function initConfigGenerator(root, initialLanguage = 'en', headingTag = '
   ntp.addEventListener('change',()=>{customField.hidden=ntp.value!=='custom';customNtp.required=!customField.hidden;customNtp.disabled=customField.hidden;customNtp.setCustomValidity('');});customNtp.disabled=true;
   form.addEventListener('input',e=>{e.target.setCustomValidity?.('');e.target.removeAttribute('aria-invalid');status.textContent='';updatePreview();});
   form.addEventListener('change',updatePreview);form.addEventListener('submit',e=>e.preventDefault());
+  board.addEventListener('change',()=>{boardLanguages();updatePreview();});
   refreshLanguage();updatePreview();
   return {setLanguage(value){language=value;help.href='https://github.com/tbc0309/xTouch-CN/blob/main/docs/INSTALLATION'+(language==='en'?'.en':'')+'.md#token';refreshLanguage();updatePreview();}};
 }
