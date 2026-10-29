@@ -260,7 +260,7 @@ target_compile_definitions(${LVGL_LIB} PUBLIC XTOUCH_NATIVE_IDF=1 ${XTOUCH_BOARD
 target_include_directories(${LVGL_LIB} PUBLIC "${ROOT}/resources")
 
 target_compile_options(${COMPONENT_LIB} PRIVATE $<$<COMPILE_LANGUAGE:C>:-fcommon>)
-if(XTOUCH_BOARD MATCHES "[Ss]3" AND (XTOUCH_FEATURE_CAMERA OR XTOUCH_FEATURE_PRINT_PREVIEW))
+if(IDF_TARGET STREQUAL "esp32s3" AND (XTOUCH_FEATURE_CAMERA OR XTOUCH_FEATURE_PRINT_PREVIEW))
   target_sources(${COMPONENT_LIB} PRIVATE "${DEPS}/JPEGDEC/src/s3_simd_420.S" "${DEPS}/JPEGDEC/src/s3_simd_444.S" "${DEPS}/JPEGDEC/src/s3_simd_dequant.S")
   if(XTOUCH_FEATURE_PRINT_PREVIEW)
    target_sources(${COMPONENT_LIB} PRIVATE "${ROOT}/lib/PNGdec/src/s3_simd_rgb565.S")
@@ -334,7 +334,7 @@ endif()
 
 # One optional implementation for both receivers; CYD retains its current build.
 if(XTOUCH_FEATURE_XIAOMI_BLE)
- if(NOT IDF_TARGET MATCHES "^(esp32|esp32s3|esp32p4)$" OR NOT CONFIG_BT_NIMBLE_ENABLED OR NOT CONFIG_BT_NIMBLE_ROLE_OBSERVER)
+ if(NOT IDF_TARGET MATCHES "^(esp32|esp32s3|esp32p4|esp32c5|esp32c6|esp32s31)$" OR NOT CONFIG_BT_NIMBLE_ENABLED OR NOT CONFIG_BT_NIMBLE_ROLE_OBSERVER)
   message(FATAL_ERROR "Xiaomi BLE requires native IDF with NimBLE observer sdkconfig")
  endif()
  if(XTOUCH_FEATURE_BLE_PROVISIONING)
@@ -370,3 +370,13 @@ endif()
 
 # Project message bus and remaining source-level LVGL 8 names on LVGL 9.
 target_compile_options(${COMPONENT_LIB} PRIVATE "$<$<COMPILE_LANGUAGE:C,CXX>:-include${ROOT}/src/ui/lvgl_compat.h>")
+
+if(IDF_TARGET STREQUAL "esp32c5")
+ target_include_directories(${COMPONENT_LIB} PRIVATE "${DEPS}/XPowersLib/src")
+ target_sources(${COMPONENT_LIB} PRIVATE "${DEPS}/XPowersLib/src/XPowersLibInterface.cpp")
+ target_compile_definitions(${COMPONENT_LIB} PRIVATE CONFIG_XPOWERS_ESP_IDF_NEW_API=1)
+endif()
+
+if(IDF_TARGET STREQUAL "esp32c5" OR IDF_TARGET STREQUAL "esp32c6")
+ target_sources(${COMPONENT_LIB} PRIVATE "${ROOT}/boards/common/ch32_port.cpp")
+endif()

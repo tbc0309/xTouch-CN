@@ -1,0 +1,15 @@
+{
+  "target": "waveshare-c5-35",
+  "manufacturerSources": [
+    "https://docs.waveshare.com/ESP32-C5-Touch-LCD-3.5"
+  ],
+  "requiredFlashBytes": 33554432,
+  "psramBytes": 8388608,
+  "physicalTested": false,
+  "photo": {
+    "src": "readme-assets/test-boards/waveshare-c5-35.webp",
+    "sourceUrl": "https://docs.waveshare.com/assets/images/ESP32-C5-Touch-LCD-3.5-1-6ac6b944fcd32ab25aad7fbe11d80832.webp",
+    "page": "https://docs.waveshare.com/ESP32-C5-Touch-LCD-3.5",
+    "alt": "ESP32-C5-Touch-LCD-3.5"
+  }
+}

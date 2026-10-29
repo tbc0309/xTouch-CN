@@ -11,12 +11,20 @@ def validate_identity(data,name,chip,project):
  if b'\0' not in field or field.split(b'\0',1)[0].decode('ascii')!=project:
   raise ValueError('Application project identity differs from the configured board build')
 
+def validate_flash_identity(meta,target):
+ if int(meta['bootloader']['offset'],0)!=target['boot_offset'] or int(meta['app']['offset'],0)!=target['app_offset']:
+  raise ValueError('Catalog boot/application offsets differ from the SDK flasher plan')
+ flash_bytes=int(meta['flash_settings']['flash_size'].removesuffix('MB'))*1048576
+ if flash_bytes!=target['flash']:
+  raise ValueError('Catalog Flash capacity differs from the SDK flasher plan')
+
 def package(build,name):
  sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]/'scripts'))
  from release_policy import read as release_identity
  release=release_identity(pathlib.Path(__file__).resolve().parents[1])
  build=pathlib.Path(build);out=build/'artifacts';out.mkdir(exist_ok=True)
  meta=json.loads((build/'flasher_args.json').read_text('utf-8'));chip=meta['extra_esptool_args']['chip']
+ validate_flash_identity(meta,BY_STEM[name])
  if chip=='esp32p4':
   configs=[json.loads((build/part/'sdkconfig.json').read_text('utf-8')) for part in ('config','bootloader/config')]
   if any(c.get('CACHE_L2_CACHE_LINE_SIZE')!=64 for c in configs):

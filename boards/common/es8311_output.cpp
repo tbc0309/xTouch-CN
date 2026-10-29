@@ -24,14 +24,14 @@ static int readReg(const audio_codec_ctrl_if_t *, int reg, int regLen, void *dat
                : -1;
 }
 static audio_codec_ctrl_if_t control = {nullptr, opened, readReg, writeReg, nullptr};
-bool board_es8311_begin() {
+bool board_es8311_begin(bool useMclk) {
     if (codec)
         return true;
     es8311_codec_cfg_t config = {};
     config.ctrl_if = &control;
     config.codec_mode = ESP_CODEC_DEV_WORK_MODE_DAC;
     config.pa_pin = -1;
-    config.use_mclk = true;
+    config.use_mclk = useMclk;
     config.mclk_div = 256;
     codec = es8311_codec_new(&config);
     if (!codec)

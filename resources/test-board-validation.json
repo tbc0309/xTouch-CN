@@ -208,5 +208,20 @@
     "status": "untested",
     "feedback": null,
     "note": ""
+  },
+  "waveshare-c5-35": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "waveshare-c6-28": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
+  },
+  "esp32-s31-korvo-1": {
+    "status": "untested",
+    "feedback": null,
+    "note": ""
   }
 }

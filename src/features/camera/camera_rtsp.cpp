@@ -2,7 +2,7 @@
 #if XTOUCH_FEATURE_CAMERA
 #include "camera_rtsp.h"
 #include <sdkconfig.h>
-#if !CONFIG_IDF_TARGET_ESP32
+#if CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4
 #include "camera_rtp.h"
 #include "camera_protocol.h"
 #include "platform/idf/runtime.h"
@@ -157,7 +157,7 @@ int cameraRtspRun(const char *host,const char *code,std::atomic<bool> &stop,cons
 }
 
 #else
-// The SDK decoder component supports S3/P4. Classic ESP32 keeps JPEG viewing;
+// The pinned decoder component supports S3/P4. Other targets keep JPEG viewing;
 // an H.264 request reports the existing unsupported-format caption.
 int cameraRtspRun(const char *, const char *, std::atomic<bool> &stop, const CameraRtspSink &) {
     return stop ? 0 : 3;

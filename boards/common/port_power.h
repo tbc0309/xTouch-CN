@@ -4,14 +4,16 @@
 #include <driver/gpio.h>
 #include <driver/rtc_io.h>
 #include <esp_sleep.h>
+#include <algorithm>
 inline BoardPowerProfile board_power_profile(bool sleeping) {
 #if CONFIG_IDF_TARGET_ESP32P4
     return {100, sleeping ? 200u : (CONFIG_ESP32P4_REV_MIN_FULL >= 300 ? 400u : 360u), false};
 #else
-    return {80, sleeping ? 160u : 240u, false};
+    return {80, sleeping ? std::min(160u, unsigned(CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ)) : unsigned(CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ), false};
 #endif
 }
 inline void board_power_after_deep_sleep() {
+#if XTOUCH_FEATURE_DEEP_SLEEP
 #if !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
     gpio_deep_sleep_hold_dis();
 #endif
@@ -20,8 +22,10 @@ inline void board_power_after_deep_sleep() {
         gpio_hold_dis(gpio_num_t(backlight));
     if (XTOUCH_DEEP_WAKE_PIN >= 0 && rtc_gpio_is_valid_gpio(gpio_num_t(XTOUCH_DEEP_WAKE_PIN)))
         rtc_gpio_deinit(gpio_num_t(XTOUCH_DEEP_WAKE_PIN));
+#endif
 }
 inline void board_power_before_deep_sleep() {
+#if XTOUCH_FEATURE_DEEP_SLEEP
     const int backlight = XTouchPort::profile().backlight;
     if (backlight >= 0) {
         gpio_hold_en(gpio_num_t(backlight));
@@ -29,9 +33,10 @@ inline void board_power_before_deep_sleep() {
         gpio_deep_sleep_hold_en();
 #endif
     }
+#endif
 }
 inline bool board_touch_wake_prepare() {
-#if XTOUCH_DEEP_WAKE_PIN < 0
+#if !XTOUCH_FEATURE_DEEP_SLEEP || XTOUCH_DEEP_WAKE_PIN < 0
     return false;
 #else
     const gpio_num_t pin = gpio_num_t(XTOUCH_DEEP_WAKE_PIN);

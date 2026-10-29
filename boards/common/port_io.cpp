@@ -29,7 +29,9 @@ bool reg(uint8_t address, uint16_t index, unsigned indexBytes, uint8_t *out, siz
 namespace XTouchPort {
 bool preparePeripherals() {
     const auto &p = profile();
-    if (!xtouch_i2c.begin(p.sda, p.scl, 400000))
+    if (!xtouch_i2c.begin(p.sda, p.scl, p.i2cHz))
+        return false;
+    if (p.peripherals && p.peripherals->begin && !p.peripherals->begin())
         return false;
     if (p.power == Power::Ch32) {
         if (!writeExpander(2, uint16_t(p.expanderDirection)) ||
@@ -145,6 +147,10 @@ bool prepareBacklight() {
 }
 void amplifier(bool enabled) {
     const auto &p = profile();
+    if (p.peripherals && p.peripherals->amplifier) {
+        p.peripherals->amplifier(enabled);
+        return;
+    }
     if (p.power == Power::Ch32 && p.expanderWidth == 16) {
         const uint8_t index = 3;
         uint8_t current[2]{};
@@ -169,6 +175,11 @@ void amplifier(bool enabled) {
 }
 } // namespace XTouchPort
 void board_brightness(uint8_t level) {
+    const auto *hooks = XTouchPort::profile().peripherals;
+    if (hooks && hooks->brightness) {
+        hooks->brightness(level);
+        return;
+    }
     if (XTouchPort::profile().power == XTouchPort::Power::CoreS3) {
         // The PMIC controls LCD voltage; use its board-specified 20..23 range.
         writeRegister(0x34, 0x99, uint8_t((uint32_t(level) * 100 / 255 + 641) >> 5));
@@ -186,7 +197,28 @@ bool board_touch(int &x, int &y) {
     uint8_t data[8]{};
     bool pressed = false;
     int nx = 0, ny = 0;
-    if (touchKind == XTouchPort::Touch::Ft6x36) {
+    if (touchKind == XTouchPort::Touch::Chsc5432) {
+        const uint8_t command[] = {0x20, 0, 0, 0x2c};
+        uint8_t packet[28]{};
+        if (xtouch_i2c.transfer(touchAddress, command, sizeof(command), packet, sizeof(packet)) != ESP_OK)
+            return contact.read(x, y);
+        const auto result = XTouchPort::chsc5432Packet(packet, sizeof(packet), nx, ny);
+        if (result == XTouchPort::TouchPacket::Ignore)
+            return contact.read(x, y);
+        pressed = result == XTouchPort::TouchPacket::Pressed;
+    } else if (touchKind == XTouchPort::Touch::Cst3530) {
+        const uint8_t command[] = {0xd0, 7, 0, 0};
+        uint8_t packet[9]{};
+        if (xtouch_i2c.transfer(touchAddress, command, sizeof(command), packet, sizeof(packet)) != ESP_OK)
+            return contact.read(x, y);
+        const uint8_t ack[] = {0xd0, 0, 2, 0xab};
+        if (xtouch_i2c.transfer(touchAddress, ack, sizeof(ack), nullptr, 0) != ESP_OK)
+            return contact.read(x, y);
+        const auto result = XTouchPort::cst3530Packet(packet, sizeof(packet), nx, ny);
+        if (result == XTouchPort::TouchPacket::Ignore)
+            return contact.read(x, y);
+        pressed = result == XTouchPort::TouchPacket::Pressed;
+    } else if (touchKind == XTouchPort::Touch::Ft6x36) {
         if (!reg(touchAddress, 2, 1, data, 5))
             return contact.read(x, y);
         if ((data[0] & 15) > 2)

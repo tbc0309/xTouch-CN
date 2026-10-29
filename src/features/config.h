@@ -100,7 +100,7 @@
 #endif
 #endif
 
-// Password/code cloud authentication is supported by the native S3/P4 transport.
+// Password/code cloud authentication uses the native cloud transport.
 #ifndef XTOUCH_FEATURE_CLOUD_LOGIN
 #ifdef XTOUCH_WAVESHARE
 #define XTOUCH_FEATURE_CLOUD_LOGIN 1

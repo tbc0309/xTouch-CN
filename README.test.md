@@ -25,7 +25,7 @@ Pre-release · 测试版
 
 ✅ 测试OK；❌ 有问题；➖ 未实测。状态表示本项目在对应硬件上的实物测试结论，与编译结果分开记录。欢迎反馈完整型号、屏幕组合、固件版本和操作结果，核对后更新状态。
 
-“测试固件可用”表示已完成原生编译及镜像检查，不代表所有硬件功能均已通过实物测试。“编译验证中”或“参数待确认”的型号暂不提供安装选项。未映射的 SD、状态灯或独立深睡唤醒功能不启用；普通待机与深睡为不同功能。经典 ESP32 的摄像头仅提供兼容 JPEG，不提供 H.264。
+“测试固件可用”表示已完成原生编译及镜像检查，不代表所有硬件功能均已通过实物测试。“编译验证中”或“参数待确认”的型号暂不提供安装选项。未映射的 SD、状态灯或独立深睡唤醒功能不启用；普通待机与深睡为不同功能。经典 ESP32、C5 和 S31 的摄像头仅提供兼容 JPEG，不提供 H.264。C6 不编译摄像头和任务缩略图；S31 暂需使用原生 esptool 安装。
 
 固件名下列出资源档位、图标、语言及可选模块配置。“开／关”表示是否编入该功能，不表示实物测试结果；“温湿计”为温湿度计接收模块，“账号登录”为密码／验证码登录，Token 与 Wi-Fi 等公共功能不重复列出。待最终构建确认的配置以实际生成的固件为准。
 
@@ -81,10 +81,28 @@ Pre-release · 测试版
 | <img src="docs/images/test-boards/rymcu-bigsmart.jpg" width="150" alt="rymcu-bigsmart"><br>**rymcu-bigsmart**<br>未确认官方中文品牌名 / RYMCU | ESP32-S3-WROOM-1-N16R8 | 2.8″<br>320 × 240<br>ST7789 / SPI | Flash 16 MB<br>PSRAM 8 MB | GT911 / I²C<br>ES8311 + NS4150B；ES7210输入<br>WS2812B RGB / GPIO43（与UART0_TX复用） | 测试固件可用<br><code>rymcu-s3</code><br><small class="firmware-options">小资源 · 原装图标 · 8语<br>温湿计开 · 账号登录开<br>状态灯开 · 深睡开<br>SD关 · 蓝牙配网关</small> | ➖ 未实测<br>尚无该型号的实物反馈 |
 | <small>暂无对应图片</small><br>**chd-esp32s3-box**<br>中文品牌未确认 / CHD | ESP32-S3 N16R8 | 2.8″<br>240 × 320<br>ST7789 / SPI | Flash 16 MB<br>PSRAM 8 MB | GT911 / FT6336G，按装配批次<br>ES8311 + NS4156；ES7210输入<br>待确认 | 测试固件可用<br><code>chd-s3-box28</code><br><small class="firmware-options">小资源 · 原装图标 · 8语<br>温湿计开 · 账号登录开<br>状态灯关 · 深睡开<br>SD关 · 蓝牙配网关</small> | ➖ 未实测<br>尚无该型号的实物反馈 |
 | <small>暂无对应图片</small><br>**chd-esp32s3-box-lcd35**<br>中文品牌未确认 / CHD | ESP32-S3 N16R8 | 3.5″<br>320 × 480<br>ST7796 / SPI | Flash 16 MB<br>PSRAM 8 MB | GT911 / FT6336G，按装配批次<br>ES8311 + NS4156；ES7210输入<br>待确认 | 测试固件可用<br><code>chd-s3-box35</code><br><small class="firmware-options">大资源 · MDI · 8语<br>温湿计开 · 账号登录开<br>状态灯关 · 深睡开<br>SD关 · 蓝牙配网关</small> | ➖ 未实测<br>尚无该型号的实物反馈 |
-| <img src="docs/images/test-boards/atk-dnesp32s3-box3.png" width="150" alt="atk-dnesp32s3-box3"><br>**atk-dnesp32s3-box3**<br>正点原子 / ALIENTEK | ESP32-S3R8 | 2.4″<br>待确认<br>待确认 | Flash 16 MB<br>PSRAM 8 MB | 2.4寸带触摸LCD扩展接口；所装控制器另核（待确认）<br>ES8311 + NS4150B；板载2520腔体扬声器<br>红蓝双色用户LED；蓝色PWR灯 | 参数待确认<br><small>模块配置待确定</small> | ➖ 未实测<br>尚无该型号的实物反馈 |
+| <img src="readme-assets/test-boards/atk-dnesp32s3-box3.png" width="150" alt="ATK BOX3"><br>**ATK-DNESP32S3 BOX3**<br>正点原子 / ALIENTEK | ESP32-S3R8 | 2.4″<br>320 × 240<br>ST7789V2 / SPI | Flash 16 MB<br>PSRAM 8 MB | CHSC5432 / I²C<br>ES8311 + NS4150B<br>双色灯不作为RGB状态灯 | 测试固件可用<br><code>atk-dnesp32s3-box3</code><br><small class="firmware-options">小资源 · 原装图标 · 8语<br>温湿计开 · 账号登录开<br>状态灯关 · BOOT深睡开<br>SD关 · 蓝牙配网关<br>背光仅开关</small> | ➖ 未实测 |
 | <img src="docs/images/test-boards/guition-jc4827w543-ext-amp.webp" width="150" alt="guition-jc4827w543-ext-amp"><br>**guition-jc4827w543-ext-amp**<br>未确认官方中文品牌名 / GUITION | ESP32-S3R8 | 4.3″<br>480 × 272<br>规格书ST3401A；厂家组件ST77916；既有驱动NV3041A，尚未消歧（待确认） | Flash 4 MB<br>PSRAM 8 MB | GT911 / XPT2046 / 无，按后缀（待确认）<br>待确认<br>待确认 | 容量／面板待解决<br><small>模块配置待确定</small> | ➖ 未实测<br>尚无该型号的实物反馈 |
 | <img src="docs/images/test-boards/guition-jc4827w543.webp" width="150" alt="guition-jc4827w543"><br>**guition-jc4827w543**<br>未确认官方中文品牌名 / GUITION | ESP32-S3R8 | 4.3″<br>480 × 272<br>规格书ST3401A；厂家组件ST77916；既有驱动NV3041A，尚未消歧（待确认） | Flash 4 MB<br>PSRAM 8 MB | GT911 / XPT2046 / 无，按后缀（待确认）<br>待确认<br>待确认 | 容量／面板待解决<br><small>模块配置待确定</small> | ➖ 未实测<br>尚无该型号的实物反馈 |
-| <small>暂无对应图片</small><br>**yunliao-s3**<br>云聊（产品名，品牌归属待确认） / Yunliao（项目拼写） | ESP32-S3 | 2.8″<br>待确认<br>待确认 | Flash 待确认<br>PSRAM 待确认 | 待确认<br>ES8388；8389仅为作者后续计划<br>待确认 | 参数待确认<br><small>模块配置待确定</small> | ➖ 未实测<br>尚无该型号的实物反馈 |
+| <small>暂无对应图片</small><br>**yunliao-s3**<br>云聊（产品名，品牌归属待确认） / Yunliao | ESP32-S3 | 2.8″<br>320 × 240<br>ST7789 / SPI（公开配置） | Flash 待确认<br>PSRAM 待确认 | 待确认<br>ES8388；8389仅为作者后续计划<br>待确认 | 参数待确认<br><small>模块配置待确定</small> | ➖ 未实测<br>尚无该型号的实物反馈 |
+
+### ESP32-C5
+
+| 主板 / 品牌 | 主控 | 屏幕 | Flash / PSRAM | 触摸 / 声音 / 状态灯 | 固件 | 用户实测 |
+|---|---|---|---|---|---|---|
+| <img src="readme-assets/test-boards/waveshare-c5-35.webp" width="150" alt="waveshare-c5-35"><br>**waveshare-c5-35**<br>微雪 / Waveshare | ESP32-C5 | 3.5″<br>480 × 320<br>ST7796 / SPI | 32 MB / 8 MB | FT6336 / I²C<br>ES8311<br>无RGB状态灯 | 测试固件可用<br><code>waveshare-c5-35</code><br><small class="firmware-options">大资源 · MDI · 8语<br>温湿计开 · 账号登录开<br>JPEG摄像头 · 缩略图开<br>深睡关 · SD关 · 蓝牙配网关</small> | ➖ 未实测 |
+
+### ESP32-C6
+
+| 主板 / 品牌 | 主控 | 屏幕 | Flash / PSRAM | 触摸 / 声音 / 状态灯 | 固件 | 用户实测 |
+|---|---|---|---|---|---|---|
+| <img src="readme-assets/test-boards/waveshare-c6-28.webp" width="150" alt="waveshare-c6-28"><br>**waveshare-c6-28**<br>微雪 / Waveshare | ESP32-C6 | 2.8″<br>320 × 240<br>ST7789 / SPI | 16 MB / 无PSRAM | CST3530 / I²C<br>ES8311<br>无RGB状态灯 | 测试固件可用<br><code>waveshare-c6-28</code><br><small class="firmware-options">小资源 · 原装图标 · 8语<br>温湿计开 · 账号登录开<br>摄像头关 · 缩略图关<br>10账号 / 20设备<br>深睡关 · SD关 · 蓝牙配网关</small> | ➖ 未实测 |
+
+### ESP32-S31
+
+| 主板 / 品牌 | 主控 | 屏幕 | Flash / PSRAM | 触摸 / 声音 / 状态灯 | 固件 | 用户实测 |
+|---|---|---|---|---|---|---|
+| <img src="readme-assets/test-boards/esp32-s31-korvo-1.png" width="150" alt="esp32-s31-korvo-1"><br>**esp32-s31-korvo-1**<br>乐鑫 / Espressif | ESP32-S31 | 4.3″<br>800 × 480<br>RGB · SUB3屏幕子板 | 16 MB / 16 MB | GT1151 / I²C<br>ES8389<br>WS2812 RGB | 需原生esptool安装<br><code>esp32-s31-korvo-1</code><br><small class="firmware-options">大资源 · MDI · 8语<br>温湿计开 · 账号登录开<br>JPEG摄像头 · 缩略图开<br>状态灯开 · 不支持亮度调节<br>深睡关 · SD关 · 蓝牙配网关</small> | ➖ 未实测 |
 
 ## 使用与反馈
 

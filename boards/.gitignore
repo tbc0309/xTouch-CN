@@ -14,6 +14,9 @@ __pycache__/
 **/dependencies.lock
 !port-project-s3/dependencies.lock
 !port-project-p4/dependencies.lock
+!port-project-c5/dependencies.lock
+!port-project-c6/dependencies.lock
+!port-project-s31/dependencies.lock
 !esp32-s3-box-3/dependencies.lock
 !esp32-s3-korvo2-lcd/dependencies.lock
 !esp32-s3-korvo2-lcd-rndis/dependencies.lock

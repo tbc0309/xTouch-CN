@@ -16,10 +16,10 @@
     "test"
   ],
   "backend": "spi",
-  "panel": "ILI9341",
-  "codec": "待核对",
+  "panel": "ST7789 (公开固件驱动)",
+  "codec": "ES8388",
   "blockers": [
-    "容量与坐标触摸尚无可靠厂家依据，不使用项目默认16/8MB冒充实物规格。"
+    "公开固件已有320×240显示、ES8388声音、电源及按键参数；缺少坐标触摸实现和准确Flash/PSRAM实物容量依据。"
   ],
   "implementationTargets": [],
   "verifiedParameters": {
@@ -36,14 +36,16 @@
       "note": ""
     },
     "resolution": {
-      "status": "unverified",
+      "value": "320×240",
+      "status": "source-confirmed",
       "sources": [],
-      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      "note": "公开固件配置依据；不代替具体PCB实物验收。"
     },
     "display": {
-      "status": "unverified",
+      "value": "ST7789 / SPI mode 3 / 40MHz",
+      "status": "source-confirmed",
       "sources": [],
-      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      "note": "公开固件配置依据；不代替具体PCB实物验收。"
     },
     "flashMB": {
       "status": "unverified",
@@ -58,13 +60,13 @@
     "touch": {
       "status": "unverified",
       "sources": [],
-      "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+      "note": "公开固件未实现坐标触摸；这不能证明所有硬件修订均不带触摸，仍需准确硬件资料。"
     },
     "audio": {
-      "value": "ES8388；8389仅为作者后续计划",
-      "status": "owner-confirmed",
+      "value": "ES8388",
+      "status": "source-confirmed",
       "sources": [],
-      "note": ""
+      "note": "公开固件配置依据；不代替具体PCB实物验收。"
     },
     "indicator": {
       "status": "unverified",

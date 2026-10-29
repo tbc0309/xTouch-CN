@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 33554432,
+  "applicationSlotBytes": 12582912,
+  "chip": "esp32c5",
+  "version": "1.0.1-test",
+  "application": "waveshare-c5-35.bin",
+  "fullImage": "waveshare-c5-35-full.bin",
+  "applicationBytes": 5300768,
+  "applicationOffset": 131072,
+  "sha256": "a4b5fceb927cadd55180f5d8bb21dfe8dcb27ab1a8da88bad0d14c3558604af3",
+  "fullSha256": "c918ba7a9167af3e0c4dd7ef3b2a2fb85741cb270c04cf6d98711046a9d53b54",
+  "project": "xt_waveshare_c5_35",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

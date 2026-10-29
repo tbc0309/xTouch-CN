@@ -35,13 +35,23 @@ def profile_definitions(command):
 application_profile=profile_definitions(application[0]['command'])
 sdk_config=json.loads((build/'config/sdkconfig.json').read_text(encoding='utf-8'))
 main_task_core=1 if sdk_config.get('ESP_MAIN_TASK_AFFINITY_CPU1') else 0 if sdk_config.get('ESP_MAIN_TASK_AFFINITY_CPU0') else None
-if args.release and main_task_core!=1:
- raise SystemExit('Formal UI/main task must be pinned to CPU1; inspect the generated sdkconfig')
+expected_main_core=0 if sdk_config.get('FREERTOS_UNICORE') else 1
+if args.release and main_task_core!=expected_main_core:
+ raise SystemExit('UI/main task affinity differs from the SDK core topology; inspect the generated sdkconfig')
 graphics_profile=profile_definitions(graphics_memory[0]['command'])
-for name in ('XTOUCH_WAVESHARE','XTOUCH_BOARD_CYD','XTOUCH_LANGUAGES_ZH_EN','XTOUCH_SINGLE_PRINTER_LOGO','XTOUCH_UI_PICTURE_PICKER','XTOUCH_UI_HIDPI_ASSETS'):
+for name in ('XTOUCH_WAVESHARE','XTOUCH_BOARD_CYD','XTOUCH_LANGUAGES_ZH_EN','XTOUCH_SINGLE_PRINTER_LOGO','XTOUCH_UI_PICTURE_PICKER','XTOUCH_UI_HIDPI_ASSETS','XTOUCH_UI_LVGL_BYTES'):
  if application_profile.get(name)!=graphics_profile.get(name):
   raise SystemExit('Application/LVGL profile mismatch: '+name)
 passive_sensor_budget=None
+if application_profile.get('XTOUCH_COMPACT_DEVICE_CAPACITY')=='1' and application_profile.get('XTOUCH_FEATURE_XIAOMI_BLE')=='1':
+ if not sdk_config.get('BT_NIMBLE_ROLE_OBSERVER') or any(sdk_config.get('BT_NIMBLE_'+role) for role in ('ROLE_CENTRAL','ROLE_PERIPHERAL','ROLE_BROADCASTER','GATT_CLIENT','GATT_SERVER')):
+  raise SystemExit('Compact passive receiver must use observer-only roles')
+ if not sdk_config.get('BT_NIMBLE_MEM_ALLOC_MODE_INTERNAL'):
+  raise SystemExit('A board without PSRAM must use internal NimBLE memory')
+ passive_sensor_budget={}
+ for key in ('BT_NIMBLE_MSYS_1_BLOCK_COUNT','BT_NIMBLE_MSYS_2_BLOCK_COUNT'):
+  if sdk_config.get(key)!=4:raise SystemExit('Compact passive buffer budget differs from its board configuration: '+key)
+  passive_sensor_budget[key]=4
 if application_profile.get('XTOUCH_BOARD_CYD')=='1' and application_profile.get('XTOUCH_FEATURE_XIAOMI_BLE')=='1':
  header=build/'config/sdkconfig.h'
  if not header.is_file():raise SystemExit('CYD passive sensor budget: missing compiled SDK configuration')
@@ -142,6 +152,12 @@ if policy_path.exists():
  matches=[board for board in BOARDS.values() if board['project']==project and board['chip']==data.get('target')]
  if len(matches)!=1:raise SystemExit('Cannot identify exact OTA board from native application')
  board=matches[0]
+ if board.get('compactMemory'):
+  if application_profile.get('XTOUCH_COMPACT_DEVICE_CAPACITY')!='1' or application_profile.get('XTOUCH_UI_LVGL_BYTES')!='49152':
+   raise SystemExit('Compact board memory/capacity flags are missing; reconfigure and rebuild')
+ for feature in board.get('disabledFeatures',[]):
+  if application_profile.get('XTOUCH_FEATURE_'+feature.upper())!='0':
+   raise SystemExit('Unsupported board feature compiled: '+feature)
  if board.get('source'):
   for macro,key in [('XTOUCH_DEEP_WAKE_PIN','deepSleepWakeGpio'),('XTOUCH_SLEEP_BUTTON_PIN','sleepButtonGpio')]:
    if application_profile.get(macro)!=str(board[key]):raise SystemExit('Compiled board capability changed; reconfigure/rebuild: '+macro)

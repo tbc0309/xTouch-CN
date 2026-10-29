@@ -15,6 +15,11 @@
       "url": "https://github.com/bitbank2/JPEGDEC.git",
       "ref": "86282979224c8a32fd51e091ed5a35b0c699a52b",
       "commit": "86282979224c8a32fd51e091ed5a35b0c699a52b"
+    },
+    "XPowersLib": {
+      "url": "https://github.com/lewisxhe/XPowersLib.git",
+      "ref": "d6997586e68f65afd51baa775903df930db39821",
+      "commit": "d6997586e68f65afd51baa775903df930db39821"
     }
   }
 }

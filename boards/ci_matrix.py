@@ -10,7 +10,7 @@ sys.path.insert(0,str(root/'scripts'))
 from release_policy import read
 release=read(root)
 original=['cyd','s3','p4','es3c35p']
-names=[key for key in BOARDS if key not in original] if release['prerelease'] else original
+names=[key for key in BOARDS if key not in original and not BOARDS[key].get('localOnly',False)] if release['prerelease'] else original
 matrix=json.dumps({'include':[{'board':key} for key in names]},separators=(',',':'))
 if '--github-output' in sys.argv:
     with open(os.environ['GITHUB_OUTPUT'],'a',encoding='utf8') as output:

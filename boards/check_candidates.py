@@ -17,7 +17,8 @@ def check(root):
     bsp_targets = json.loads(bsp_path.read_text(encoding='utf8')) if bsp_path.exists() else {}
     for name, row in records.items():
         errors = []
-        if name in active:
+        promoted = name in active and active[name].get('candidateId') == name
+        if name in active and not promoted:
             errors.append('Candidate must not replace an active build target')
         width, height = row['screen']
         if width == height or max(width, height) / min(width, height) >= 2:
@@ -39,23 +40,25 @@ def check(root):
         if not row.get('blockers'):
             errors.append('Incomplete driver must state its blockers')
         for target in row.get('implementationTargets', []):
-            profile = bsp_targets.get(target)
+            profile = bsp_targets.get(target) or active.get(target)
             if not profile or profile['candidateId'] != name:
                 errors.append('BSP target does not match its hardware candidate')
                 continue
             project = root / profile['directory']
-            for filename in ('CMakeLists.txt', 'bsp_port.cmake', 'display_config.cmake',
+            required = ('CMakeLists.txt', 'bsp_port.cmake', 'display_config.cmake',
                              'sdkconfig.defaults', 'partitions.csv',
                              'xtouch_board_support/CMakeLists.txt',
-                             'xtouch_board_support/idf_component.yml'):
+                             'xtouch_board_support/idf_component.yml') if profile.get('bspProfile') else (
+                                 'CMakeLists.txt', 'profile.cpp', 'display_config.cmake', 'sdkconfig.defaults', 'partitions.csv')
+            for filename in required:
                 if not (project / filename).is_file():
                     errors.append('Missing project input: ' + filename)
             cmake = (project / 'CMakeLists.txt').read_text(encoding='utf8')
-            if 'BSP_CONFIG_NO_GRAPHIC_LIB=1' not in cmake:
+            if profile.get('bspProfile') and 'BSP_CONFIG_NO_GRAPHIC_LIB=1' not in cmake:
                 errors.append('BSP must not start a second graphics library')
             if profile['nativeBuildAllowed'] or profile['releaseSupported']:
                 errors.append('Uncompiled BSP target may not be enabled for release')
-            for source in ('bsp_spi.cpp', 'bsp_audio.cpp', 'power.h'):
+            for source in (('bsp_spi.cpp', 'bsp_audio.cpp', 'power.h') if profile.get('bspProfile') else ()):
                 if not (root / 'candidates/common' / source).is_file():
                     errors.append('Missing BSP adapter: ' + source)
         results.append(dict(board=name,configurationValid=not errors,errors=errors,

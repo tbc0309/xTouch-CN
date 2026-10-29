@@ -1,6 +1,10 @@
 #include "board.h"
 #include "port_profile.h"
+#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4
 #include "port_st7796_init.h"
+#include <esp_lcd_ili9341.h>
+#include <esp_lcd_st7796.h>
+#endif
 #include "touch_contact.h"
 #include "platform/idf/i2c.h"
 #include <driver/gpio.h>
@@ -9,8 +13,6 @@
 #include <esp_lcd_panel_io.h>
 #include <esp_lcd_panel_ops.h>
 #include <esp_lcd_panel_vendor.h>
-#include <esp_lcd_ili9341.h>
-#include <esp_lcd_st7796.h>
 #include <esp_log.h>
 #include <freertos/semphr.h>
 #include <algorithm>
@@ -61,6 +63,7 @@ bool board_display_begin() {
     dev.reset_gpio_num = gpio_num_t(p.reset);
     dev.bits_per_pixel = 16;
     dev.rgb_ele_order = p.bgr ? LCD_RGB_ELEMENT_ORDER_BGR : LCD_RGB_ELEMENT_ORDER_RGB;
+#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4
     st7796_vendor_config_t vendor{};
     if (p.customSt7796) {
         vendor.init_cmds = port_st7796_init;
@@ -70,9 +73,18 @@ bool board_display_begin() {
     auto err = p.panel == XTouchPort::Panel::Ili9341  ? esp_lcd_new_panel_ili9341(io, &dev, &panel)
                : p.panel == XTouchPort::Panel::St7796 ? esp_lcd_new_panel_st7796(io, &dev, &panel)
                                                       : esp_lcd_new_panel_st7789(io, &dev, &panel);
-    if (err != ESP_OK || esp_lcd_panel_reset(panel) != ESP_OK ||
-        esp_lcd_panel_init(panel) != ESP_OK)
+#else
+    // SPI command transport is provided by IDF; board hooks supply the glass-specific init.
+    auto err = esp_lcd_new_panel_st7789(io, &dev, &panel);
+#endif
+    if (err != ESP_OK || esp_lcd_panel_reset(panel) != ESP_OK)
         return false;
+    if (p.peripherals && p.peripherals->panelInit) {
+        if (!p.peripherals->panelInit(io))
+            return false;
+    } else if (esp_lcd_panel_init(panel) != ESP_OK) {
+        return false;
+    }
     if (esp_lcd_panel_swap_xy(panel, p.swap) != ESP_OK ||
         esp_lcd_panel_mirror(panel, p.mirrorX, p.mirrorY) != ESP_OK ||
         esp_lcd_panel_invert_color(panel, p.invert) != ESP_OK)

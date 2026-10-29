@@ -1,4 +1,4 @@
-"""Run from an ESP-IDF 6.1 terminal: python boards/build.py s3|p4|cyd|es3c35p."""
+"""Build an explicit board target from an ESP-IDF 6.1 terminal."""
 import argparse,os,pathlib,subprocess,sys,shutil,re,json
 from board_catalog import BOARDS, sdkconfig_defaults
 # Git component hashes are byte based. Keep pinned upstream files LF on every
@@ -52,11 +52,13 @@ if True: # Every variant owns its SDK config; omitted BLE must also free control
        sdkconfig_defaults(args.board, root))
  radio=args.ble_provisioning or args.xiaomi_ble
  values={'BT_ENABLED':'y' if radio else 'n','BT_NIMBLE_ENABLED':'y' if radio else 'n','BT_BLUEDROID_ENABLED':'n','ESP_PROTOCOMM_SUPPORT_SECURITY_VERSION_1':'y'}
- if BOARDS[args.board].get('source') and BOARDS[args.board]['chip']=='esp32s3':
+ if BOARDS[args.board].get('source') and BOARDS[args.board]['chip'] in ('esp32s3','esp32c5','esp32c6','esp32s31'):
   # Several new boards route audio/RGB to GPIO43/44, the default UART0 pins.
   usb=BOARDS[args.board]['console']=='usb-jtag'
   values.update(ESP_CONSOLE_USB_SERIAL_JTAG='y' if usb else 'n',ESP_CONSOLE_UART_DEFAULT='n' if usb else 'y',ESP_CONSOLE_UART_CUSTOM='n')
  if args.board=='cyd':values['BT_CONTROLLER_ENABLED']='y' if radio else 'n'
+ if BOARDS[args.board].get('compactMemory'):
+  values.update(BT_NIMBLE_MEM_ALLOC_MODE_INTERNAL='y',BT_NIMBLE_MEM_ALLOC_MODE_EXTERNAL='n',BT_NIMBLE_MSYS_1_BLOCK_COUNT='4',BT_NIMBLE_MSYS_2_BLOCK_COUNT='4')
  if BOARDS[args.board]['chip']=='esp32p4':values.update(BT_CONTROLLER_DISABLED='y',BT_NIMBLE_TRANSPORT_UART='n',ESP_HOSTED_HOST_FEAT_BT='y' if radio else 'n')
  for key,value in values.items():
   text=re.sub(r'^(?:CONFIG_'+key+r'=.*|# CONFIG_'+key+r' is not set)\n?', '',text,flags=re.M)
@@ -71,7 +73,7 @@ if True: # Every variant owns its SDK config; omitted BLE must also free control
 options=['-D','XTOUCH_TEST_PROVISIONING_ONLY='+('ON' if args.provisioning_only else 'OFF'),'-D','XTOUCH_TEST_DEFER_BLE=OFF','-D','XTOUCH_TEST_AUTOMATION='+('ON' if args.test_automation else 'OFF'),'-D','XTOUCH_FEATURE_XIAOMI_BLE='+('ON' if args.xiaomi_ble else 'OFF'),'-D','XTOUCH_FEATURE_BLE_PROVISIONING='+('ON' if args.ble_provisioning else 'OFF')]
 options+=['-D','XTOUCH_FEATURE_EXTERNAL_CHAMBER='+('ON' if args.external_chamber else 'OFF')]
 for feature in ['audio','deep_sleep','indicator','camera','print_preview','cloud_token','cloud_login']:
- options+=['-D','XTOUCH_FEATURE_'+feature.upper()+'='+('OFF' if feature in args.without or (args.board=='cyd' and feature in ['camera','print_preview']) else 'ON')]
+ options+=['-D','XTOUCH_FEATURE_'+feature.upper()+'='+('OFF' if feature in args.without or feature in BOARDS[args.board].get('disabledFeatures',[]) or (args.board=='cyd' and feature in ['camera','print_preview']) else 'ON')]
 default_assets='large' if BOARDS[args.board]['screen'][0]>=480 and BOARDS[args.board]['screen'][1]>=320 else 'small'
 options+=['-D','XTOUCH_ICON_SET='+(args.icons or ''),'-D','XTOUCH_ASSET_SIZE='+(args.assets or default_assets)]
 command=[sys.executable,str(pathlib.Path(os.environ['IDF_PATH'])/'tools/idf.py'),'-C',str(root/name),'-B',str(build_dir),'-D','XTOUCH_BOARD='+name,'-D','IDF_TARGET='+target,'-D','SDKCONFIG='+str(sdkconfig)]+options+['build']

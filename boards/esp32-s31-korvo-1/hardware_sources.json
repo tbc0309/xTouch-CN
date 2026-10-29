@@ -1,0 +1,15 @@
+{
+  "target": "esp32-s31-korvo-1",
+  "manufacturerSources": [
+    "https://documentation.espressif.com/esp-dev-kits/en/latest/esp32s31/esp32-s31-korvo-1/index.html"
+  ],
+  "requiredFlashBytes": 16777216,
+  "psramBytes": 16777216,
+  "physicalTested": false,
+  "photo": {
+    "src": "readme-assets/test-boards/esp32-s31-korvo-1.png",
+    "sourceUrl": "https://raw.githubusercontent.com/espressif/esp-dev-kits/master/docs/_static/esp32-s31-korvo-1/esp32-s31-korvo-1-isometric.png",
+    "page": "https://documentation.espressif.com/esp-dev-kits/en/latest/esp32s31/esp32-s31-korvo-1/index.html",
+    "alt": "ESP32-S31-Korvo-1 V1.1"
+  }
+}

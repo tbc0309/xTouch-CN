@@ -1,6 +1,6 @@
 # xTouch-CN 1.0.1-test · 新主板测试版
 
-基于 xTouch-CN 1.0.1，提供 38 个新增主板／芯片修订固件目标，覆盖 ESP32、ESP32-S3 和 ESP32-P4。使用原生 ESP-IDF 6.1 与 LVGL 9.6.0。
+基于 xTouch-CN 1.0.1，提供 42 个新增主板／芯片修订固件目标，覆盖 ESP32、ESP32-C5、ESP32-C6、ESP32-S3、ESP32-S31 和 ESP32-P4。使用原生 ESP-IDF 6.1 与 LVGL 9.6.0。
 
 本次为 **Pre-release**。附件固件已完成原生编译、镜像与 ELF 对应、Flash／双 OTA 容量、资源配置及 OTA 身份检查。新增板型的实物验收状态独立记录，尚未实测的项目标为 **➖ 未实测**。
 
@@ -11,6 +11,8 @@
 - 按屏幕分辨率选择资源规格与图标；语言、状态灯、深睡等模块配置见主板列表。
 - 经典 ESP32 测试目标的摄像头仅提供兼容 JPEG；未映射的 SD、状态灯或独立深睡唤醒不启用。
 - 资料或容量尚未满足条件的型号不提供本次安装镜像。现有四款正式主板继续使用 `1.0.1` 正式版。
+
+新增 BOX3、微雪 C5 3.5、微雪 C6 2.8 与 S31 Korvo-1。C5／S31 摄像头仅支持 JPEG；C6 无 PSRAM，关闭摄像头与缩略图，保留温湿度计和账号登录，最多10账号／20设备。S31 需使用原生 esptool 安装，当前网页串口工具尚不支持该主控。四款均为 ➖ 未实测。
 
 ## 安装
 
@@ -28,4 +30,4 @@
 
 ---
 
-**Test firmware:** 38 additional board/silicon targets based on 1.0.1. Native build, image/ELF, resource, partition and OTA identity checks are complete; physical validation is tracked separately in the board catalog. Select **Test firmware** in the web installer and match the exact hardware. Existing release boards continue to use stable 1.0.1. Report hardware details and reproduction steps without credentials.
+**Test firmware:** 42 additional board/silicon targets based on 1.0.1. Native build, image/ELF, resource, partition and OTA identity checks are complete; physical validation is tracked separately in the board catalog. Select **Test firmware** in the web installer and match the exact hardware. Existing release boards continue to use stable 1.0.1. Report hardware details and reproduction steps without credentials.

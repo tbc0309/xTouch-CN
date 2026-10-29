@@ -1,12 +1,12 @@
-# atk-dnesp32s3-box3
+# ATK-DNESP32S3 BOX3
 
-实物测试状态：➖ 未实测。固件范围和构建配置见项目测试版主板列表。
+实物测试状态：➖ 未实测。
 
-## 配置说明
+适用厂家2.4英寸320×240屏幕组合：ST7789V2，4线SPI；CHSC5432电容触摸，I2C地址0x2E；AW9523BTQR控制电源、背光及触摸复位。不是BOX1/BOX2的I80接线。
 
-- 厂家确认的是2.4寸触摸屏接口，尚未确认实际面板和触摸型号；不套用BOX1/BOX2的引脚。
+16MB Flash、8MB PSRAM，ES8311与NS4150B输出。背光采用开关控制；红蓝双色灯不作为RGB状态灯。SD接口暂未启用。
 
-## 厂家资料
-
-- https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/
-- https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/download/
+厂家资料：
+- https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/example-idf/lcd/
+- https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/example-idf/touch/
+- https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/example-idf/iic_exio/

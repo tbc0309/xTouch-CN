@@ -1,0 +1,15 @@
+{
+  "target": "waveshare-c6-28",
+  "manufacturerSources": [
+    "https://docs.waveshare.com/ESP32-C6-Touch-LCD-2.8"
+  ],
+  "requiredFlashBytes": 16777216,
+  "psramBytes": 0,
+  "physicalTested": false,
+  "photo": {
+    "src": "readme-assets/test-boards/waveshare-c6-28.webp",
+    "sourceUrl": "https://docs.waveshare.com/assets/images/C6-2.8-1-26df3090816897827295572149c2c8aa.webp",
+    "page": "https://docs.waveshare.com/ESP32-C6-Touch-LCD-2.8",
+    "alt": "ESP32-C6-Touch-LCD-2.8"
+  }
+}

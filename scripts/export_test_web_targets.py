@@ -5,10 +5,12 @@ import sys
 root=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(root/'boards'))
 from board_catalog import BOARDS
-targets={key:{field:board[field] for field in ['directory','stem','chip','chip_id','family','project','name','flash','boot_offset','app_offset','screen','hint']} for key,board in BOARDS.items() if key not in ['cyd','s3','p4','es3c35p']}
+targets={key:{field:board[field] for field in ['directory','stem','chip','chip_id','family','project','name','flash','boot_offset','app_offset','screen','hint']} for key,board in BOARDS.items() if key not in ['cyd','s3','p4','es3c35p'] and not board.get('localOnly',False)}
 for key in targets:
     targets[key]['manifest']='test/manifest-'+key+'.json'
     targets[key]['siliconRevision']=BOARDS[key].get('siliconRevision')
+    if BOARDS[key].get('webInstallSupported') is False:
+        targets[key]['webInstallSupported']=False
 path=root/'web/test-board-targets.json'
 path.write_text(json.dumps(targets,ensure_ascii=False,indent=2)+'\n','utf8')
 (root/'web/test-board-targets.js').write_text('// Generated test board identities. Availability is validated from the release catalog.\nexport default '+json.dumps(targets,ensure_ascii=False,separators=(',',':'))+';\n','utf8')

@@ -45,12 +45,14 @@ bool board_display_begin() {
     cfg.vsync_gpio_num = gpio_num_t(r.vsync);
     cfg.de_gpio_num = gpio_num_t(r.de);
     cfg.pclk_gpio_num = gpio_num_t(r.clock);
-    cfg.disp_gpio_num = GPIO_NUM_NC;
+    cfg.disp_gpio_num = gpio_num_t(r.displayEnable);
     for (unsigned i = 0; i < 16; ++i)
         cfg.data_gpio_nums[i] = gpio_num_t(r.data[i]);
     cfg.flags.fb_in_psram = 1;
     if (esp_lcd_new_rgb_panel(&cfg, &panel) != ESP_OK || esp_lcd_panel_reset(panel) != ESP_OK ||
         esp_lcd_panel_init(panel) != ESP_OK)
+        return false;
+    if (r.displayEnable >= 0 && esp_lcd_panel_disp_on_off(panel, true) != ESP_OK)
         return false;
     void *buffers[2]{};
     if (esp_lcd_rgb_panel_get_frame_buffer(panel, 2, &buffers[0], &buffers[1]) != ESP_OK)
@@ -123,6 +125,14 @@ bool board_display_sleep(bool sleeping) {
     if (waiting)
         return false;
     const auto &p = XTouchPort::profile();
+    if (XTouchPort::rgbProfile().displayEnable >= 0) {
+        if (esp_lcd_panel_disp_on_off(panel, !sleeping) != ESP_OK)
+            return false;
+        asleep = sleeping;
+        if (!sleeping)
+            lv_obj_invalidate(lv_scr_act());
+        return true;
+    }
     if (sleeping && p.backlight < 0 && p.power == XTouchPort::Power::Gpio) {
         std::memset(back, 0, size_t(p.width) * p.height * 2);
         first = 0;

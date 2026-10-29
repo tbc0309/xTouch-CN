@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 16777216,
+  "applicationSlotBytes": 6291456,
+  "chip": "esp32s3",
+  "version": "1.0.1-test",
+  "application": "atk-dnesp32s3-box3.bin",
+  "fullImage": "atk-dnesp32s3-box3-full.bin",
+  "applicationBytes": 3424240,
+  "applicationOffset": 131072,
+  "sha256": "be2caa5e13a4ef7f206554cf342b061cd9beedd5e2291884b9450ffb875857c0",
+  "fullSha256": "2ca253112ac7912014a372ef1fa69cff069de63d15e4e883d3cb21a6ebb0873c",
+  "project": "xt_atk_s3_box3",
+  "releaseTag": "1.0.1-test",
+  "prerelease": true
+}

@@ -161,10 +161,11 @@
     "releaseSupported": false,
     "physicalTested": false,
     "nativeBuildAllowed": false,
-    "selection": "pending-touch",
+    "selection": "retained",
     "sources": [
       "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
-      "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/download/"
+      "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/download/",
+      "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/example-idf/touch/"
     ],
     "photo": {
       "src": "https://wiki.alientek.com/assets/images/dnesp32s3-box3-show-108091f86c799a2c39e161f98046d971.png",
@@ -175,14 +176,16 @@
       "main",
       "test"
     ],
-    "backend": "i80",
-    "panel": "待核对所配 2.4 寸模块",
-    "touch": "待核对",
+    "backend": "spi",
+    "panel": "ST7789V2",
+    "touch": "CHSC5432 / I2C 0x2E",
     "codec": "ES8311",
     "blockers": [
-      "厂家确认的是2.4寸触摸屏接口，尚未确认实际面板和触摸型号；不套用BOX1/BOX2的引脚。"
+      "尚未进行实物验收；SD接口暂未映射。"
     ],
-    "implementationTargets": [],
+    "implementationTargets": [
+      "atk-dnesp32s3-box3"
+    ],
     "verifiedParameters": {
       "chip": {
         "value": "ESP32-S3R8",
@@ -207,14 +210,26 @@
         "note": ""
       },
       "resolution": {
-        "status": "unverified",
-        "sources": [],
-        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+        "value": "320×240",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/example-idf/lcd/",
+            "locator": "厂家实验硬件资源及驱动说明"
+          }
+        ],
+        "note": "仅适用于文档所述2.4寸屏组合"
       },
       "display": {
-        "status": "unverified",
-        "sources": [],
-        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+        "value": "ST7789V2 / 4-wire SPI",
+        "status": "confirmed",
+        "sources": [
+          {
+            "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/example-idf/lcd/",
+            "locator": "厂家实验硬件资源及驱动说明"
+          }
+        ],
+        "note": "仅适用于文档所述2.4寸屏组合"
       },
       "flashMB": {
         "value": 16,
@@ -239,15 +254,15 @@
         "note": ""
       },
       "touch": {
-        "value": "2.4寸带触摸LCD扩展接口；所装控制器另核",
-        "status": "partial",
+        "value": "CHSC5432 / 0x2E / AW9523 P1_7 reset",
+        "status": "confirmed",
         "sources": [
           {
-            "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/",
-            "locator": "硬件基本参数 / 资源分布"
+            "url": "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/example-idf/touch/",
+            "locator": "厂家实验硬件资源及驱动说明"
           }
         ],
-        "note": "已证实部分与仍待确认部分分别说明；不计为整项核实完成。"
+        "note": "仅适用于文档所述2.4寸屏组合"
       },
       "audio": {
         "value": "ES8311 + NS4150B；板载2520腔体扬声器",
@@ -272,14 +287,12 @@
         "note": ""
       }
     },
-    "parameterAuditComplete": false,
+    "parameterAuditComplete": true,
     "memorySpecificationVerified": true,
-    "sourceStatus": "blocked",
-    "nativeCompiled": false,
+    "sourceStatus": "native-build-verified",
+    "nativeCompiled": true,
     "requiredInputs": [
-      "所配2.4寸面板控制器",
-      "I80数据线与AW9523复位时序",
-      "触摸控制器和接线"
+      "显示、触摸、声音、待机的实物验收"
     ]
   },
   "df-k10": {
@@ -2272,10 +2285,10 @@
       "test"
     ],
     "backend": "spi",
-    "panel": "ILI9341",
-    "codec": "待核对",
+    "panel": "ST7789 (公开固件驱动)",
+    "codec": "ES8388",
     "blockers": [
-      "容量与坐标触摸尚无可靠厂家依据，不使用项目默认16/8MB冒充实物规格。"
+      "公开固件已有320×240显示、ES8388声音、电源及按键参数；缺少坐标触摸实现和准确Flash/PSRAM实物容量依据。"
     ],
     "implementationTargets": [],
     "verifiedParameters": {
@@ -2292,14 +2305,16 @@
         "note": ""
       },
       "resolution": {
-        "status": "unverified",
+        "value": "320×240",
+        "status": "source-confirmed",
         "sources": [],
-        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+        "note": "公开固件配置依据；不代替具体PCB实物验收。"
       },
       "display": {
-        "status": "unverified",
+        "value": "ST7789 / SPI mode 3 / 40MHz",
+        "status": "source-confirmed",
         "sources": [],
-        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+        "note": "公开固件配置依据；不代替具体PCB实物验收。"
       },
       "flashMB": {
         "status": "unverified",
@@ -2314,13 +2329,13 @@
       "touch": {
         "status": "unverified",
         "sources": [],
-        "note": "公开资料尚未确认；不以构建配置或未实现功能推断硬件。"
+        "note": "公开固件未实现坐标触摸；这不能证明所有硬件修订均不带触摸，仍需准确硬件资料。"
       },
       "audio": {
-        "value": "ES8388；8389仅为作者后续计划",
-        "status": "owner-confirmed",
+        "value": "ES8388",
+        "status": "source-confirmed",
         "sources": [],
-        "note": ""
+        "note": "公开固件配置依据；不代替具体PCB实物验收。"
       },
       "indicator": {
         "status": "unverified",

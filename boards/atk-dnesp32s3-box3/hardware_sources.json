@@ -1,0 +1,16 @@
+{
+  "target": "atk-dnesp32s3-box3",
+  "manufacturerSources": [
+    "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/example-idf/touch/",
+    "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/example-idf/iic_exio/",
+    "https://wiki.alientek.com/docs/Boards/IoT/DNESP32S3B3/start-guide/dnesp32s3-box3-introduction/"
+  ],
+  "requiredFlashBytes": 16777216,
+  "psramBytes": 8388608,
+  "physicalTested": false,
+  "photo": {
+    "src": "readme-assets/test-boards/atk-dnesp32s3-box3.png",
+    "sourceUrl": "https://wiki.alientek.com/assets/images/dnesp32s3-box3-show-108091f86c799a2c39e161f98046d971.png",
+    "alt": "ATK-DNESP32S3 BOX3"
+  }
+}

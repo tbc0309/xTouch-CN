@@ -1,6 +1,6 @@
 # Scope the PSRAM allocation policy to the pinned TinyH264 decoder archive.
 # Do not wrap global SDK allocators: MQTT, Wi-Fi and display DMA keep their policies.
-if(XTOUCH_FEATURE_CAMERA)
+if(XTOUCH_FEATURE_CAMERA AND (IDF_TARGET STREQUAL "esp32s3" OR IDF_TARGET STREQUAL "esp32p4"))
  get_target_property(XTOUCH_DECODER_ARCHIVE tinyh264 IMPORTED_LOCATION)
  if(NOT XTOUCH_DECODER_ARCHIVE)
   message(FATAL_ERROR "The pinned TinyH264 decoder archive is missing")

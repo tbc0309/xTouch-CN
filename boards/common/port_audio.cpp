@@ -36,7 +36,7 @@ BoardAudioPins board_audio_pins() {
 bool board_audio_codec_begin() {
     const auto kind = XTouchPort::profile().codec;
     if (kind == XTouchPort::Codec::Es8311)
-        return board_es8311_begin();
+        return board_es8311_begin(XTouchPort::profile().codecUseMclk);
     if (special)
         return true;
     if (kind == XTouchPort::Codec::Aw88298) {
@@ -54,12 +54,12 @@ bool board_audio_codec_begin() {
         cfg.hw_gain.pa_gain = 1.0f;
         special = aw88298_codec_new(&cfg);
     } else {
-        address = 0x10;
+        address = XTouchPort::profile().codecAddress ? XTouchPort::profile().codecAddress : 0x10;
         es8389_codec_cfg_t cfg{};
         cfg.ctrl_if = &control;
         cfg.codec_mode = ESP_CODEC_DEV_WORK_MODE_DAC;
         cfg.pa_pin = -1;
-        cfg.use_mclk = true;
+        cfg.use_mclk = XTouchPort::profile().codecUseMclk;
         cfg.mclk_div = 256;
         special = es8389_codec_new(&cfg);
     }
