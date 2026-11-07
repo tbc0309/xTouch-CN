@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['web/**', 'scripts/build_web.py', 'scripts/build_test_web.py', 'scripts/fetch_test_release.py', 'scripts/build_error_search.py', 'docs/data/error-codes.json', 'boards/**/ota.json', 'boards/**/manifest.json', 'version.json', '.github/workflows/pages.yml']
+    paths: ['web/**', 'scripts/build_web.py', 'scripts/build_idotmatrix_web.py', 'scripts/fetch_idotmatrix_release.py', 'scripts/build_test_web.py', 'scripts/fetch_test_release.py', 'scripts/build_error_search.py', 'docs/data/error-codes.json', 'boards/board_catalog.py', 'boards/**/ota.json', 'boards/**/manifest.json', 'version.json', '.github/workflows/pages.yml']
   release:
     types: [published]
 permissions:
@@ -102,6 +102,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python scripts/fetch_test_release.py --output _site --download-dir test-release-images
+      - name: Add independent pixel-controller installer when publicly released
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/fetch_idotmatrix_release.py --output _site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

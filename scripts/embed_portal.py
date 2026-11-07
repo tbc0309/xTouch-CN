@@ -42,9 +42,11 @@ def select_panels(page,mask):
 node=shutil.which("node")
 if not node:raise SystemExit("Node.js is required to build portal assets")
 from generate_locales import generate, language_assets
-from check_portal_assets import source_digest
+from check_portal_assets import source_digest, pixel_source_bytes
 root=Path(__file__).resolve().parents[1]
 language_assets()
+from generate_pixel_layout import generate as generate_pixel_layout
+generate_pixel_layout()
 language_options=''.join('<option value="'+row['code']+'">'+row['name']+'</option>' for row in json.loads((root/'resources/languages.json').read_text('utf-8')) if not limited or row['code'] in ('zh','en')).encode('utf-8')
 parts=['#pragma once','#include "platform/idf/text.h"','#include "features/config.h"']
 for source,symbol in [('index.html','index'),('style.css','style'),('app.js','script')]:
@@ -53,13 +55,13 @@ for source,symbol in [('index.html','index'),('style.css','style'),('app.js','sc
  if source=='app.js':
   zones=json.loads((root/'resources/timezones/iana-posix.json').read_text('utf-8'))
   clock=b'const XTouchTimezones='+json.dumps(zones,separators=(',',':')).encode()+b';\n'+(root/'portal/clock.js').read_bytes()
-  raw=generate(limited=limited)+clock+raw
+  raw=generate(limited=limited)+clock+(root/'portal/view-state.js').read_bytes()+b'\n'+raw
  if source.endswith('.css'):
   raw=subprocess.run([node,str(root/'scripts/minify-portal.cjs'),source.rsplit('.',1)[1]],input=raw,capture_output=True,check=True).stdout
  if source=='index.html':
   # Select a fixed HTML variant at compile time. The browser does not probe
   # hardware or wait for /api/info to decide which settings are available.
-  for condition,filename in [("#if defined(XTOUCH_BOARD_ES3C35P)","lcdwiki-es3c35p.bin"),("#elif defined(XTOUCH_WAVESHARE) && defined(XTOUCH_BOARD_S3)","esp32-s3-touch-lcd-2.8-v2.bin"),("#elif defined(XTOUCH_WAVESHARE)","esp32-p4-wifi6-touch-lcd-4.3.bin"),("#else","xtouch-2.8.bin")]:
+  for condition,filename in [("#if defined(XTOUCH_BOARD_ES3C35P)","lcdwiki-es3c35p.bin"),("#elif defined(XTOUCH_WAVESHARE) && defined(XTOUCH_BOARD_S3)","esp32-s3-touch-lcd-2.8-v2.bin"),("#elif defined(XTOUCH_WAVESHARE)","esp32-p4-wifi6-touch-lcd-4.3.bin"),("#elif defined(XTOUCH_CYD_ST7789)","xtouch-2.8-st7789.bin"),("#else","xtouch-2.8.bin")]:
    parts.append(condition)
    for mask in range(8):
     page=raw.replace(b'__FIRMWARE_FILENAME__',filename.encode('ascii'))
@@ -93,3 +95,12 @@ target=root/('src/xtouch/portal_assets_zh_en.h' if limited else 'src/xtouch/port
 content='// Portal source SHA256: '+source_digest(limited)+'\n'+'\n'.join(parts)+'\n'
 if not target.exists() or target.read_text(encoding='utf-8')!=content:
  target.write_text(content,encoding='utf-8')
+
+# Optional pixel-screen UI is served only by builds which include that module.
+pixel_source=pixel_source_bytes()
+pixel_min=subprocess.run([node,str(root/'scripts/minify-portal.cjs'),'js'],input=pixel_source,capture_output=True,check=True).stdout
+pixel_data=zopfli.gzip.compress(pixel_min,numiterations=20)
+pixel_target=root/'src/features/pixel_screen/portal_assets.h'
+from hashlib import sha256
+pixel_content='// Pixel portal SHA256: '+sha256(pixel_source.replace(b'\r\n',b'\n')).hexdigest()+'\n#pragma once\n#include <stdint.h>\nstatic const uint8_t pixel_portal_script[] = {'+','.join(hex(v) for v in pixel_data)+'};\n'
+if not pixel_target.exists() or pixel_target.read_text(encoding='utf-8')!=pixel_content:pixel_target.write_text(pixel_content,encoding='utf-8')

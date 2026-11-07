@@ -4,7 +4,7 @@
 #include "profile_route.h"
 
 namespace XTouchSchema {
-#if defined(XTOUCH_BOARD_CYD)
+#if defined(XTOUCH_BOARD_CYD) || (defined(XTOUCH_COMPACT_DEVICE_CAPACITY) && XTOUCH_COMPACT_DEVICE_CAPACITY)
 constexpr size_t MaxAccounts = 10;
 constexpr size_t MaxPrinters = 20;
 #else

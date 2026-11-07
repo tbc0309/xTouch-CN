@@ -1,6 +1,8 @@
 {
-  "version": "1.0.1",
-  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.1/esp32-s3-touch-lcd-2.8-v2.bin",
-  "size": 3356800,
-  "md5": "4932150f1e5383b2674ca4617f30ba4e"
+  "version": "1.0.2",
+  "releaseTag": "1.0.2",
+  "prerelease": false,
+  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.2/esp32-s3-touch-lcd-2.8-v2.bin",
+  "size": 4261584,
+  "md5": "7c7ebbb5ce25fa7e1d22d64124858a7f"
 }

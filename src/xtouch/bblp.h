@@ -23,7 +23,7 @@ bool xtouch_bblp_network_chamber() {
         return bambuStatus.chamber_supported;
     const char *m = xtouch_bblp_model();
     return !strcmp(m, "BL-P001") || !strcmp(m, "BL-P002") || !strcmp(m, "C13") ||
-           !strcmp(m, "N7") || !strcmp(m, "N6") || !strcmp(m, "O1C") || !strcmp(m, "O1C2") ||
+           !strcmp(m, "N10") || !strcmp(m, "N7") || !strcmp(m, "N6") || !strcmp(m, "O1C") || !strcmp(m, "O1C2") ||
            !strcmp(m, "O1D") || !strcmp(m, "O1E") || !strcmp(m, "O1S");
 }
 bool xtouch_bblp_chamber_display() {

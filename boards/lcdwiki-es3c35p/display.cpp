@@ -18,6 +18,7 @@ constexpr int Width = 480, Height = 320, NativeWidth = 320, NativeHeight = 480;
 // Composition targets PSRAM frame buffers; this tile is not the SPI queue.
 // Keep internal DMA RAM available for networking and the camera worker.
 constexpr unsigned DrawRows = 16;
+constexpr unsigned TransferRows = 8;
 constexpr uint8_t TouchAddress = 0x55;
 constexpr const char *Tag = "es3c35p";
 // This glass needs INVON for normal colors (also present in its vendor init).
@@ -53,15 +54,28 @@ void present(bool wait) {
         return;
     }
     waitTransfer();
-    // Pack aligned native rows into a separate outgoing buffer. The next LVGL
-    // frame may compose concurrently, but cannot overwrite queued DMA data.
+    // Keep the DMA staging memory reserved from boot. Passing a full PSRAM
+    // frame makes the SPI driver allocate bounce buffers while TLS/SD workers
+    // are active, which can fail even when PSRAM still has plenty of space.
     int left = dirtyLeft & ~15, right = (dirtyRight + 15) & ~15, w = right - left;
     int top = dirtyFirst & ~1, bottom = (dirtyEnd + 1) & ~1;
-    for (int row = top; row < bottom; ++row)
-        std::memcpy(transferPixels + (row - top) * w, framePixels + row * NativeWidth + left,
-                    w * 2);
-    transferPending = true;
-    ESP_ERROR_CHECK(esp_lcd_panel_draw_bitmap(panel, left, top, right, bottom, transferPixels));
+    for (int first = top; first < bottom; first += TransferRows) {
+        waitTransfer();
+        int rows = std::min<int>(TransferRows, bottom - first);
+        for (int row = 0; row < rows; ++row)
+            std::memcpy(transferPixels + row * w, framePixels + (first + row) * NativeWidth + left,
+                        w * 2);
+        transferPending = true;
+        esp_err_t error =
+            esp_lcd_panel_draw_bitmap(panel, left, first, right, first + rows, transferPixels);
+        if (error != ESP_OK) {
+            transferPending = false;
+            // Retain the dirty region for a later refresh; a failed transfer
+            // must not abort the application or wait for a callback never queued.
+            ESP_LOGW(Tag, "display transfer deferred: %s", esp_err_to_name(error));
+            return;
+        }
+    }
     dirtyFirst = NativeHeight;
     dirtyEnd = 0;
     dirtyLeft = NativeWidth;
@@ -80,14 +94,14 @@ bool board_display_begin() {
     gpio_set_level(GPIO_NUM_41, 0);
     gpio_set_level(GPIO_NUM_48, 1);
     // QSPI40 needs more bandwidth than direct PSRAM DMA sustained during boot.
-    // Let IDF stage at most two 5 KiB chunks in internal DMA RAM.
+    // One fixed internal 5 KiB transfer tile avoids runtime bounce allocation.
     spi_bus_config_t bus{};
     bus.sclk_io_num = 12;
     bus.data0_io_num = 11;
     bus.data1_io_num = 13;
     bus.data2_io_num = 14;
     bus.data3_io_num = 9;
-    bus.max_transfer_sz = NativeWidth * 8 * 2;
+    bus.max_transfer_sz = NativeWidth * TransferRows * 2;
     if (spi_bus_initialize(SPI2_HOST, &bus, SPI_DMA_CH_AUTO) != ESP_OK)
         return false;
     transferDone = xSemaphoreCreateBinary();
@@ -125,8 +139,8 @@ bool board_display_begin() {
     // This glass ignores MADCTL.MV. Rotate during composition, not in the panel.
     framePixels = static_cast<uint16_t *>(
         heap_caps_aligned_alloc(64, Width * Height * 2, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT));
-    transferPixels = static_cast<uint16_t *>(
-        heap_caps_aligned_alloc(64, Width * Height * 2, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT));
+    transferPixels = static_cast<uint16_t *>(heap_caps_aligned_alloc(
+        64, NativeWidth * TransferRows * 2, MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL));
     drawPixels = static_cast<uint16_t *>(
         heap_caps_malloc(Width * DrawRows * 2, MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL));
     if (!framePixels || !transferPixels || !drawPixels)

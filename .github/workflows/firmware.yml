@@ -20,6 +20,18 @@ on:
 permissions:
   contents: read
 jobs:
+  targets:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.targets.outputs.matrix }}
+      prerelease: ${{ steps.targets.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - id: targets
+        run: python boards/ci_matrix.py --github-output
   source-checks:
     runs-on: ubuntu-latest
     steps:
@@ -31,14 +43,15 @@ jobs:
       - run: python scripts/check_format.py
       - run: python scripts/check_localization.py
       - run: python scripts/check_documentation.py
+      - run: python boards/check_contracts.py
       - run: python boards/prepare.py
   native-idf:
+    needs: targets
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
       fail-fast: false
-      matrix:
-        board: [cyd, s3, p4, es3c35p]
+      matrix: ${{ fromJSON(needs.targets.outputs.matrix) }}
     container: espressif/idf:v6.1
     steps:
       - uses: actions/checkout@v4
@@ -50,19 +63,21 @@ jobs:
       - run: npm ci
         working-directory: web
       - name: Build and validate package
+        id: build
         shell: bash
         run: |
           . "$IDF_PATH/export.sh"
           python -m pip install -r scripts/requirements.txt
           python scripts/check_documentation.py
-          python boards/build.py "${{ matrix.board }}"
+          python boards/build.py "${{ matrix.board }}" ${{ needs.targets.outputs.prerelease == 'true' && '--allow-candidate-build' || '' }}
       - uses: actions/upload-artifact@v4
         with:
           name: native-${{ matrix.board }}
-          path: boards/build-${{ matrix.board }}/artifacts/
+          path: ${{ steps.build.outputs.artifacts }}
           if-no-files-found: error
   installer-build:
-    needs: native-idf
+    needs: [targets, native-idf]
+    if: needs.targets.outputs.prerelease != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -80,11 +95,12 @@ jobs:
           path: release-builds
       - run: npm ci && npm run bundle
         working-directory: web
-      - name: Build all four installer targets
+      - name: Build supported installer targets
         run: >-
           python scripts/build_web.py
           --firmware-dir release-builds/native-cyd
           --ota-manifest release-builds/native-cyd/ota.json
+          --board-firmware-dir release-builds/native-cyd-st7789
           --board-firmware-dir release-builds/native-s3
           --board-firmware-dir release-builds/native-p4
           --board-firmware-dir release-builds/native-es3c35p

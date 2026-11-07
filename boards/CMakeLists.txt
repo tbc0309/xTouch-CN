@@ -8,6 +8,6 @@ if(NOT XTOUCH_BOARD MATCHES "^(esp32-s3-touch-lcd-2.8-v2|esp32-p4-wifi6-touch-lc
   message(FATAL_ERROR "Set -DXTOUCH_BOARD to one of the two supported board directory names")
 endif()
 set(EXTRA_COMPONENT_DIRS "${CMAKE_CURRENT_LIST_DIR}/.deps/lvgl")
-include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+include("${CMAKE_CURRENT_LIST_DIR}/common/idf_project.cmake")
 set(COMPONENTS main)
 project(xtouch_waveshare)

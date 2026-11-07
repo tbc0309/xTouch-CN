@@ -39,7 +39,9 @@ There are 19 model identifiers and 23 product IDs. Product names follow Mi Home;
 3. Save and bind, then wait for temperature and humidity. Valid broadcasts populate Product (model identifier).
 4. Select Hide, Alternate or Sensor only. Alternating defaults to 5 seconds, adjustable from 1–30 seconds.
 
-The screen's Bluetooth thermometer card uses the same layout as Language and edits the same saved display preference as web management. It is disabled and gray until a sensor is bound, then becomes selectable without requiring a received measurement or a BLE Key for plain broadcasts. Removing the binding disables the dropdown automatically.
+Bluetooth reception starts only after a sensor is bound. Hide removes the home-screen readings while reception continues. Clear the binding to stop reception.
+
+The screen's Thermometer setting edits the same saved display preference as web management. It is disabled and gray until a sensor is bound, then becomes selectable without requiring a received measurement or a BLE Key for plain broadcasts. Removing the binding disables the dropdown automatically.
 
 Unlocking a saved MAC shows a disabled save button; a valid change enables it. Changing MAC with a blank key clears the old device's key. Keeping the same MAC with a blank key retains its key. Missing keys are reported rather than borrowing another sensor's key.
 

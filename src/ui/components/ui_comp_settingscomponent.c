@@ -584,6 +584,9 @@ lv_obj_t *ui_settingsComponent_create(lv_obj_t *comp_parent)
 
     lv_obj_t *environmentLabel;
     lv_obj_t *environmentRow=ui_environment_setting_create(cui_settingsComponent,&environmentLabel,&ui_settings_environmentSelect);
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+    lv_obj_t *pixelRow=ui_pixel_setting_create(cui_settingsComponent);
+#endif
 
     lv_obj_t *cui_settings_ota;
     cui_settings_ota = lv_obj_create(cui_settingsComponent);
@@ -694,12 +697,16 @@ lv_obj_t *ui_settingsComponent_create(lv_obj_t *comp_parent)
     lv_obj_add_event_cb(bleButton,portal_ble_event,LV_EVENT_CLICKED,NULL);
 #endif
     lv_obj_t *standbyTitle=settings_heading(cui_settingsComponent,xtouch_local("待机","Standby"));
-    lv_obj_t *printerTitle=settings_heading(cui_settingsComponent,xtouch_local("打印机","Printer"));
+    lv_obj_t *printerTitle=settings_heading(cui_settingsComponent,xtouch_local("外设","Peripherals"));
     lv_obj_t *ordered[]={cui_settingsTitle,cui_screenTitle,languageRow,cui_settingsBackLightPanel,cui_screenInvertSetting,cui_settingsTFTFlip,standbyTitle,cui_settingsTFTOFFPanel,cui_screenWOPSetting,
 #if XTOUCH_FEATURE_AUDIO
     soundTitle,touchSoundRow,warningSoundRow,volumeRow,
 #endif
-    printerTitle,cui_settings_auxFan,cui_settings_chamberFan,environmentRow,cui_deviceTitle,cui_settings_ota,cui_reseDeviceButton,projectRow,manageButton,wifiButton
+    printerTitle,cui_settings_auxFan,cui_settings_chamberFan,environmentRow,
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+    pixelRow,
+#endif
+    cui_deviceTitle,cui_settings_ota,cui_reseDeviceButton,projectRow,manageButton,wifiButton
 #if XTOUCH_FEATURE_BLE_PROVISIONING
     ,bleButton
 #endif

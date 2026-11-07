@@ -8,6 +8,7 @@ const words = {
   testWarning: ['正在选择测试固件。请核对完整主板型号、屏幕与芯片修订，安装前备份配置。实测状态请查看测试版主板列表。', 'Test firmware selected. Check the exact board, display and chip revision, and back up your settings. See the test board list for validation status.'],
   testUnavailable: ['此测试固件目录暂不可用，未切换到正式版。请稍后重试。', 'This test firmware catalog is unavailable. No release firmware was substituted. Please retry later.'],
   testRebuilding: ['此版本测试固件正在重新编译，暂不可安装。', 'Test firmware for this version is being rebuilt and is not yet available for installation.'],
+  manualInstall: ['此主控暂不支持网页串口安装，请从测试版发布页下载固件，使用原生 esptool 安装。', 'This chip is not yet supported by the web serial installer. Download its firmware from the test release and use native esptool.'],
   "errorLookup": [
     "故障码查询",
     "Error lookup"
@@ -130,6 +131,7 @@ function text(tag,value,className){const el=document.createElement(tag);el.textC
 function boardName(board){return board.name.replace(/^Waveshare · /,lang==="zh"?"微雪 · ":"Waveshare · ");}
 function applyLanguage(){
  renderFooter(lang);
+ if($("pixel-installer-link"))$("pixel-installer-link").href='idotmatrix.html?lang='+lang;
  $("language").value=lang;document.documentElement.lang=lang==="zh"?"zh-CN":"en";
  document.title=lang==="zh"?"xTouch-CN · 在线刷写":"xTouch-CN · Web installer";
  document.querySelectorAll("[data-i18n]").forEach(el=>el.textContent=t(el.dataset.i18n));
@@ -141,12 +143,13 @@ function applyLanguage(){
   $("board-screen").textContent=activeTargets[metadata.id].screen.join(" × ");
   const hint=activeTargets[metadata.id].hint;
   document.querySelector('[data-i18n="boardHint"]').textContent=hint?hint[lang==="zh"?0:1]:t("boardHint");
+  if(activeTargets[metadata.id].webInstallSupported===false)$("installer-status").textContent=t("manualInstall");
  }
 }
 function selectBoard(){
  metadata=boardCatalog.find(board=>board.id===$("board").value);
  if(metadata)try{localStorage.setItem(boardPreferenceKey(),metadata.id);}catch{}
- installerReady=false;$("installer-widget").replaceChildren();$("load-installer").disabled=!metadata;
+ installerReady=false;$("installer-widget").replaceChildren();$("load-installer").disabled=!metadata||activeTargets[metadata.id].webInstallSupported===false;
  $("load-installer").hidden=false;
  $("installer-status").textContent="";applyLanguage();
 }
@@ -197,7 +200,7 @@ $("load-installer").addEventListener("click", async () => {
     $("installer-status").textContent = t("unsupported");
     return;
   }
-  if (!metadata) return;
+  if (!metadata || activeTargets[metadata.id].webInstallSupported===false) return;
   $("load-installer").disabled = true;
   $("board").disabled = true;
   $("test-channel").disabled = true;

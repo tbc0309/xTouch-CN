@@ -7,3 +7,5 @@ Copyright Bambu Lab. Distributed under the GNU Affero General Public License v3.
 Run `python scripts/generate_printer_images.py` (Pillow required) to regenerate the indexed LVGL artwork. The gray background matches the original home card.
 
 The shared original PNGs are development inputs, not embedded in the device. Generated artwork uses a 255-color RGB565 palette and independently compressed scanlines, decoded by `src/ui/printer_image_decoder.c`. Pixel arrays shared by multiple model entries are emitted once.
+
+H3C (N10) cover source: https://github.com/bambulab/BambuStudio/blob/v02.09.01.70/resources/profiles/BBL/Bambu%20Lab%20H3C_cover.png

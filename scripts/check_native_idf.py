@@ -4,6 +4,8 @@ from collections import Counter
 import hashlib
 import struct
 import subprocess
+import os
+import sys
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('build_dir',type=pathlib.Path)
 parser.add_argument('--release',action='store_true',help='Reject laboratory test APIs')
@@ -31,16 +33,37 @@ if len(graphics_memory)!=1:raise SystemExit('Expected one LVGL memory implementa
 def profile_definitions(command):
  return dict((name,value or '1') for name,value in re.findall(r'(?:^|\s)-D(\w+)(?:=([^\s]+))?',command))
 application_profile=profile_definitions(application[0]['command'])
+# Check the resolved requirements scan against the actual application flags.
+# Downloaded managed libraries may still be built by IDF; they are not enabled modules.
+resolved_requires=data['build_component_info']['main']['reqs']
+module_dependencies={}
+for feature,dependency in [('CAMERA','espressif__esp_h264'),('BLE_PROVISIONING','espressif__network_provisioning')]:
+ value=application_profile.get('XTOUCH_FEATURE_'+feature)
+ module_dependencies[feature]={'enabled':value=='1','directDependency':dependency in resolved_requires}
+ if value=='0' and dependency in resolved_requires:
+  raise SystemExit('Disabled module was restored during the isolated requirements scan: '+feature)
 sdk_config=json.loads((build/'config/sdkconfig.json').read_text(encoding='utf-8'))
+if application_profile.get('XTOUCH_BOARD_CYD')=='1' and (not sdk_config.get('COMPILER_OPTIMIZATION_ASSERTIONS_SILENT') or sdk_config.get('COMPILER_OPTIMIZATION_ASSERTION_LEVEL')!=1):
+ raise SystemExit('CYD requires enabled compact assertions; regenerate the SDK configuration from its defaults')
 main_task_core=1 if sdk_config.get('ESP_MAIN_TASK_AFFINITY_CPU1') else 0 if sdk_config.get('ESP_MAIN_TASK_AFFINITY_CPU0') else None
-if args.release and main_task_core!=1:
- raise SystemExit('Formal UI/main task must be pinned to CPU1; inspect the generated sdkconfig')
+expected_main_core=0 if sdk_config.get('FREERTOS_UNICORE') else 1
+if args.release and main_task_core!=expected_main_core:
+ raise SystemExit('UI/main task affinity differs from the SDK core topology; inspect the generated sdkconfig')
 graphics_profile=profile_definitions(graphics_memory[0]['command'])
-for name in ('XTOUCH_WAVESHARE','XTOUCH_BOARD_CYD','XTOUCH_LANGUAGES_ZH_EN','XTOUCH_SINGLE_PRINTER_LOGO','XTOUCH_UI_PICTURE_PICKER','XTOUCH_UI_HIDPI_ASSETS'):
+for name in ('XTOUCH_WAVESHARE','XTOUCH_BOARD_CYD','XTOUCH_LANGUAGES_ZH_EN','XTOUCH_SINGLE_PRINTER_LOGO','XTOUCH_UI_PICTURE_PICKER','XTOUCH_UI_HIDPI_ASSETS','XTOUCH_UI_LVGL_BYTES'):
  if application_profile.get(name)!=graphics_profile.get(name):
   raise SystemExit('Application/LVGL profile mismatch: '+name)
 passive_sensor_budget=None
-if application_profile.get('XTOUCH_BOARD_CYD')=='1' and application_profile.get('XTOUCH_FEATURE_XIAOMI_BLE')=='1':
+if application_profile.get('XTOUCH_COMPACT_DEVICE_CAPACITY')=='1' and application_profile.get('XTOUCH_FEATURE_XIAOMI_BLE')=='1':
+ if not sdk_config.get('BT_NIMBLE_ROLE_OBSERVER') or any(sdk_config.get('BT_NIMBLE_'+role) for role in ('ROLE_CENTRAL','ROLE_PERIPHERAL','ROLE_BROADCASTER','GATT_CLIENT','GATT_SERVER')):
+  raise SystemExit('Compact passive receiver must use observer-only roles')
+ if not sdk_config.get('BT_NIMBLE_MEM_ALLOC_MODE_INTERNAL'):
+  raise SystemExit('A board without PSRAM must use internal NimBLE memory')
+ passive_sensor_budget={}
+ for key in ('BT_NIMBLE_MSYS_1_BLOCK_COUNT','BT_NIMBLE_MSYS_2_BLOCK_COUNT'):
+  if sdk_config.get(key)!=4:raise SystemExit('Compact passive buffer budget differs from its board configuration: '+key)
+  passive_sensor_budget[key]=4
+if application_profile.get('XTOUCH_BOARD_CYD')=='1' and application_profile.get('XTOUCH_FEATURE_XIAOMI_BLE')=='1' and application_profile.get('XTOUCH_FEATURE_PIXEL_SCREEN')!='1':
  header=build/'config/sdkconfig.h'
  if not header.is_file():raise SystemExit('CYD passive sensor budget: missing compiled SDK configuration')
  selected=dict(re.findall(r'^#define (CONFIG_BT_NIMBLE_\w+) (\d+)$',header.read_text(encoding='utf-8'),re.M))
@@ -52,13 +75,28 @@ if application_profile.get('XTOUCH_BOARD_CYD')=='1' and application_profile.get(
   expected=re.search(r'^'+name+r'=(\d+)$',defaults,re.M)
   if not expected or selected.get(name)!=expected[1]:raise SystemExit('CYD passive sensor budget mismatch: '+name)
   passive_sensor_budget[name]=int(expected[1])
+if application_profile.get('XTOUCH_FEATURE_PIXEL_SCREEN')=='1':
+ if not sdk_config.get('BT_NIMBLE_ROLE_CENTRAL') or not sdk_config.get('BT_NIMBLE_GATT_CLIENT') or not sdk_config.get('BT_NIMBLE_ROLE_OBSERVER'):
+  raise SystemExit('Pixel link requires central/GATT client and observer coexistence')
 project=data.get('project_name','xtouch_waveshare')
+if application_profile.get('XTOUCH_BOARD_CYD')=='1':
+ expected_st7789=project=='xtouch_cyd_st7789'
+ if (application_profile.get('XTOUCH_CYD_ST7789')=='1')!=expected_st7789:
+  raise SystemExit('CYD panel driver and firmware project identity disagree')
+
 image=build/(project+'.bin');linkmap=build/(project+'.map')
 if not image.is_file() or image.stat().st_mtime<description.stat().st_mtime:raise SystemExit('Native binary has not been linked after configuration')
 from check_cyd_assets import check as check_linked_assets
 main_command=application[0]['command']
 source_paths=[e['file'].replace('\\','/') for e in commands]
 source_names=[path.rsplit('/',1)[-1] for path in source_paths]
+optional_modules=[]
+for feature in ['GCODE_BROWSER','PIXEL_SCREEN']:
+ enabled=application_profile.get('XTOUCH_FEATURE_'+feature)=='1'
+ sources=[path for path in source_paths if '/features/'+feature.lower()+'/' in path]
+ if bool(sources)!=enabled:raise SystemExit(feature+' module source selection differs from application definitions')
+ optional_modules.append({'name':feature,'enabled':enabled,'compiledSources':len(sources)})
+
 duplicate_fonts=sorted(name for name,count in Counter(source_names).items() if count>1 and re.fullmatch(r'ui_font_.*\.c',name))
 if duplicate_fonts:raise SystemExit('Duplicate UI font source names: '+', '.join(duplicate_fonts))
 if '-DXTOUCH_SINGLE_PRINTER_LOGO=1' in main_command and any(re.search(r'/(images|generated/large)/printer_models\.c$',path) for path in source_paths):
@@ -81,7 +119,13 @@ if len(image_bytes)<208 or image_bytes[0]!=0xe9 or image_bytes[32:36]!=bytes.fro
 if image_bytes[176:208]!=hashlib.sha256(elf_bytes).digest():
  raise SystemExit('Application image does not match audited ELF SHA256')
 indicator_drivers=[path for path in source_paths if '/boards/' in path and path.endswith('/indicator.cpp')]
-if indicator_drivers:
+hosted_ble = data.get('target') == 'esp32p4' and any('-DXTOUCH_FEATURE_'+feature+'=1' in main_command for feature in ('XIAOMI_BLE','PIXEL_SCREEN')) and any(path.endswith('/platform/idf/ble_runtime.cpp') for path in source_paths)
+required_bindings=set((b'xtouch_board_indicator_begin',b'xtouch_board_indicator_rgb') if indicator_drivers else ())
+if hosted_ble:required_bindings.update((b'eh_bt_bind_nimble',b'eh_bt_unbind_nimble',b'ble_transport_to_ll_cmd_impl'))
+storage_drivers=[path for path in source_paths if '/boards/' in path and (path.endswith('/storage.cpp') or path.endswith('/storage_none.cpp'))]
+if len(storage_drivers)!=1:raise SystemExit('Expected exactly one explicit board storage adapter')
+required_bindings.add(b'xtouch_board_storage_profile')
+if required_bindings:
  section_offset=struct.unpack_from('<I',elf_bytes,32)[0]
  section_size,section_count=struct.unpack_from('<HH',elf_bytes,46)
  sections=[struct.unpack_from('<10I',elf_bytes,section_offset+i*section_size) for i in range(section_count)]
@@ -93,9 +137,9 @@ if indicator_drivers:
   for at in range(section[4],section[4]+section[5],section[9]):
    name,address,length,info,other,index=struct.unpack_from('<IIIBBH',elf_bytes,at)
    label=names[name:names.find(b'\0',name)]
-   if label in (b'xtouch_board_indicator_begin',b'xtouch_board_indicator_rgb'):bindings[label]=info>>4
- if any(bindings.get(name)!=1 for name in (b'xtouch_board_indicator_begin',b'xtouch_board_indicator_rgb')):
-  raise SystemExit('Hardware indicator must link its board driver, not weak defaults')
+   if label in required_bindings:bindings[label]=info>>4
+ if any(bindings.get(name)!=1 for name in required_bindings):
+  raise SystemExit('Required board/BLE driver must link strong implementations: '+', '.join(name.decode() for name in sorted(required_bindings) if bindings.get(name)!=1))
 asset_size='large' if '-DXTOUCH_UI_HIDPI_ASSETS=1' in main_command else 'small'
 icon_set='mdi' if '-DXTOUCH_ICON_STYLE=1' in main_command else 'original'
 check_linked_assets(build/(project+'.elf'),asset_size,icon_set)
@@ -107,7 +151,7 @@ if args.release and laboratory:raise SystemExit('Laboratory test API must not en
 # Validate the bytes actually linked into the image, not just generated headers.
 root=pathlib.Path(__file__).resolve().parents[1]
 portal_header='portal_assets_zh_en.h' if application_profile.get('XTOUCH_LANGUAGES_ZH_EN')=='1' else 'portal_assets.h'
-portal_flags=('XTOUCH_WAVESHARE','XTOUCH_BOARD_CYD','__XTOUCH_SCREEN_28__','XTOUCH_BOARD_S3',
+portal_flags=('XTOUCH_CYD_ST7789','XTOUCH_WAVESHARE','XTOUCH_BOARD_CYD','__XTOUCH_SCREEN_28__','XTOUCH_BOARD_S3',
               'XTOUCH_BOARD_P4','XTOUCH_BOARD_ES3C35P','XTOUCH_FEATURE_CLOUD_TOKEN',
               'XTOUCH_FEATURE_CLOUD_LOGIN','XTOUCH_FEATURE_XIAOMI_BLE','XTOUCH_FEATURE_AUDIO',
               'XTOUCH_FEATURE_INDICATOR','XTOUCH_HAS_RGB_LED','XTOUCH_FEATURE_DEEP_SLEEP')
@@ -123,11 +167,59 @@ for name,values in portal_arrays:
  payload=bytes(int(value,16) for value in re.findall(r'0x[0-9a-fA-F]+',values))
  if not payload or payload not in image_bytes:raise SystemExit('Linked portal resource does not match source/module profile: '+name)
 dependencies=json.loads((pathlib.Path(__file__).resolve().parents[1]/'boards/dependencies.json').read_text(encoding='utf-8'))
+policy_path=root/'resources/ota_channels.json'
+compiled_ota=None
+if policy_path.exists():
+ policy=json.loads(policy_path.read_text(encoding='utf-8'))
+ channels=policy['channels']
+ if channels not in (['main'],['main','test']) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*',policy['repository']):
+  raise SystemExit('Unexpected OTA channel policy')
+ from release_policy import read as release_identity
+ try:release=release_identity(root)
+ except ValueError as error:raise SystemExit(str(error))
+ if image_bytes[48:80].split(b'\0',1)[0].decode('ascii')!=release['version']:
+  raise SystemExit('Application descriptor version differs from the release identity; rebuild required')
+ sys.path.insert(0,str(root/'boards'))
+ from board_catalog import BOARDS
+ matches=[board for board in BOARDS.values() if board['project']==project and board['chip']==data.get('target')]
+ if len(matches)!=1:raise SystemExit('Cannot identify exact OTA board from native application')
+ board=matches[0]
+ if int.from_bytes(image_bytes[12:14],'little')!=board['chip_id']:
+  raise SystemExit('Application chip identity differs from board metadata')
+ identity_header=build/'generated/xtouch_board_build.h'
+ if not identity_header.is_file():raise SystemExit('Missing generated board identity')
+ identity_text=identity_header.read_text(encoding='utf8')
+ for macro,expected in [('XTOUCH_FIRMWARE_LIMIT_OVERRIDE',slot_bytes),('XTOUCH_HTTP_UPLOAD_LIMIT_BYTES',slot_bytes+4096)]:
+  value=re.search(r'#define '+macro+r' (\d+)U',identity_text)
+  if not value or int(value[1])!=expected:raise SystemExit('Generated board capacity differs from actual partition table: '+macro)
+ if board.get('compactMemory'):
+  if application_profile.get('XTOUCH_COMPACT_DEVICE_CAPACITY')!='1' or application_profile.get('XTOUCH_UI_LVGL_BYTES')!='49152':
+   raise SystemExit('Compact board memory/capacity flags are missing; reconfigure and rebuild')
+ for feature in board.get('disabledFeatures',[]):
+  if application_profile.get('XTOUCH_FEATURE_'+feature.upper())!='0':
+   raise SystemExit('Unsupported board feature compiled: '+feature)
+ if board.get('source'):
+  for macro,key in [('XTOUCH_DEEP_WAKE_PIN','deepSleepWakeGpio'),('XTOUCH_SLEEP_BUTTON_PIN','sleepButtonGpio')]:
+   if application_profile.get(macro)!=str(board[key]):raise SystemExit('Compiled board capability changed; reconfigure/rebuild: '+macro)
+  for macro,supported in [('XTOUCH_FEATURE_INDICATOR',board['statusIndicatorSupported']),('XTOUCH_FEATURE_DEEP_SLEEP',board['deepSleepWakeGpio']>=0)]:
+   if not supported and application_profile.get(macro)!='0':raise SystemExit('Unsupported hardware module compiled: '+macro)
+ prefix='/'+policy['repository']+'/'
+ for channel in ['main','test']:
+  path=(prefix+channel+'/boards/'+board['directory']+'/ota.json').encode()
+  if (path in image_bytes)!=(channel in channels):raise SystemExit('Linked OTA endpoints differ from source policy; reconfigure and rebuild')
+ if ('/'+board['stem']+'.bin').encode() not in image_bytes:raise SystemExit('Linked OTA firmware filename differs from exact board identity')
+ compiled_ota={'board':board['directory'],'channels':channels}
 report={'lvgl':dependencies['libraries']['lvgl']['ref'],'laboratoryBuild':laboratory,'passed':True,'target':data.get('target'),'components':len(components),'framework':'ESP-IDF','arduinoFramework':False,'pubSubClient':False,'imageBytes':image.stat().st_size,'otaSlotBytes':slot_bytes,'imageMatchesElf':True,'scope':'build dependency, binary/ELF identity, capacity and final link audit; not hardware validation'}
 report['applicationLvglProfileMatches']=True
+if application_profile.get('XTOUCH_BOARD_CYD')=='1':report['cydPanel']='st7789' if expected_st7789 else 'ili9341-2'
+report['moduleDependencies']=module_dependencies
 report['indicatorDriverLinked']=bool(indicator_drivers)
+report['hostedBleBindingLinked']=hosted_ble
+report['storageAdapter']=pathlib.Path(storage_drivers[0]).parent.name
 report['compiledPortalMatches']=True
+report['optionalModules']=optional_modules
 report['passiveSensorBudget']=passive_sensor_budget
 report['mainTaskCore']=main_task_core
+if compiled_ota:report['compiledOtaPolicy']=compiled_ota
 if args.report:args.report.write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 print(json.dumps(report))

@@ -1,7 +1,7 @@
 #pragma once
 #include <esp_err.h>
-#if defined(XTOUCH_BOARD_P4)
-#include "../esp32-p4-wifi6-touch-lcd-4.3/network.h"
+#ifdef XTOUCH_BOARD_NETWORK_HEADER
+#include XTOUCH_BOARD_NETWORK_HEADER
 #else
-inline esp_err_t board_network_begin() { return ESP_OK; }
+#include "xtouch_board_network.h"
 #endif

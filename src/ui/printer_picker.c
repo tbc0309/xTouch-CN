@@ -158,6 +158,33 @@ static int row_inset(unsigned row){
     (void)row;
     return 0;
 }
+void ui_picker_draw_action(lv_draw_ctx_t *ctx,lv_area_t area,unsigned kind,bool pictures){
+    int w=lv_disp_get_hor_res(NULL),h=lv_disp_get_ver_res(NULL);
+    int u=LV_MAX(1,LV_MIN(w/320,h/240));
+    ui_chrome_metrics_t chrome=ui_chrome_metrics(w,h);
+    lv_draw_rect_dsc_t r;lv_draw_rect_dsc_init(&r);r.bg_opa=LV_OPA_COVER;
+    if(kind==0){
+        lv_area_t a=area;r.radius=6*u;r.bg_color=lv_color_hex(0x555555);lv_draw_rect(ctx,&r,&a);
+        r.radius=0;r.bg_color=lv_color_white();
+        int icon=chrome.icon;
+        lv_area_t symbol=centered_box(a,icon,pictures?icon*14/18:icon);
+        // List bars carry more ink than bullets; balance their optical center.
+        int left=symbol.x1,top=symbol.y1;
+        if(pictures)for(int i=0;i<3;++i){
+            lv_area_t dot={left,top+i*icon/3,left+LV_MAX(1,icon/9)-1,top+i*icon/3+LV_MAX(1,icon/9)-1};
+            lv_area_t line={left+icon*5/18,dot.y1,left+icon-1,dot.y2};lv_draw_rect(ctx,&r,&dot);lv_draw_rect(ctx,&r,&line);
+        }else for(int y=0;y<2;++y)for(int x=0;x<2;++x){
+            lv_area_t tile={left+x*icon*11/18,top+y*icon*11/18,left+(x*11+7)*icon/18-1,top+(y*11+7)*icon/18-1};lv_draw_rect(ctx,&r,&tile);
+        }
+    }
+    if(kind!=1)return;
+    r.radius=6*u;r.bg_color=lv_color_hex(0xAA2A00);lv_draw_rect(ctx,&r,&area);
+    lv_area_t circle=centered_box(area,chrome.icon,chrome.icon);
+    r.radius=LV_RADIUS_CIRCLE;r.bg_color=lv_color_white();lv_draw_rect(ctx,&r,&circle);
+    lv_draw_line_dsc_t line;lv_draw_line_dsc_init(&line);line.color=lv_color_hex(0xAA2A00);line.width=LV_MAX(1,chrome.icon/9);line.round_start=line.round_end=1;
+    int inset=chrome.icon*5/18;lv_point_t a={circle.x1+inset,circle.y1+inset},b={circle.x2-inset,circle.y2-inset};
+    ui_draw_line(ctx,&line,&a,&b);a.y=circle.y2-inset;b.y=circle.y1+inset;ui_draw_line(ctx,&line,&a,&b);
+}
 static void draw(lv_event_t *e){
     lv_draw_ctx_t *ctx=lv_event_get_draw_ctx(e);int u=layout.unit;
     ui_chrome_metrics_t chrome=ui_chrome_metrics(lv_disp_get_hor_res(NULL),lv_disp_get_ver_res(NULL));
@@ -165,26 +192,8 @@ static void draw(lv_event_t *e){
     lv_draw_rect(ctx,&r,&layout.panel);
     int title_end=(XTOUCH_UI_PICTURE_PICKER?layout.toggle.x1:layout.close.x1)-6*u;
     text(ctx,(lv_area_t){layout.panel.x1+chrome.edge,layout.panel.y1,title_end,layout.panel.y1+chrome.bar-1},XTOUCH_TEXT_SELECT_DEVICE,0xFFFFFF,false);
-    if(XTOUCH_UI_PICTURE_PICKER){
-        lv_area_t a=layout.toggle;r.radius=6*u;r.bg_color=lv_color_hex(0x555555);lv_draw_rect(ctx,&r,&a);
-        r.radius=0;r.bg_color=lv_color_white();
-        int icon=chrome.icon;
-        lv_area_t symbol=centered_box(a,icon,image_mode()?icon*14/18:icon);
-        // List bars carry more ink than bullets; balance their optical center.
-        int left=symbol.x1,top=symbol.y1;
-        if(image_mode())for(int i=0;i<3;++i){
-            lv_area_t dot={left,top+i*icon/3,left+LV_MAX(1,icon/9)-1,top+i*icon/3+LV_MAX(1,icon/9)-1};
-            lv_area_t line={left+icon*5/18,dot.y1,left+icon-1,dot.y2};lv_draw_rect(ctx,&r,&dot);lv_draw_rect(ctx,&r,&line);
-        }else for(int y=0;y<2;++y)for(int x=0;x<2;++x){
-            lv_area_t tile={left+x*icon*11/18,top+y*icon*11/18,left+(x*11+7)*icon/18-1,top+(y*11+7)*icon/18-1};lv_draw_rect(ctx,&r,&tile);
-        }
-    }
-    r.radius=6*u;r.bg_color=lv_color_hex(0xAA2A00);lv_draw_rect(ctx,&r,&layout.close);
-    lv_area_t circle=centered_box(layout.close,chrome.icon,chrome.icon);
-    r.radius=LV_RADIUS_CIRCLE;r.bg_color=lv_color_white();lv_draw_rect(ctx,&r,&circle);
-    lv_draw_line_dsc_t line;lv_draw_line_dsc_init(&line);line.color=lv_color_hex(0xAA2A00);line.width=LV_MAX(1,chrome.icon/9);line.round_start=line.round_end=1;
-    int inset=chrome.icon*5/18;lv_point_t a={circle.x1+inset,circle.y1+inset},b={circle.x2-inset,circle.y2-inset};
-    ui_draw_line(ctx,&line,&a,&b);a.y=circle.y2-inset;b.y=circle.y1+inset;ui_draw_line(ctx,&line,&a,&b);
+    if(XTOUCH_UI_PICTURE_PICKER)ui_picker_draw_action(ctx,layout.toggle,0,image_mode());
+    ui_picker_draw_action(ctx,layout.close,1,image_mode());
 }
 
 static void draw_devices(lv_event_t *e){

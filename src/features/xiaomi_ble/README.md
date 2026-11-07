@@ -17,7 +17,6 @@ and ATC/PVVX/BTHome formats are excluded. Public sensors can bind by MAC alone;
 encrypted packets require a valid BLE Key. The model comes from the product ID.
 Configure one MAC and BLE Key in the management page. Display modes are Hide,
 Alternate (default), and Sensor only, with a 1–30 second alternating interval (default: 5 seconds).
-The clock and sensor labels use the same font and centered row geometry.
 Last-known readings remain visible with a ~ marker after ten minutes; the web
 page shows the independent temperature and humidity report ages.
 

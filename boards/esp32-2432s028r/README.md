@@ -9,3 +9,5 @@ Display and XPT2046 touch use native drivers; the Arduino framework is not linke
 See [hardware pins](../../docs/HARDWARE.en.md#cyd), [build instructions](../../docs/DEVELOPMENT.en.md#build), [resource rules](../../docs/DEVELOPMENT.en.md) and [installation](../../docs/INSTALLATION.en.md#install).
 
 The printing logo identifies the printer brand and does not imply affiliation. Asset licensing is listed in [third-party notices](../../LICENSE-3RD-PARTY.md).
+
+This profile is for ILI9341 panels. For the ST7789 variant, use the separate [CYD ST7789 target](../esp32-2432s028r-st7789/README.md); it shares driver code but has its own firmware and OTA identity.

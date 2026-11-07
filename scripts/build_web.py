@@ -19,6 +19,7 @@ parser.add_argument('--ota-manifest', type=Path,
 parser.add_argument('--board-firmware-dir', action='append', default=[], type=Path,
                     help='Additional supported-board artifacts directory produced by boards/package.py')
 parser.add_argument('--allow-partial',action='store_true',help='Development preview only: allow omitted board packages')
+parser.add_argument('--idotmatrix-firmware-dir',type=Path,help='Verify a local independent-controller candidate; installation remains disabled')
 args = parser.parse_args()
 manifest = json.loads((args.ota_manifest or root / 'boards/esp32-2432s028r/ota.json').read_text('utf-8'))
 version = json.loads((root / 'version.json').read_text('utf-8'))['version']
@@ -88,6 +89,10 @@ css_name = 'style-' + hashlib.sha256(css_source.encode()).hexdigest()[:12] + '.c
 html = (source / 'index.html').read_text('utf-8')
 html = html.replace('src="app.js"', f'src="{app_name}"').replace('href="style.css"', f'href="{css_name}"')
 (output / 'index.html').write_text(html, 'utf-8')
+from build_idotmatrix_web import build_page, add_firmware
+build_page(output,css_name,language_name,installer_name)
+if args.idotmatrix_firmware_dir:
+    add_firmware(output,args.idotmatrix_firmware_dir,published=False)
 config_html = (source / 'config.html').read_text('utf-8').replace('src="config-page.js"', f'src="{config_page_name}"').replace('href="style.css"', f'href="{css_name}"')
 (output / 'config.html').write_text(config_html, 'utf-8')
 from build_error_search import build as build_errors
@@ -123,7 +128,7 @@ def installer_parts(stem, image):
 shutil.copy2(args.firmware_dir / 'xtouch-2.8-full.bin', output / 'firmware/xtouch-2.8-full.bin')
 cyd_metadata = {'version': version, 'fullPath': 'firmware/xtouch-2.8-full.bin',
             'fullSha256': hashlib.sha256(full).hexdigest(), 'size':len(full), 'appUrl':manifest['url']}
-metadata = {'version':version,'boards':[{'id':'cyd','name':'CYD · ESP32-2432S028R','manifest':'manifest.json',**cyd_metadata}]}
+metadata = {'version':version,'boards':[{'id':'cyd','name':BOARDS['cyd']['name'],'manifest':'manifest.json',**cyd_metadata}]}
 seen = set()
 for folder in args.board_firmware_dir:
     record = json.loads((folder / 'manifest.json').read_text('utf-8'))
@@ -141,17 +146,19 @@ for folder in args.board_firmware_dir:
     layout=read_layout(board_full[0x8000:0x9000])
     slot=layout['ota_0']['size']
     expected_flash=target['flash']
-    if layout['spiffs']['offset']+layout['spiffs']['size']!=expected_flash:
+    app_offset=target['app_offset']
+    if max(p['offset']+p['size'] for p in layout.values())!=expected_flash:
         raise SystemExit('Incorrect Flash partition capacity: '+key)
     if (record.get('application') != stem+'.bin' or record.get('fullImage') != stem+'-full.bin'
-        or record.get('applicationOffset') != 0x20000 or record.get('applicationBytes') != len(board_app)
+        or record.get('applicationOffset') != app_offset or layout['ota_0']['offset'] != app_offset
+        or record.get('applicationBytes') != len(board_app)
         or hashlib.sha256(board_app).hexdigest() != record.get('sha256')
         or hashlib.sha256(board_full).hexdigest() != record.get('fullSha256')
         or len(board_app) > slot or len(board_app) < 36
         or board_app[0] != 0xe9 or int.from_bytes(board_app[12:14],'little') != chip_id
         or board_app[32:36] != bytes.fromhex('3254cdab')
         or board_app[48:80].split(b'\0',1)[0] != version.encode('ascii')
-        or len(board_full) > layout['ota_1']['offset'] or board_full[0x20000:] != board_app
+        or len(board_full) > layout['ota_1']['offset'] or board_full[app_offset:] != board_app
         or board_full[boot_offset] != 0xe9 or board_full[0x8000:0x8002] != b'\xaa\x50'):
         raise SystemExit('Invalid board image, chip, partition layout, or checksum: '+key)
     board_path = 'firmware/'+stem+'-full.bin'

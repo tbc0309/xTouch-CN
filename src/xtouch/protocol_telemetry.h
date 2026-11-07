@@ -2,6 +2,8 @@
 #include <ArduinoJson.h>
 #include <stdint.h>
 #include <string.h>
+#include <cmath>
+#include <cstdlib>
 
 namespace XTouchTelemetry {
 struct Bed {bool present=false,actualValid=false,targetValid=false;unsigned actual=0,target=0;};
@@ -13,6 +15,34 @@ inline Bed bed(JsonObjectConst report){
     int64_t number=value.as<int64_t>();if(number<INT32_MIN||number>UINT32_MAX)return out;
     uint32_t bits=uint32_t(number);out.actual=bits&65535U;out.target=bits>>16;
     out.actualValid=out.actual<=160;out.targetValid=out.target<=160;return out;
+}
+struct Chamber {
+    bool actualPresent=false,targetPresent=false,actualValid=false,targetValid=false;
+    double actual=0,target=0;
+};
+inline Chamber chamber(JsonObjectConst report){
+    Chamber out;
+    auto number=[](JsonVariantConst v,double low,double high,double &value){
+        if(v.isNull()||v.is<bool>())return false;
+        if(v.is<const char*>()){const char *text=v.as<const char*>();char *end;value=strtod(text,&end);if(!*text||*end)return false;}
+        else if(v.is<double>())value=v.as<double>();else return false;
+        return std::isfinite(value)&&value>=low&&value<=high;
+    };
+    out.actualPresent=report.containsKey("chamber_temper");
+    out.targetPresent=report.containsKey("ctt");
+    if(out.actualPresent)out.actualValid=number(report["chamber_temper"],-20,200,out.actual);
+    if(out.targetPresent)out.targetValid=number(report["ctt"],0,100,out.target);
+    JsonObjectConst info=report["device"]["ctc"]["info"];
+    if(info.containsKey("temp")){
+        out.actualPresent=out.targetPresent=true;out.actualValid=out.targetValid=false;
+        JsonVariantConst value=info["temp"];
+        if(value.is<uint64_t>()&&value.as<uint64_t>()>UINT32_MAX)return out;
+        if(value.is<int64_t>()||value.is<uint64_t>()){
+            int64_t n=value.as<int64_t>();
+            if(n>=INT32_MIN&&n<=UINT32_MAX){uint32_t bits=uint32_t(n);out.actual=bits&65535u;out.target=bits>>16;out.actualValid=out.actual<=200;out.targetValid=out.target<=100;}
+        }
+    }
+    return out;
 }
 inline bool chamberLight(JsonObjectConst report,bool &on){
     for(JsonObjectConst light:report["lights_report"].as<JsonArrayConst>()){

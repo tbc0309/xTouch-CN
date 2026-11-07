@@ -16,13 +16,17 @@
 - 暂停、恢复和取消打印，控制温度、风扇、灯光与运动。
 - 查看AMS及外置耗材、材料颜色与已上报余量，操作设备支持的进退料、重读和烘干功能。
 - 绑定BLE温湿度计，选择关闭显示、交替显示或仅温湿度。
+- SD 卡可用时浏览打印机文件、缓存缩略图，并重新打印已确认的切片盘；云设备需要同序列号的局域网配置访问文件。
+- 联动32×32 iDotMatrix像素屏，显示打印状态与温湿度，支持设备密码、亮度、显示开关和内置时钟。
 - 查看支持的本地摄像头、故障码和打印机提示。
 - 通过网页配置Wi-Fi、设备与账号，备份、恢复配置及升级固件。
 - 设置语言、亮度、提示音和待机方式。
 
+![xTouch-CN 与像素屏、温湿度计联动演示](docs/images/xtouch-pixel-thermometer.gif)
+
 ## 界面展示
 
-以下六张为P4界面的演示数据渲染，摄像头画面仅作示意，不表示所有机型和外设均已实测。
+P4 界面示例，摄像头画面仅作示意。
 
 | | |
 |---|---|
@@ -30,11 +34,11 @@
 | **选择打印机**<br>![P4 选择打印机](docs/images/boards/p4-printer-picker.png) | **温度与风扇**<br>![P4 温度与风扇](docs/images/boards/p4-temperature.png) |
 | **耗材**<br>![P4 耗材](docs/images/boards/p4-filament.png) | **摄像头**<br>![P4 摄像头](docs/images/boards/p4-camera.png) |
 
-[查看完整界面图集](docs/SCREENSHOTS.md)
+[查看完整界面图集](docs/SCREENSHOTS.md) · [像素屏画面预览](docs/PIXEL_DISPLAYS.md)
 
 ## 支持的主板
 
-主板参数与功能支持分开列出。外观相似、芯片相同或屏幕尺寸相同都不代表镜像通用。
+外观相似、芯片相同或屏幕尺寸相同都不代表镜像通用。
 
 > **更多主板（测试版）**：[查看主板参数与实测状态](https://github.com/tbc0309/xTouch-CN/blob/test/README.test.md)。测试版以 Pre-release 提供，安装前请核对完整型号、查看实测状态并备份配置。
 
@@ -42,7 +46,7 @@
 |---|---|---|---|---|
 | 主板型号 | [ESP32-2432S028R（CYD）](docs/HARDWARE.md#cyd) | [Waveshare ESP32-S3-Touch-LCD-2.8 V2](docs/HARDWARE.md#waveshare) | [Waveshare ESP32-P4-WIFI6-Touch-LCD-4.3](docs/HARDWARE.md#waveshare) | [LCDWIKI ES3C35P](boards/lcdwiki-es3c35p/README.md) |
 | 图片 | <img src="docs/images/cyd-board-product.jpg" width="100%" alt="CYD主板"> | <img src="docs/images/boards/esp32-s3-touch-lcd-2.8-v2-product-right.svg" width="100%" alt="Waveshare S3 V2主板"> | <img src="docs/images/boards/esp32-p4-wifi6-touch-lcd-4.3-product-right.svg" width="100%" alt="Waveshare P4主板"> | <img src="docs/images/boards/es3c35p-product.jpg" width="100%" alt="LCDWIKI ES3C35P主板"> |
-| 显示与触摸 | 320×240；ILI9341／XPT2046电阻触摸 | 320×240；ST7789／CST3530 | 800×480；ST7701／GT911 | 480×320；ST77922显示触摸一体，3.5寸 |
+| 显示与触摸 | 320×240；ILI9341／ST7789 两种固件；XPT2046 电阻触摸 | 320×240；ST7789／CST3530 | 800×480；ST7701／GT911 | 480×320；ST77922显示触摸一体，3.5寸 |
 | 芯片与存储 | ESP32；4 MB Flash，无PSRAM | ESP32-S3；16 MB Flash、8 MB PSRAM | P4 v3.x＋C6；32 MB Flash、32 MB PSRAM | ESP32-S3；16 MB Flash、8 MB PSRAM；ES8311音频、RGB灯 |
 | 默认资源 | 小屏 original；中英文字库、双OTA | 小屏 original | 大屏 MDI | 大屏 MDI；与S3相同功能模块 |
 
@@ -63,8 +67,10 @@
 | 温度、风扇与运动控制 | ✅ | ✅ | ✅ | ✅ | 按机型能力显示；部分控制需要局域网＋开发者模式 |
 | AMS／外置耗材 | ✅ | ✅ | ✅ | ✅ | 槽位、颜色、材料与已上报余量；支持的设备提供进退料等操作 |
 | BLE 温湿度计 | ✅ | ✅ | ✅ | ✅ | [支持型号](docs/THERMOMETERS.md)；关闭显示／交替显示／仅温湿度 |
+| SD 打印文件浏览 | ❌ | ✅ | ✅ | ✅ | 需要控制屏SD卡及打印机局域网访问；按切片盘浏览与重新打印 |
+| 32像素屏联动 | ❌ | ✅ | ✅ | ✅ | iDotMatrix 32×32；密码连接、状态画面及内置时钟 |
 | 云端／局域网任务缩略图 | ❌ | ✅ | ✅ | ✅ | CYD受存储与运行内存限制，打印机型图使用绿色拓竹Logo |
-| 本地JPEG摄像头 | ❌ | ✅ | ✅ | ✅ | 受机型协议限制；云设备仅摄像头可按同序列号关联本地连接 |
+| 本地JPEG摄像头 | ❌ | ✅ | ✅ | ✅ | 受机型协议限制；云设备可按同序列号关联本地连接 |
 | 图片式设备选择 | ❌ | ✅ | ✅ | ✅ | CYD仅列表模式；其它板可切换图片／列表 |
 | 故障码与必要提示 | ✅ | ✅ | ✅ | ✅ | 机型上报的HMS与打印错误 |
 | 完整英文故障详情 | ❌ | ✅ | ✅ | ✅ | CYD容量受限，保留故障码与必要提示 |

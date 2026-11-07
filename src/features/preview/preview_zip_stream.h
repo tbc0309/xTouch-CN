@@ -13,10 +13,18 @@ struct Buffer {
  Buffer()=default;Buffer(const Buffer&)=delete;
 };
 
+// Bounded association check for an extracted G-code and its source package.
+// This checks a prefix, not a whole-file integrity hash; retain the file identity.
+struct MemberProbe { const char *name=nullptr;size_t limit=65536; };
+struct GcodeProbe {
+ const uint8_t *expected=nullptr;size_t bytes=0;uint32_t fileSize=0;
+ char md5[33]{};bool hasMd5=false,matched=false;
+};
 template<class ReadSome,class Cancel,class Allocate>
 int extract(ReadSome raw,Cancel cancel,Allocate allocate,unsigned plate,
-            uint8_t *&png,size_t &pngSize,size_t &transferred){
+            uint8_t *&png,size_t &pngSize,size_t &transferred,GcodeProbe *probe=nullptr,MemberProbe *memberProbe=nullptr){
  png=nullptr;pngSize=0;transferred=0;
+ if(probe){probe->hasMd5=false;probe->matched=false;probe->md5[0]=0;}
  if(!plate||plate>999)return 25;
  uint8_t input[512],replay[28];size_t cursor=0,length=0,replayAt=0,replaySize=0;
  auto fill=[&](){
@@ -71,7 +79,20 @@ int extract(ReadSome raw,Cancel cancel,Allocate allocate,unsigned plate,
   char full[64],small[64];std::snprintf(full,sizeof(full),"Metadata/plate_%u.png",plate);
   std::snprintf(small,sizeof(small),"Metadata/plate_%u_small.png",plate);
   const bool smallName=!std::strcmp(name,small);
-  const bool target=!std::strcmp(name,full)||smallName,descriptor=flags&8;
+  char gcodeName[64],md5Name[72];
+  std::snprintf(gcodeName,sizeof(gcodeName),"Metadata/plate_%u.gcode",plate);
+  std::snprintf(md5Name,sizeof(md5Name),"Metadata/plate_%u.gcode.md5",plate);
+  const bool gcodeTarget=probe&&!std::strcmp(name,gcodeName),md5Target=probe&&!std::strcmp(name,md5Name);
+  const bool memberTarget=memberProbe && memberProbe->name && !std::strcmp(name,memberProbe->name);
+  const bool target=memberProbe?memberTarget:probe?(gcodeTarget||md5Target):(!std::strcmp(name,full)||smallName),descriptor=flags&8;
+  if(gcodeTarget && (!probe->hasMd5 || !probe->expected || !probe->bytes || probe->bytes>1024 ||
+       (expanded && expanded!=probe->fileSize)))return 25;
+  if(gcodeTarget && method==0){
+   Buffer prefix;prefix.p=(uint8_t*)allocate(probe->bytes);if(!prefix.p)return 12;
+   if(!read(prefix.p,probe->bytes))return 13;
+   probe->matched=!std::memcmp(prefix.p,probe->expected,probe->bytes);
+   return probe->matched?0:25;
+  }
   if(!target&&!descriptor){if(compressed>scanLimit||!read(nullptr,size_t(compressed)))return 13;continue;}
   if(method!=0&&method!=8)return 29;
   // Stored, non-image streaming members have no self-delimiting codec.
@@ -98,10 +119,12 @@ int extract(ReadSome raw,Cancel cancel,Allocate allocate,unsigned plate,
    continue;
   }
 
-  const size_t outputLimit=target?imageLimit:8*1024*1024;
+  const size_t outputLimit=memberTarget?std::min<size_t>(memberProbe->limit,65536):gcodeTarget?probe->bytes:md5Target?32:target?imageLimit:8*1024*1024;
   if(target){
-   if(!descriptor&&(!compressed||!expanded||compressed>imageLimit||expanded>imageLimit))return 11;
-   image.p=(uint8_t*)allocate(descriptor?imageLimit:size_t(expanded));if(!image.p)return 12;
+   if(!probe&&!memberProbe&&!descriptor&&(!compressed||!expanded||compressed>imageLimit||expanded>imageLimit))return 11;
+   if(md5Target && !descriptor && expanded!=32)return 25;
+   if(memberTarget && ((!descriptor && (!expanded || expanded>outputLimit)) || (method==0 && descriptor)))return 11;
+   image.p=(uint8_t*)allocate((probe||memberProbe)?outputLimit:descriptor?imageLimit:size_t(expanded));if(!image.p)return 12;
   }
   size_t produced=0,consumed=0;uint32_t crc=0;
   if(method==8){
@@ -118,7 +141,10 @@ int extract(ReadSome raw,Cancel cancel,Allocate allocate,unsigned plate,
     stream.next_in=input+cursor;stream.avail_in=available;stream.next_out=output;stream.avail_out=sizeof(output);
     int result=::inflate(&stream,Z_NO_FLUSH,0);size_t took=available-stream.avail_in,n=sizeof(output)-stream.avail_out;
     cursor+=took;consumed+=took;
-    if(!append(output,n,produced,outputLimit,crc,target))return 11;
+    if(gcodeTarget) {
+     size_t take=std::min(n,probe->bytes-produced);std::memcpy(image.p+produced,output,take);produced+=take;
+     if(produced==probe->bytes){probe->matched=!std::memcmp(image.p,probe->expected,probe->bytes);return probe->matched?0:25;}
+    } else if(!append(output,n,produced,outputLimit,crc,target))return 11;
     if(target&&consumed>imageLimit)return 11;
     if(result==Z_STREAM_END){done=true;break;}
     if(result!=Z_OK||(!took&&!n))return 19;
@@ -126,6 +152,8 @@ int extract(ReadSome raw,Cancel cancel,Allocate allocate,unsigned plate,
    // inflateEnd would free the preallocated window/state separately. Both are
    // owned by stateMemory, matching the bundled PNG decoder's allocation model.
    if(!done)return 13;
+  }else if(descriptor&&md5Target){
+   if(!read(image.p,32))return 13;produced=consumed=32;crc=uint32_t(::crc32(0,image.p,32));
   }else if(descriptor){
    uint8_t signature[8];if(!read(signature,8))return 13;
    const uint8_t pngSignature[]={137,80,78,71,13,10,26,10};
@@ -160,6 +188,13 @@ int extract(ReadSome raw,Cancel cancel,Allocate allocate,unsigned plate,
    expanded=zip64?(uint64_t(u32(d+12))|uint64_t(u32(d+16))<<32):u32(d+8);
   }
   if(consumed!=compressed||produced!=expanded||crc!=expectedCRC)return 19;
+  if(md5Target) {
+   if(produced!=32)return 25;
+   for(unsigned i=0;i<32;++i){uint8_t c=image.p[i];if(!((c>='0'&&c<='9')||(c>='a'&&c<='f')||(c>='A'&&c<='F')))return 25;probe->md5[i]=c>='a'&&c<='f'?char(c-'a'+'A'):char(c);}
+   probe->md5[32]=0;probe->hasMd5=true;std::free(image.p);image.p=nullptr;continue;
+  }
+  if(gcodeTarget)return 25;
+  if(memberTarget){png=image.p;image.p=nullptr;pngSize=produced;return 0;}
   if(target){
    if(produced<24||std::memcmp(image.p,"\x89PNG\r\n\x1a\n",8)||std::memcmp(image.p+12,"IHDR",4))return 19;
    auto bigEndian=[](const uint8_t *v){return uint32_t(v[0])<<24|uint32_t(v[1])<<16|uint32_t(v[2])<<8|v[3];};

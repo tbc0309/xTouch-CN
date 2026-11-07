@@ -2848,5 +2848,95 @@
     "Не более {n} устройств.",
     "最大 {n} 台のデバイス。",
     "최대 {n}개 기기."
+  ],
+  "Reset on connection": [
+    "连接后自动重置",
+    "連線後重設",
+    "Reset on connection",
+    "Réinitialiser à la connexion",
+    "Beim Verbinden zurücksetzen",
+    "Сброс при подключении",
+    "接続時にリセット",
+    "연결 시 초기화"
+  ],
+  "Clear artwork on connection": [
+    "连接后自动清理",
+    "連線後自動清理",
+    "Clear artwork on connection",
+    "Effacer les créations à la connexion",
+    "Motive beim Verbinden löschen",
+    "Удалять рисунки при подключении",
+    "接続時に作品を削除",
+    "연결 시 저장 작품 삭제"
+  ],
+  "Resetting display": [
+    "重置像素屏",
+    "正在重設螢幕",
+    "Resetting display",
+    "Réinitialisation de l’écran",
+    "Display wird zurückgesetzt",
+    "Сброс экрана",
+    "画面をリセット中",
+    "화면 초기화 중"
+  ],
+  "Reset failed": [
+    "重置失败",
+    "重設失敗",
+    "Reset failed",
+    "Échec de la réinitialisation",
+    "Zurücksetzen fehlgeschlagen",
+    "Не удалось сбросить экран",
+    "リセット失敗",
+    "초기화 실패"
+  ],
+  "Password restore failed": [
+    "密码恢复失败",
+    "密碼還原失敗",
+    "Password restore failed",
+    "Échec du rétablissement du mot de passe",
+    "Passwort konnte nicht wiederhergestellt werden",
+    "Не удалось восстановить пароль",
+    "パスワードの復元に失敗",
+    "비밀번호 복원 실패"
+  ],
+  "Display rejected image": [
+    "像素屏拒绝画面",
+    "螢幕拒絕接收畫面",
+    "Display rejected image",
+    "Image refusée par l’écran",
+    "Display hat das Bild abgelehnt",
+    "Экран отклонил изображение",
+    "画面が画像を拒否しました",
+    "화면에서 이미지를 거부했습니다"
+  ],
+  "Display storage full": [
+    "像素屏存储不足",
+    "螢幕儲存空間不足",
+    "Display storage full",
+    "Stockage de l’écran plein",
+    "Displayspeicher voll",
+    "Память экрана заполнена",
+    "画面のストレージ容量不足",
+    "화면 저장 공간 부족"
+  ],
+  "Clearing stored artwork": [
+    "清理已存素材",
+    "正在清理已存素材",
+    "Clearing stored artwork",
+    "Suppression des créations enregistrées",
+    "Gespeicherte Motive werden gelöscht",
+    "Удаление сохранённых рисунков",
+    "保存作品を削除中",
+    "저장 작품 삭제 중"
+  ],
+  "Artwork cleanup failed": [
+    "素材清理失败",
+    "素材清理失敗",
+    "Artwork cleanup failed",
+    "Échec de la suppression des créations",
+    "Löschen der Motive fehlgeschlagen",
+    "Не удалось удалить рисунки",
+    "作品の削除に失敗",
+    "작품 삭제 실패"
   ]
 }

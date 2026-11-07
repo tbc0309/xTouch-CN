@@ -9,5 +9,6 @@ bool xtouch_environment_store(JsonVariantConst doc);
 bool xtouch_environment_save(JsonVariantConst input);
 void xtouch_xiaomi_ble_unbind();
 bool xtouch_xiaomi_ble_measurement(float &temperature,float &humidity,uint32_t &age,uint32_t *temperatureAge=nullptr,uint32_t *humidityAge=nullptr,uint32_t *seenAge=nullptr);
+bool xtouch_environment_fresh_measurement(float &temperature,float &humidity);
 
 const char *xtouch_xiaomi_ble_model();

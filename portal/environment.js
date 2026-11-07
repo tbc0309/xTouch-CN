@@ -5,10 +5,11 @@ function environmentProductLabel(value){
  const name=names[value.model]||value.manufacturer||t('蓝牙温湿度计','Bluetooth thermometer');
  return ['zh','zh-TW','ja'].includes(lang)?`${name}（${value.model}）`:`${name} (${value.model})`;
 }
-function environmentDraft(){return !!environmentCard&&(fieldDirty($('environmentMac'))||!!$('environmentKey').value||(['environmentMac','environmentKey'].some(id=>$(id).dataset.locked==='0')&&environmentKnown?.configured));}
+function environmentEditing(){return !!environmentCard&&!!environmentKnown?.configured&&($('environmentMac').dataset.locked==='0'||(environmentKnown.keySaved&&$('environmentKey').dataset.locked==='0'));}
+function environmentDraft(){return !!environmentCard&&(fieldDirty($('environmentMac'))||!!$('environmentKey').value||environmentEditing());}
 function environmentFields(value){
  environmentKnown=value;$('environmentMac').value=value.mac||'';$('environmentKey').value='';if($('environmentKey').dataset.locked==='0'&&$('environmentKey').onchange)$('environmentKey').onchange();$('environmentDisplay').value=value.display||'alternate';$('environmentInterval').value=value.interval||5;$('environmentEncrypt').checked=!!value.encrypted;
- for(const name of ['environmentMac','environmentKey']){const input=$(name);trackField(input,input.value);if(value.configured&&!input.dataset.environmentEditor){lockEditor(input,environmentButtons);input.dataset.environmentEditor='1';}input.dispatchEvent(new Event('saved'));if(!value.configured){input.readOnly=false;input.dataset.locked='0';input.parentElement.classList.remove('editLocked');input.setAttribute('aria-readonly','false');}}
+ for(const name of ['environmentMac','environmentKey']){const input=$(name);trackField(input,input.value);if(value.configured&&!input.dataset.environmentEditor){lockEditor(input,environmentButtons,()=>name==='environmentMac'?!!environmentKnown?.configured:!!environmentKnown?.keySaved);input.dataset.environmentEditor='1';}input.dispatchEvent(new Event('saved'));if(!value.configured){input.readOnly=false;input.dataset.locked='0';input.parentElement.classList.remove('editLocked');input.setAttribute('aria-readonly','false');}}
 }
 function updateEnvironmentPanel(value,failures=0){
  if(!value)return;
@@ -23,7 +24,7 @@ function updateEnvironmentPanel(value,failures=0){
    link.target='_blank';link.rel='noopener noreferrer';link.className='tokenHelp';link.textContent=code;keyGuide.append(link);
   }
   keyGuide.append(')');section.querySelector('.passwordField > span').append(keyGuide);
-  $('settings').append(section);environmentCard=section;fieldHeadingObserver.observe($('environmentKey').parentElement);
+  $('settings').append(section);environmentCard=section;setupOptionalPanel(section);fieldHeadingObserver.observe($('environmentKey').parentElement);
   for(const name of ['environmentMac','environmentKey']){trackField($(name),$(name).value);for(const ev of ['input','locked'])$(name).addEventListener(ev,environmentButtons);}
   $('environmentSave').onclick=()=>environmentSave(false);
   $('environmentClear').onclick=async()=>{if(confirm(t('清除绑定','Clear binding')+'?'))await environmentSave(true);};
@@ -52,7 +53,7 @@ function environmentButtons(){
  const mac=$('environmentMac'),key=$('environmentKey'),known=environmentKnown,display=$('environmentDisplay'),seconds=$('environmentInterval'),protect=$('environmentEncrypt');
  const sameMac=!!known?.mac&&mac.value.trim().toUpperCase()===known.mac.toUpperCase();
  const editingEmptyKey=sameMac&&key.dataset.locked==='0'&&!key.value&&known?.keySaved;
- const editing=mac.dataset.locked==='0'||key.dataset.locked==='0';
+ const editing=environmentEditing();
  const changed=!known?.configured||!sameMac||!!key.value||display.value!==known.display||Number(seconds.value)!==known.interval;
  protect.disabled=environmentBusy||!key.value;if(!key.value)protect.checked=sameMac&&!!known?.encrypted;
  seconds.disabled=display.value!=='alternate';
