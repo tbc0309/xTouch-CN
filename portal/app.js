@@ -107,7 +107,7 @@ function enterLogin() {
     b.disabled = false;
 }
 const $ = (id) => document.getElementById(id),
-  t = (zh, en) => (lang === "zh" ? zh : localeWords[en]?.[languageCodes.indexOf(lang)] || en),
+  t = (zh, en, featureWords) => (lang === "zh" ? zh : featureWords?.[en]?.[languageCodes.indexOf(lang)] || localeWords[en]?.[languageCodes.indexOf(lang)] || en),
   defaults = new Map(
     [...document.querySelectorAll("[data-t]")].map((el) => [
       el.dataset.t,
@@ -318,6 +318,7 @@ function profileLimitMessage(kind) {
 }
 function updateInfo(d) {
   info = d;
+  if(d.pixelScreen){window.pixelScreenStatus=d.pixelScreen;if(typeof window.XTouchPixelPortal?.update==='function')window.XTouchPixelPortal.update(d.pixelScreen);else if(!window.pixelScreenLoading){window.pixelScreenLoading=true;const script=document.createElement('script');script.src='/pixel-screen.js';script.onerror=()=>{window.pixelScreenLoading=false;script.remove();};document.head.append(script);}}
   if(typeof updateEnvironmentPanel==='function')updateEnvironmentPanel(d.environment,d.xiaomiBle?.authenticationFailures||0);
   if (!pendingLanguage && languageCodes.includes(d.portalLanguage) && d.portalLanguage !== lang) {
     lang=d.portalLanguage;
@@ -446,14 +447,16 @@ $("logout").onclick = async () => {
     message(failure(error), true);
   }
 };
+const portalView=createPortalViewState();
 for (const button of document.querySelectorAll("[data-tab]"))
   button.onclick = () => {
-    collapseAccounts();
+    portalView.capture();
     for (const tab of document.querySelectorAll(".tab"))
       tab.hidden = tab.id !== button.dataset.tab;
     for (const b of document.querySelectorAll("[data-tab]"))
       { b.classList.toggle("active", b === button); b.setAttribute("aria-pressed", String(b === button)); }
     if (cfg) accounts();
+    portalView.select(button.dataset.tab);
   };
 function groupParentheticalNotes(root) {
   if (!root.isConnected) return;
@@ -492,7 +495,7 @@ function naturalFieldWidth(element) {
 const fieldHeadingObserver = new ResizeObserver(entries => {
   for(const {target:box} of entries) {
     if(!box.isConnected){fieldHeadingObserver.unobserve(box);continue;}
-    const caption=box.querySelector(":scope > span:not(.inlineNote)"), option=box.querySelector(":scope > .checkbox"), input=box.querySelector(":scope > input");
+    const caption=box.querySelector(":scope > span:not(.inlineNote)"), option=box.querySelector(":scope > .passwordActions, :scope > .checkbox"), input=box.querySelector(":scope > input");
     if(!caption || !option || !input)continue;
     const note=caption.querySelector(":scope > .inlineNote") || box.querySelector(":scope > .inlineNote");
     if(note)note.remove();
@@ -516,7 +519,7 @@ function fieldDirty(input) {
   return !!baseline && String(controlValue(input)) !== String(baseline() ?? "");
 }
 function refreshUnsaved() {
-  for (const input of document.querySelectorAll("#app input:not([data-environment]),#app select:not([data-environment])")) {
+  for (const input of document.querySelectorAll("#app input:not([data-environment]):not([data-pixel]),#app select:not([data-environment]):not([data-pixel])")) {
     if (!fieldBaselines.has(input)) trackField(input, controlValue(input));
     input.classList.toggle("unsaved", fieldDirty(input));
   }
@@ -594,6 +597,7 @@ const modelNames = {
   N6: "X2D",
   N7: "P2S",
   N9: "A2L",
+  N10: "H3C",
   O1C: "H2C",
   O1C2: "H2C",
   O1D: "H2D",
@@ -785,11 +789,11 @@ function readOnlyField(parent, label, value, type = "text", maxLength = 100) {
   input.classList.add("readOnlyValue");
   return input;
 }
-function lockEditor(input, onUnlock) {
+function lockEditor(input, onUnlock, hasSavedValue = () => true) {
   if (input.classList.contains("readOnlyValue")) return;
   const wrap = input.parentElement;
   wrap.classList.add("editLocked");
-  input.title = t(
+  const lockedTitle = t(
     "双击修改；键盘按 F2 或 Enter",
     "Double-click to edit; F2 or Enter with keyboard",
   );
@@ -804,7 +808,8 @@ function lockEditor(input, onUnlock) {
     committed = input.value;
   };
   const lock = () => {
-    if (fieldDirty(input)) { unlock(false); return; }
+    if (!hasSavedValue() || fieldDirty(input)) { unlock(false); return; }
+    input.title = lockedTitle;
     wrap.classList.add("editLocked");
     input.setAttribute("aria-readonly", "true");
     input.dataset.locked = "1";
@@ -812,6 +817,7 @@ function lockEditor(input, onUnlock) {
     input.dispatchEvent(new Event("locked"));
   };
   const unlock = (focus = true) => {
+    input.title = "";
     wrap.classList.remove("editLocked");
     input.setAttribute("aria-readonly", "false");
     input.dataset.locked = "0";
@@ -1096,6 +1102,7 @@ function accounts() {
       `${a.name || a.account || a.id}（${passwordState}）`,
       () => {
         a.expanded = !open;
+        portalView.panel("account:"+a.id,a.expanded);
         accounts();
         if (a.expanded && (a.token || a.tokenSaved) && !a.devices && !cloudBusy)
           cloud(a, { action: "devices" });
@@ -1526,6 +1533,7 @@ async function cloud(a, input) {
   }
 }
 async function load() {
+  portalView.capture();
   cfg = await api("/api/config");
   const active = (cfg.printers || [])[cfg.activePrinter || 0];
   cfg.printers = (cfg.printers || []).filter(Boolean);
@@ -1533,7 +1541,7 @@ async function load() {
   cfg.activePrinter = Math.max(0, cfg.printers.indexOf(active));
   cfg.cloudAccounts = cfg.cloudAccounts || [];
   for (const a of cfg.cloudAccounts) {
-    a.expanded = false;
+    a.expanded = portalView.expanded("account:"+a.id);
     a.loginMethod = a.loginMethod || "token";
     a.authMode = a.loginMethod === "password" ? "password" : "token";
     a.signInMode = a.signInMode || "password";
@@ -1567,7 +1575,7 @@ async function load() {
   savedSnapshot = JSON.parse(JSON.stringify(cfg));
   cleanState = configState();
   initializeClockSettings(cfg.settings);
-  for (const input of document.querySelectorAll("#settings input:not([data-environment]),#settings select:not([data-environment])")) trackField(input,controlValue(input));
+  for (const input of document.querySelectorAll("#settings input:not([data-environment]):not([data-pixel]),#settings select:not([data-environment]):not([data-pixel])")) trackField(input,controlValue(input));
   refreshUnsaved();
   updatePending();
   if (location.hash.startsWith("#account=")) {
@@ -1576,6 +1584,8 @@ async function load() {
     );
     if (a) openAccount(a);
   }
+  if(!location.hash.startsWith("#account="))document.querySelector('[data-tab="'+portalView.tab()+'"]').click();
+  portalView.layoutChanged();
   startPolling();
 }
 function startPolling() {
@@ -1656,7 +1666,7 @@ async function saveConfiguration(automatic = false) {
       ),
       true,
     );
-  for (const input of document.querySelectorAll("#settings input:not([data-environment]),#settings select:not([data-environment])"))
+  for (const input of document.querySelectorAll("#settings input:not([data-environment]):not([data-pixel]),#settings select:not([data-environment]):not([data-pixel])"))
     if (automatic ? !input.checkValidity() : !input.reportValidity()) return;
   const b = $("save");
   b.disabled = true;
@@ -1687,7 +1697,7 @@ async function saveConfiguration(automatic = false) {
       if(previous && !a.token && (previous.region || "cn") !== (a.region || "cn"))
         a.credentialSource = {region:previous.region || "cn",account:previous.account || ""};
     }
-    const sentControls = [...document.querySelectorAll("#app input:not([data-environment]),#app select:not([data-environment])")].map(input => [input,controlValue(input)]);
+    const sentControls = [...document.querySelectorAll("#app input:not([data-environment]):not([data-pixel]),#app select:not([data-environment]):not([data-pixel])")].map(input => [input,controlValue(input)]);
     const result = await api("/api/config", payload);
     for (const p of payload.printers) delete p.credentialSource;
     for (const a of payload.cloudAccounts) delete a.credentialSource;
@@ -1702,7 +1712,7 @@ async function saveConfiguration(automatic = false) {
       }
     }
     if (automatic && relockLan.length) profiles();
-    for (const input of document.querySelectorAll("#app input:not([data-environment]),#app select:not([data-environment])")) input.dispatchEvent(new Event("saved"));
+    for (const input of document.querySelectorAll("#app input:not([data-environment]):not([data-pixel]),#app select:not([data-environment]):not([data-pixel])")) input.dispatchEvent(new Event("saved"));
     saveRetryCount = 0; saveRetryState = "";
     cleanState = sentState;
     if (result.restarting) {
@@ -2086,3 +2096,17 @@ function updateSleepValue(){const n=Number($("sleep").value);$("sleepValue").tex
 $("brightness").oninput=()=>{$("brightnessValue").textContent=$("brightness").value;updatePending();};
 $("sleep").oninput=()=>{updateSleepValue();updatePending();};
 if($("soundVolume"))$("soundVolume").oninput=()=>{$("soundVolumeValue").textContent=$("soundVolume").value+"%";updatePending();};
+
+// Optional modules receive a narrow interface; minified scripts have separate scopes.
+function setupOptionalPanel(section,onToggle){
+ const head=section.querySelector('.sectionHead'),title=head.querySelector('h2');
+ const body=document.createElement('div');body.className='optionalPanelBody';
+ while(head.nextSibling)body.append(head.nextSibling);
+ section.append(body);
+ const toggle=document.createElement('button');toggle.type='button';toggle.className='optionalPanelToggle';
+ title.replaceWith(toggle);toggle.append(title);toggle.setAttribute('aria-controls',section.id+'Body');body.id=section.id+'Body';
+
+ function show(open){body.hidden=!open;toggle.setAttribute('aria-expanded',String(open));if(onToggle)onToggle(open);}
+ toggle.onclick=()=>{const open=body.hidden;show(open);portalView.panel(section.id,open);};show(portalView.expanded(section.id));portalView.layoutChanged();
+}
+window.XTouchPixelPortal={element:$,text:t,request:api,trackField,lockEditor,failure,setupOptionalPanel,fieldHeadingObserver};

@@ -1,3 +1,4 @@
+#include "platform/idf/ble_runtime.h"
 #include "ble_provisioning.h"
 #include "platform/idf/runtime.h"
 #include <esp_event.h>
@@ -43,7 +44,7 @@ void events(void *,esp_event_base_t base,int32_t id,void *data) {
 
 void worker(void *) {
     bool initialized=false,stopping=false,deinitIssued=false;
-    uint32_t deadline=0,retryAt=0;
+    uint32_t deadline=0,retryAt=0,radioWaitAt=0;
     unsigned failedCandidates=0,seenCredentialRevision=0;
     for(;;) {
         int action; bool done,serviceEnded,deinitDone,failed;unsigned revision;
@@ -56,7 +57,19 @@ void worker(void *) {
         if(action==2 && !initialized){
             portENTER_CRITICAL(&lock);state.starting=false;state.finished=true;memset(state.pop,0,sizeof(state.pop));portEXIT_CRITICAL(&lock);
         }
+#if XTOUCH_FEATURE_XIAOMI_BLE || XTOUCH_FEATURE_PIXEL_SCREEN
+        if(action==1 && !initialized && xtouch_ble::initialized()) {
+            if(!radioWaitAt)radioWaitAt=millis();
+            if(uint32_t(millis()-radioWaitAt)>=10000){
+                portENTER_CRITICAL(&lock);state.error=ESP_ERR_TIMEOUT;state.starting=false;state.finished=true;portEXIT_CRITICAL(&lock);
+                radioWaitAt=0;continue;
+            }
+            portENTER_CRITICAL(&lock);request=1;startAt=millis()+100;portEXIT_CRITICAL(&lock);
+            vTaskDelay(pdMS_TO_TICKS(100));continue;
+        }
+#endif
         if(action==1 && !initialized) {
+            radioWaitAt=0;
             Serial.printf("[BLE] BLE init internal=%u largest=%u\n",unsigned(heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT)),unsigned(heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT)));
             network_prov_mgr_config_t config={};
             config.scheme=network_prov_scheme_ble;

@@ -4,8 +4,13 @@ from pathlib import Path
 
 BOARDS = {
     'cyd': dict(directory='esp32-2432s028r', stem='xtouch-2.8', chip='esp32', project='xtouch_cyd',
-                chip_id=0, family='ESP32', name='CYD · ESP32-2432S028R', flash=4<<20,
+                chip_id=0, family='ESP32', name='CYD · ESP32-2432S028R · ILI9341', flash=4<<20,
                 boot_offset=0x1000, app_offset=0x10000, screen=[320,240], hint=None),
+    'cyd-st7789': dict(directory='esp32-2432s028r-st7789', stem='xtouch-2.8-st7789', chip='esp32', project='xtouch_cyd_st7789',
+                chip_id=0, family='ESP32', name='CYD · ESP32-2432S028R · ST7789', flash=4<<20,
+                boot_offset=0x1000, app_offset=0x10000, screen=[320,240],
+                hint=['仅适用于 CYD 的 ST7789 屏幕版本、XPT2046 电阻触摸及4MB Flash；不可使用 ILI9341 固件。','For the CYD ST7789 panel with XPT2046 resistive touch and 4 MB Flash. Do not use the ILI9341 firmware.'],
+                releaseSupported=True, sdkconfigBase='esp32-2432s028r'),
     's3': dict(directory='esp32-s3-touch-lcd-2.8-v2', stem='esp32-s3-touch-lcd-2.8-v2', chip='esp32s3', project='xtouch_waveshare',
                chip_id=9, family='ESP32-S3', name='Waveshare · ESP32-S3-Touch-LCD-2.8 V2', flash=16<<20,
                boot_offset=0, app_offset=0x20000, screen=[320,240],
@@ -19,15 +24,54 @@ BOARDS = {
                     boot_offset=0, app_offset=0x20000, screen=[480,320],
                     hint=['仅适用于 LCDWIKI ES3C35P 3.5 英寸 ST77922 主板。','For LCDWIKI ES3C35P 3.5-inch ST77922 boards only.']),
 }
-exclusion_path=Path(__file__).with_name('target_exclusions.json')
-EXCLUDED_TARGETS=json.loads(exclusion_path.read_text(encoding='utf8')) if exclusion_path.exists() else {}
-for catalog_name in ('port_targets.json','bsp_targets.json'):
-    port_catalog=Path(__file__).with_name(catalog_name)
-    if port_catalog.exists():
-        for key,profile in json.loads(port_catalog.read_text('utf8')).items():
-            if key in EXCLUDED_TARGETS or profile.get('candidateId') in EXCLUDED_TARGETS:continue
-            if key in BOARDS:raise ValueError('Port profile must not replace an existing board')
-            BOARDS[key]=profile
+BUILTIN_TARGETS = tuple(BOARDS)
+for profile in BOARDS.values():
+    profile.setdefault('releaseChannel', 'main')
+
+
+def extend_catalog(catalog, additions, exclusions=()):
+    """Add board metadata without allowing a port to replace another identity."""
+    import re
+    result = dict(catalog)
+    for key, source in additions.items():
+        if not isinstance(key, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*', key):
+            raise ValueError('Invalid board key: ' + str(key))
+        if key in exclusions or source.get('candidateId') in exclusions:
+            continue
+        if key in result:
+            raise ValueError('Duplicate board target: ' + key)
+        profile = dict(source)
+        for field in ('directory', 'stem', 'project', 'chip'):
+            if not isinstance(profile.get(field), str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]*', profile[field]):
+                raise ValueError('Invalid board identity: ' + key + '/' + field)
+        if profile['directory'] in ('.', '..') or profile['stem'] in ('.', '..'):
+            raise ValueError('Invalid board path: ' + key)
+        if not isinstance(profile.get('flash'), int) or profile['flash'] <= 0 or not isinstance(profile.get('chip_id'), int):
+            raise ValueError('Missing Flash/chip identity: ' + key)
+        screen = profile.get('screen')
+        if not isinstance(screen, list) or len(screen) != 2 or any(not isinstance(v, int) or v <= 0 for v in screen):
+            raise ValueError('Expected a two-dimensional screen size: ' + key)
+        for flag in ('releaseSupported', 'localOnly', 'nativeBuildAllowed'):
+            if flag in profile and not isinstance(profile[flag], bool):
+                raise ValueError('Expected a boolean board capability: ' + key + '/' + flag)
+        profile.setdefault('releaseChannel', 'test')
+        if profile['releaseChannel'] not in ('main', 'test'):
+            raise ValueError('Invalid board release channel: ' + key)
+        if any(p['directory'] == profile['directory'] or p['stem'] == profile['stem'] or
+               (p['project'], p['chip']) == (profile['project'], profile['chip']) for p in result.values()):
+            raise ValueError('Ambiguous board artifact identity: ' + key)
+        if profile.get('assetSize') not in (None, 'small', 'large'):
+            raise ValueError('Invalid resource profile: ' + key)
+        result[key] = profile
+    return result
+
+
+exclusion_path = Path(__file__).with_name('target_exclusions.json')
+EXCLUDED_TARGETS = json.loads(exclusion_path.read_text(encoding='utf8')) if exclusion_path.exists() else {}
+for catalog_name in ('port_targets.json', 'bsp_targets.json'):
+    path = Path(__file__).with_name(catalog_name)
+    if path.exists():
+        BOARDS = extend_catalog(BOARDS, json.loads(path.read_text('utf8')), EXCLUDED_TARGETS)
 BY_STEM = {board['stem']: dict(id=key, **board) for key,board in BOARDS.items()}
 
 def browser_module():
@@ -39,6 +83,8 @@ def browser_module():
 def sdkconfig_defaults(board, root):
     """Match each project's default layers when seeding a clean build."""
     paths = [root / BOARDS[board]['directory'] / 'sdkconfig.defaults']
-    if board != 'cyd':
+    if BOARDS[board].get('sdkconfigBase'):
+        paths.insert(0, root / BOARDS[board]['sdkconfigBase'] / 'sdkconfig.defaults')
+    if board not in ('cyd', 'cyd-st7789'):
         paths.insert(0, root / 'sdkconfig.defaults')
     return '\n'.join(path.read_text(encoding='utf-8') for path in paths)

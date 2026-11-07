@@ -85,7 +85,9 @@ def main():
                 if unquote(parsed.fragment) not in anchors(dest.read_text(encoding='utf-8')):
                     errors.append(f'{path.relative_to(ROOT)}: missing anchor {target}')
         if path.name in ('README.md', 'README.en.md') and path.parent == ROOT:
-            images = re.findall(r'!\[[^\]]*\]\(([^)]+)\)', plain)
+            heading = '## Interface' if path.name == 'README.en.md' else '## 界面展示'
+            gallery = plain.split(heading, 1)[-1].split('\n## ', 1)[0]
+            images = re.findall(r'!\[[^\]]*\]\(([^)]+)\)', gallery)
             image_base = 'docs/images/en/boards/' if path.name == 'README.en.md' else 'docs/images/boards/'
             if images != [image_base+'p4-'+name+'.png' for name in ('home','printing','printer-picker','temperature','filament','camera')]:
                 errors.append(f'{path.name}: expected six separate P4 screenshots, got {images}')

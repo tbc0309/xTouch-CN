@@ -327,6 +327,6 @@ direct_dependencies:
 - espressif/network_provisioning
 - idf
 - xtouch_tab5_hardware
-manifest_hash: 6bc6aec32cbb274951fd994fd6cad88d22293f4b2a6c81d42c76fc354614f575
+manifest_hash: c8e859aa96a3865ae112759f731f512f9e6609761bb096404065c0ec5171734e
 target: esp32p4
 version: 3.0.0

@@ -37,11 +37,19 @@ void xtouch_printer_edit_hint(const char *serial,const char *host){
 }
 
 
+const char *xtouch_printer_serial(void){return xtouch_printer_configured(xtouch_active_printer)?xtouch_printers[xtouch_active_printer].serialNumber:"";}
 bool xtouch_printer_local_credentials(char *host,size_t hostSize,char *code,size_t codeSize){
  if(!host||!code||hostSize<2||codeSize<9||!xtouch_printers||!xtouch_profile_capacity)return false;
  host[0]=code[0]=0;const auto &active=xtouch_printers[xtouch_active_printer];
  if(!XTouchProfileRoute::local(active.configured,active.cloud)||!active.host[0]||strlen(active.accessCode)!=8)return false;
  strlcpy(host,active.host,hostSize);strlcpy(code,active.accessCode,codeSize);return true;
+}
+bool xtouch_printer_file_credentials(char *host,size_t hostSize,char *code,size_t codeSize){
+ if(!host||!code||hostSize<2||codeSize<9)return false;
+ host[0]=code[0]=0;
+ const auto *match=XTouchProfileRoute::fileProfile(xtouch_printers,xtouch_profile_capacity,xtouch_active_printer);
+ if(!match||strlen(match->host)>=hostSize)return false;
+ strlcpy(host,match->host,hostSize);strlcpy(code,match->accessCode,codeSize);return true;
 }
 bool xtouch_printer_camera_credentials(char *host,size_t hostSize,char *code,size_t codeSize){
  if(!host||!code||hostSize<2||codeSize<9||!xtouch_printers||!xtouch_profile_capacity)return false;

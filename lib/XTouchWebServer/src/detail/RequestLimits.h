@@ -1,5 +1,8 @@
 #pragma once
 #include <stdint.h>
+#if __has_include("xtouch_board_build.h")
+#include "xtouch_board_build.h"
+#endif
 #if defined(XTOUCH_HTTP_UPLOAD_LIMIT_BYTES)
 static constexpr uint32_t xtouchHttpUploadLimit=XTOUCH_HTTP_UPLOAD_LIMIT_BYTES;
 #elif defined(XTOUCH_WAVESHARE) && defined(XTOUCH_BOARD_S3)

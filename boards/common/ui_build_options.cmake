@@ -38,4 +38,6 @@ if(XTOUCH_ICON_SET)
  endif()
 endif()
 
+include("${ROOT}/boards/common/filename_fonts.cmake")
+xtouch_filename_font_options(${TARGET})
 endfunction()

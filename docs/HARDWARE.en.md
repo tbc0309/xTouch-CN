@@ -7,7 +7,14 @@ Verify the full model, display/touch controllers and GPIO wiring. Similar dimens
 <a id="cyd"></a>
 ## CYD · ESP32-2432S028R
 
-Classic ESP32, 4 MB Flash, no PSRAM, ILI9341 display and XPT2046 resistive touch, landscape 320×240. The panel uses native ESP-IDF SPI with the selected ILI9341_2-style initialization profile, with native display and touch drivers. Initial calibration is required.
+Classic ESP32, 4 MB Flash, no PSRAM, ILI9341 or ST7789 display and XPT2046 resistive touch, landscape 320×240. Each controller has separate firmware with native display and touch drivers. Initial calibration is required.
+
+| Controller | Build target | Application firmware |
+|---|---|---|
+| ILI9341 (ILI9341_2 parameters) | `cyd` | `xtouch-2.8.bin` |
+| ST7789 / ST7789V | `cyd-st7789` | `xtouch-2.8-st7789.bin` |
+
+Select firmware by the actual controller; USB connector count alone is unreliable. Project identities and OTA directories are separate. Use the matching full image over USB when first changing panel variants.
 
 | Peripheral | Signals | GPIO |
 |---|---|---|
@@ -47,7 +54,7 @@ CYD's independent [external chamber module](../src/features/external_chamber/sen
 
 ## Additional boards
 
-Resolution, resource size, icon style and feature capabilities are separate configuration choices. New ports require vendor schematics, panel initialization, touch mapping, audio, power and boot-pin checks, followed by builds, simulation and hardware validation. Do not list unfinished ports as release-supported boards. See [development rules](DEVELOPMENT.en.md).
+See the [board porting guide](PORTING.en.md) for hardware adapters and build configuration.
 
 ## LCDWIKI ES3C35P
 

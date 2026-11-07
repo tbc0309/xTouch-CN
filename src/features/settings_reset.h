@@ -13,7 +13,7 @@ ResetResult reset(bool busy, Rotate rotate, Remove remove) {
         return ResetResult::key_failed;
     constexpr const char *paths[] = {"/xtouch.json",       "/xtouch/settings.json",
                                      "/xtouch/touch.json", "/xtouch/hardware.json",
-                                     "/xtouch/admin.json", "/xtouch/env.json"};
+                                     "/xtouch/admin.json", "/xtouch/env.json", "/xtouch/pixel.json"};
     constexpr const char *suffixes[] = {"", ".tmp", ".previous"};
     bool complete = true;
     for (const char *path : paths) {

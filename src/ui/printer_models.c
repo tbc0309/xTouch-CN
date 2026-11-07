@@ -13,6 +13,7 @@ extern const lv_img_dsc_t printer_image_bambu_logo;
 #define printer_image_N6 printer_image_bambu_logo
 #define printer_image_N7 printer_image_bambu_logo
 #define printer_image_N9 printer_image_bambu_logo
+#define printer_image_N10 printer_image_bambu_logo
 #define printer_image_O1C printer_image_bambu_logo
 #define printer_image_O1C2 printer_image_bambu_logo
 #define printer_image_O1D printer_image_bambu_logo
@@ -29,6 +30,7 @@ extern const lv_img_dsc_t printer_image_N2S;
 extern const lv_img_dsc_t printer_image_N6;
 extern const lv_img_dsc_t printer_image_N7;
 extern const lv_img_dsc_t printer_image_N9;
+extern const lv_img_dsc_t printer_image_N10;
 extern const lv_img_dsc_t printer_image_O1C;
 extern const lv_img_dsc_t printer_image_O1C2;
 extern const lv_img_dsc_t printer_image_O1D;
@@ -47,6 +49,7 @@ static const PrinterModel models[] = {
 {"N6", "Bambu Lab X2D", &printer_image_N6, true},
 {"N7", "Bambu Lab P2S", &printer_image_N7, false},
 {"N9", "Bambu Lab A2L", &printer_image_N9, false},
+{"N10", "Bambu Lab H3C", &printer_image_N10, true},
 {"O1C", "Bambu Lab H2C", &printer_image_O1C, true},
 {"O1C2", "Bambu Lab H2C", &printer_image_O1C2, true},
 {"O1D", "Bambu Lab H2D", &printer_image_O1D, true},

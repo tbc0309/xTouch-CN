@@ -1,8 +1,8 @@
 {
-  "version": "1.0.1-test",
-  "releaseTag": "1.0.1-test",
+  "version": "1.0.2-test",
+  "releaseTag": "1.0.2-test",
   "prerelease": true,
-  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.1-test/esp32-p4x-wifi6-touch-lcd-3.5.bin",
-  "size": 4991952,
-  "md5": "36838720ffc194d743129763dd6e0593"
+  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.2-test/esp32-p4x-wifi6-touch-lcd-3.5.bin",
+  "size": 4998624,
+  "md5": "0f8b399a65e044a52d87ea5fa7232591"
 }

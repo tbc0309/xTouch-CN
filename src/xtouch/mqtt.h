@@ -5,6 +5,7 @@
 #include "features/power/runtime.h"
 #include "features/network/mqtt_status_policy.h"
 #include "features/network/print_job_state.h"
+#include "features/network/print_stage_report.h"
 #include "ui/printer_models.h"
 #include "ui/printer_picker.h"
 #include "ui/settings_gesture.h"
@@ -125,6 +126,7 @@ void xtouch_mqtt_processPushStatus(JsonDocument &incomingJson)
             XTouchPrintJob::changed(bambuStatus.obj_subtask_id,subtaskId) ||
             (!knownJobIdentity && XTouchPrintJob::changed(bambuStatus.gcode_file,telemetry["gcode_file"]|""));
         bool jobStarted=XTouchPrintJob::beginReport(bambuStatus,lastPrintState.c_str(),reportedState,jobIdentityChanged);
+        bool hadPrintedLayer=bambuStatus.current_layer_valid&&bambuStatus.current_layer>0;
 
         if(telemetry["support_chamber_temp_display"].is<bool>()){bambuStatus.chamber_support_known=true;bambuStatus.chamber_supported=telemetry["support_chamber_temp_display"];}
         else if(telemetry["support_chamber"].is<bool>()){bambuStatus.chamber_support_known=true;bambuStatus.chamber_supported=telemetry["support_chamber"];}
@@ -312,30 +314,13 @@ void xtouch_mqtt_processPushStatus(JsonDocument &incomingJson)
         }
         auto bed=XTouchTelemetry::bed(telemetry);
         if(bed.present){unsigned values[]={bed.actual,bed.target};bool valid[]={bed.actualValid,bed.targetValid};for(unsigned i=0;i<2;++i){if(valid[i]){*temperatures[i]=values[i];bambuStatus.temperature_valid|=1U<<i;}else bambuStatus.temperature_valid&=~(1U<<i);xtouch_mqtt_sendMsg((XTOUCH_MESSAGE)temperatureEvents[i],valid[i]?values[i]:0);}}
-        if(incomingJson["print"].containsKey("chamber_temper")&&xtouch_bblp_network_chamber()){
-            double value;bambuStatus.chamber_valid=xtouch_mqtt_number(incomingJson["print"]["chamber_temper"],-20,200,value);
-            if(bambuStatus.chamber_valid)bambuStatus.chamber_temper=value;
-            xtouch_mqtt_sendMsg(XTOUCH_ON_CHAMBER_TEMP,bambuStatus.chamber_temper);
+        auto chamber=XTouchTelemetry::chamber(telemetry);
+        if(chamber.actualPresent&&xtouch_bblp_network_chamber()){
+            bambuStatus.chamber_valid=chamber.actualValid;
+            if(chamber.actualValid)bambuStatus.chamber_temper=chamber.actual;
+            xtouch_mqtt_sendMsg(XTOUCH_ON_CHAMBER_TEMP,chamber.actualValid?chamber.actual:0);
         }
-        // BambuStudio DevChamber: legacy target and newer packed CTC telemetry.
-        if (incomingJson["print"]["ctt"].is<int>()){
-            int target=incomingJson["print"]["ctt"];bambuStatus.chamber_target_valid=target>=0&&target<=100;
-            if(bambuStatus.chamber_target_valid)bambuStatus.chamber_target_temper=target;
-        }
-        JsonVariant packed = incomingJson["print"]["device"]["ctc"]["info"]["temp"];
-        if (xtouch_bblp_network_chamber() && (packed.is<uint32_t>() || packed.is<int32_t>())) {
-            uint32_t value = packed.as<uint32_t>();
-            unsigned actual = value & 0xFFFF, target = value >> 16;
-            // Explicit unavailable values invalidate stale readings; absent deltas preserve them.
-            bambuStatus.chamber_valid=actual!=0xFFFF&&actual<=200;
-            if (actual != 0xFFFF && actual <= 200) {
-                bambuStatus.chamber_valid=true;bambuStatus.chamber_temper = actual;
-                xtouch_mqtt_sendMsg(XTOUCH_ON_CHAMBER_TEMP, actual);
-            }
-            bambuStatus.chamber_target_valid=target!=0xFFFF&&target<=100;
-            if (bambuStatus.chamber_target_valid)bambuStatus.chamber_target_temper=target;
-        }
-
+        if(chamber.targetPresent){bambuStatus.chamber_target_valid=chamber.targetValid;if(chamber.targetValid)bambuStatus.chamber_target_temper=chamber.target;}
         if(!xtouch_bblp_chamber_display()){bambuStatus.chamber_valid=false;xtouch_mqtt_sendMsg(XTOUCH_ON_CHAMBER_TEMP,0);}
         // link_th
         // link_ams
@@ -376,7 +361,10 @@ void xtouch_mqtt_processPushStatus(JsonDocument &incomingJson)
         }
 
         // stg
-        // stg_cur
+        if(jobStarted||XTouchPrintJob::terminal(reportedState)){bambuStatus.ams_status_valid=false;bambuStatus.ams_current_valid=false;bambuStatus.ams_target_valid=false;}
+        bambuStatus.print_stage_current=XTouchStageReport::update(telemetry,bambuStatus.print_stage_current,
+            jobStarted,!hadPrintedLayer&&bambuStatus.current_layer_valid&&bambuStatus.current_layer>0,
+            XTouchPrintJob::terminal(reportedState));
         // filam_bak
         // mess_production_state
         // lifecycle
@@ -482,23 +470,26 @@ void xtouch_mqtt_processPushStatus(JsonDocument &incomingJson)
         }
         xtouch_mqtt_parse_ams(incomingJson);
         if (incomingJson["print"].containsKey("ams_status")) {
-            xtouch_ams_parse_status(incomingJson["print"]["ams_status"].as<int>());
+            double value;
+            bambuStatus.ams_status_valid=xtouch_mqtt_number(incomingJson["print"]["ams_status"],0,65535,value)&&floor(value)==value;
+            if(bambuStatus.ams_status_valid)xtouch_ams_parse_status(int(value));
             xtouch_mqtt_sendMsg(XTOUCH_ON_AMS_BITS, 0);
         }
 
         if(incomingJson["print"]["vir_slot"].is<JsonArrayConst>()){
             bambuStatus.external_multi_protocol=true;
-            if(incomingJson["print"]["vir_slot"].size()==0){bambuStatus.external_routes=0;bambuStatus.external_materials=0;}
+            if(incomingJson["print"]["vir_slot"].size()==0){bambuStatus.external_routes=0;bambuStatus.external_materials=0;bambuStatus.external_color_valid=0;}
             for(JsonObjectConst ext:incomingJson["print"]["vir_slot"].as<JsonArrayConst>()){
                 const char *idText=ext["id"].is<const char*>()?ext["id"].as<const char*>():NULL;char *idEnd=NULL;long id=idText?strtol(idText,&idEnd,10):ext["id"]|0;
                 if(idText&&(!*idText||!idEnd||*idEnd))continue;
                 if(id!=254&&id!=255)continue;unsigned channel=id==255?0:1;
                 bambuStatus.external_routes|=1U<<channel;
                 if(ext.containsKey("tray_type")){
-                    if(strlen(ext["tray_type"]|""))bambuStatus.external_materials|=1U<<channel;else bambuStatus.external_materials&=~(1U<<channel);
+                    if(strlen(ext["tray_type"]|""))bambuStatus.external_materials|=1U<<channel;else {bambuStatus.external_materials&=~(1U<<channel);bambuStatus.external_color_valid&=~(1U<<channel);}
                 }
                 const char *color=ext["tray_color"]|"";bool valid=strlen(color)==8;for(unsigned n=0;valid&&n<8;n++)valid=isxdigit(color[n]);
                 if(valid){uint32_t rgb=strtoul(color,NULL,16)>>8;if(channel)bambuStatus.external_color2=rgb;else bambuStatus.external_color=rgb;}
+                if(ext.containsKey("tray_color")){if(valid)bambuStatus.external_color_valid|=1U<<channel;else bambuStatus.external_color_valid&=~(1U<<channel);}
                 auto temp=[](JsonVariantConst v)->unsigned{const char *s=v.is<const char*>()?v.as<const char*>():NULL;char *end=NULL;long n=s?strtol(s,&end,10):v.is<int>()?v.as<int>():0;return (!s||(*s&&end&&!*end))&&n>=150&&n<=350?n:0;};
                 if(ext.containsKey("nozzle_temp_min")){if(channel)bambuStatus.external_nozzle_min2=temp(ext["nozzle_temp_min"]);else bambuStatus.external_nozzle_min=temp(ext["nozzle_temp_min"]);}
                 if(ext.containsKey("nozzle_temp_max")){if(channel)bambuStatus.external_nozzle_max2=temp(ext["nozzle_temp_max"]);else bambuStatus.external_nozzle_max=temp(ext["nozzle_temp_max"]);}
@@ -510,12 +501,13 @@ void xtouch_mqtt_processPushStatus(JsonDocument &incomingJson)
         {
             bambuStatus.ams_support_virtual_tray = true;
             JsonObjectConst external=incomingJson["print"]["vt_tray"].as<JsonObjectConst>();
-            if(external.isNull() || external.size()==0)bambuStatus.external_present=false;
+            if(external.isNull() || external.size()==0){bambuStatus.external_present=false;bambuStatus.external_color_valid&=~1U;}
             if(external.containsKey("tray_type")) bambuStatus.external_present=strlen(external["tray_type"] | "")>0;
             if(external.containsKey("tray_color")) {
                 const char *hex=external["tray_color"] | "";bool valid=strlen(hex)==8;
                 for(unsigned i=0;valid && i<8;++i) valid=isxdigit(hex[i]);
                 bambuStatus.external_color=valid ? strtoul(hex,nullptr,16)>>8 : 0x777777;
+                if(valid)bambuStatus.external_color_valid|=1;else bambuStatus.external_color_valid&=~1U;
             }
             auto temperature=[](JsonVariantConst v)->uint16_t {
                 long value=0;
@@ -564,7 +556,7 @@ void xtouch_mqtt_parseMessage(XtouchAutoGrowBufferStream &input, byte type = 0)
     DynamicJsonDocument incomingJson(type==1?12288:XTOUCH_MQTT_SERVER_JSON_PARSE_SIZE);
     DynamicJsonDocument amsFilter(2048);
     if(type==0){
-        for(const char *key:{"support_chamber","support_chamber_temp_display","support_chamber_temp_edit","support_chamber_temp_edit_range","support_aux_fan","support_chamber_fan","sequence_id","err_code","result","reason","vir_slot","ams_status","fun","bed_temp","bed_target_temper","bed_temper","big_fan1_speed","big_fan2_speed","chamber_temper","command","cooling_fan_speed","ctt","fan_gear","frame_temper","gcode_file","plate_idx","plate_index","gcode_file_prepare_percent","gcode_state","hms","home_flag","hw_switch_state","ipcam","cfg","stat","layer_num","lights_report","mc_percent","mc_print_error_code","mc_print_line_number","mc_print_stage","mc_print_sub_stage","mc_remaining_time","nozzle_diameter","nozzle_target_temper","nozzle_temper","print_error","print_type","printer_type","profile_id","project_id","queue_number","spd_lvl","spd_mag","subtask_id","subtask_name","task_id","total_layer_num","vt_tray","wifi_signal"})amsFilter["print"][key]=true;
+        for(const char *key:{"support_chamber","support_chamber_temp_display","support_chamber_temp_edit","support_chamber_temp_edit_range","support_aux_fan","support_chamber_fan","sequence_id","err_code","result","reason","vir_slot","ams_status","fun","bed_temp","bed_target_temper","bed_temper","big_fan1_speed","big_fan2_speed","chamber_temper","command","cooling_fan_speed","ctt","fan_gear","frame_temper","gcode_file","plate_idx","plate_index","gcode_file_prepare_percent","gcode_state","hms","home_flag","hw_switch_state","ipcam","cfg","stat","layer_num","lights_report","mc_percent","mc_print_error_code","mc_print_line_number","mc_print_stage","mc_print_sub_stage","mc_remaining_time","nozzle_diameter","nozzle_target_temper","nozzle_temper","print_error","print_type","printer_type","profile_id","project_id","queue_number","spd_lvl","spd_mag","stg_cur","subtask_id","subtask_name","task_id","total_layer_num","vt_tray","wifi_signal"})amsFilter["print"][key]=true;
         amsFilter["print"]["device"]["type"]=true;amsFilter["print"]["device"]["airduct"]["modeCur"]=true;amsFilter["print"]["device"]["airduct"]["parts"]=true;amsFilter["print"]["device"]["bed_temp"]=true;amsFilter["print"]["device"]["bed"]["info"]["temp"]=true;
         for(const char *key:{"extruder","ctc","holder"})amsFilter["print"]["device"][key]=true;
         amsFilter["print"]["device"]["nozzle"]["state"]=true;
@@ -711,6 +703,8 @@ void xtouch_mqtt_connect()
         (int32_t)(millis() - xtouch_mqtt_nextAttempt) < 0) return;
     XTouchCamera::reset(bambuStatus);
     xtouch_mqtt_hasStatus=false;
+    bambuStatus.print_stage_current=-1;
+    bambuStatus.ams_status_valid=false;bambuStatus.ams_current_valid=false;bambuStatus.ams_target_valid=false;
     xtouch_mqtt_sendMsg(XTOUCH_ON_IPCAM);
     XTouchLoopScope timing(XTOUCH_PHASE_CONNECT);
     String clientId = "XTOUCH-" + String((uint32_t)ESP.getEfuseMac(), HEX);
@@ -779,6 +773,7 @@ static void xtouch_mqtt_switch_printer()
     xtouch_pending_printer = -1;
     ui_printer_picker_close();
     memset(&bambuStatus, 0, sizeof(bambuStatus));
+    bambuStatus.print_stage_current = -1;
     bambuStatus.m_tray_now = 255;
     bambuStatus.m_tray_tar = 255;
     memset(bambuStatus.ams_bound_extruder,255,sizeof(bambuStatus.ams_bound_extruder));

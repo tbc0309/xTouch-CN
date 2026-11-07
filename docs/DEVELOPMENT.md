@@ -9,6 +9,8 @@ CYD、S3、P4 及ES3C35P 使用原生 ESP-IDF 6.1、LVGL 9.6.0。P4 使用 Hoste
 应用与LVGL组件共用同一组主板能力定义。原生构建检查会在打包前拒绝不一致的配置，避免界面资源和内存预算出现偏差。
 ## 构建
 
+CYD 按实际面板分别构建：`python boards/build.py cyd` 为 ILI9341（保留 ILI9341_2 参数），`python boards/build.py cyd-st7789` 为 ST7789。两者共用原生硬件驱动，项目身份、固件文件名和 OTA 目录独立，防止自动升级互换面板固件；不要仅凭 USB 插口数量判断型号。ST7789 不改变 40 MHz SPI、16 行 DMA 或触摸校准。
+
 激活 ESP-IDF 6.1 工具环境，在仓库根目录执行：
 
 ```sh
@@ -40,7 +42,7 @@ python boards/build.py es3c35p
 | `portal/`／`web/` | 设备管理网页／公开安装与查询网站 |
 | `resources/`／`scripts/` | 生成输入、授权、生成及审计脚本 |
 
-共享功能不复制到每块板。像素尺寸与资源档位分开；标题／控件采用 `ui/chrome_metrics.h`，仅在边界转换坐标一次。驱动必须在 DMA 完成前保持缓冲有效，不为无 PSRAM 的 CYD 盲目增加整帧缓冲。
+主板适配共用功能与界面组件。资源档位独立于物理分辨率，`ui/chrome_metrics.h` 提供共享尺寸；DMA 提交后的缓冲在传输完成前由驱动持有。
 
 <a id="options"></a>
 ## 功能与资源选项
@@ -67,35 +69,33 @@ python boards/build.py s3 --without audio --assets small --icons original
 
 ### 字库与生成资源
 
+文件名字库通过 CMake 选项 `XTOUCH_FILENAME_FONT=auto|common-zh|ui` 选择。标点补充由 `XTOUCH_FILENAME_PUNCTUATION` 独立控制，默认 `ON`，覆盖 99 个常用中英文标点及符号；选择 `ui` 关闭常用汉字扩展时，仍保留标点和完整的界面固定文案。`auto` 按主控判断：ESP32-S3、ESP32-P4 的文件浏览模块默认内置 GB2312 的 6763 个常用简体汉字及 GB2312 符号、常用排版标点，其它主控默认仅含界面用字；不依据某个板名或资源大小判断。未编译文件浏览模块时不增加该字库容量，也不会由字库选项开启模块。补充模块只保存当前同字号 UI 未覆盖的字形；已有 UI 字形通过字体链复用，避免重复占用固件。共享资源位于 `resources/fonts/file-names/`，使用 `scripts/generate_filename_fonts.py` 重新生成。更新 UI 字库的生成流程会自动增减补充模块；构建时校验 `coverage.json`，覆盖不一致时拒绝使用旧资源。28px 字库通过静态 fallback 链分段，兼容 small／large 资源的字形索引范围，不改变全局 LVGL 字形结构。
+
 界面文字为 OPPO Sans 4.0、字重 600；日／韩缺字采用 Noto Sans CJK。CYD 仅保留中英文字库。字体及图标按资源档位生成，机型图也预生成，运行时不再依靠任意缩放补救错误资源。
 
 翻译元数据位于 `resources/languages.json`；持久化语言索引不可随意重排。修改后运行生成器及 `scripts/check_localization.py`。字体生成需要合法源字体，命令见生成脚本 `--help`；授权见[第三方许可](../LICENSE-3RD-PARTY.md)。
 
-## 验证
+## 构建检查
 
-1. 运行受影响协议、认证、隔离与 UI 回归；共用改动覆盖 CYD、S3、P4 及受影响的其他主板。
-2. 编译普通目标，运行 `scripts/check_native_idf.py <构建目录> --release`，审计无 Arduino、无诊断入口、正确资源、分区及模块。检查包括 IDF 响应文件中的测试参数，以及最终固件中的网页字节是否与源码和模块组合一致。
-3. 从当前生产 UI 渲染截图，检查文字墨迹、对齐、截断、滚动与内存。
-4. 在目标硬件验证启动、配置保持、网页、网络、显示与受影响功能；不能用模拟通过代替实机。
-5. 固件更新前执行 `python scripts/check_thumbnail_upstream.py --latest-release --strict --report boards/build/thumbnail-upstream-review.json --cache boards/build/upstream-sources`。该工具需要已认证的 GitHub CLI，或只读 GitHub API 凭据环境变量 `GH_TOKEN`／`GITHUB_TOKEN`。上游相关代码变化须先复核，不能只刷新基线；与模拟器协议联动的改动同步可复用回归。
+```sh
+python scripts/check_localization.py
+python scripts/check_documentation.py
+python boards/check_contracts.py
+python scripts/check_native_idf.py boards/build-s3 --release
+```
 
-真实打印机测试一次只启用一个客户端，备份配置，轮次之间断开并静置，结束恢复。控制命令与无害查询分开；不自动重试机械操作。未验证的机型、认证或网络故障保留未完成状态。
+原生审计检查框架依赖、模块选择、资源、镜像身份和分区容量。构建目录按所选主板替换。
 
+## 诊断工具
 
-发布前检查固件编译、网页管理、配网、界面布局及 OTA 分区切换；硬件测试与私有诊断记录单独保存在本地。
-
-## 分析工具与预算
-
-| 目标 | 工具与使用边界 |
+| 范围 | 工具 |
 |---|---|
-| Flash、IRAM、DRAM 和 OTA 容量 | 在对应主板工程中运行 `idf.py size`、`idf.py size-components`、`idf.py size-files`；同时核对最终应用镜像和分区，不以源码行数推断容量 |
-| 静态诊断 | 保留 GCC 警告及 `compile_commands.json`；[IDF Clang-Tidy](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/tools/idf-clang-tidy.html) 需要匹配的 esp-clang 工具链，在独立构建目录分析，不直接切换发行版工具链或自动修复第三方代码 |
-| 堆、碎片和栈 | 同时记录空闲量、历史最低值、最大连续块和任务栈余量；实验构建可用 IDF heap tracing／完整性检查，TLS 成功所需的是连续可用内存 |
-| LVGL 绘制 | 按当前 LVGL 的 Kconfig 启用 SYSMON／PERF_MONITOR 或 profiler，仅用于诊断；记录刷新区域、绘图时间与驱动传输时间，不把模拟器耗时当实体屏帧率 |
-| 布局和字库 | 用原生 LVGL 运行生产组件，覆盖长名称、100 台设备、各语言、极值读数、滚动与命中；直接检查实际字体的 glyph，不能只确认字符串包含所需字符 |
-| DMA 和异步任务 | 核对缓冲所有权、完成回调、失败回退、取消与退出；压力测试同时观察网络和内存，避免只测总线空载吞吐 |
+| Flash 与 RAM 占用 | `idf.py size`、`idf.py size-components`、`idf.py size-files` |
+| 静态分析 | `compile_commands.json` 与 [IDF Clang-Tidy](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/tools/idf-clang-tidy.html)，使用匹配的 esp-clang 工具链 |
+| 堆与任务栈 | IDF heap tracing、完整性检查及任务栈余量 |
+| LVGL 性能 | LVGL Kconfig 中的 SYSMON／PERF_MONITOR 或 profiler |
 
-分析开关、追踪缓冲和测试端点不进入普通固件。每次优化比较同一资源、同一配置和同一工作负载；不能把更改字体、关闭功能或扩大内存后的结果当作原条件优化。
+诊断选项会影响内存占用和绘图性能；普通固件不包含测试端点。
 
 <a id="release"></a>
 ## 分区与打包
@@ -109,7 +109,7 @@ python boards/build.py s3 --without audio --assets small --icons original
 
 应用地址 CYD `0x10000`，S3／P4／ES3C35P `0x20000`；完整包从 `0x0` 安装。P4 引导程序在 `0x2000`。使用打包输出，不手工拼接不匹配的引导与应用。P4 的缓存映射与 64 字节 L2 行配置由构建审计。
 
-每板 `ota.json`、镜像摘要、长度、版本和 Release 产物必须一致。文件名见[安装表](INSTALLATION.md#install)。只有通过发布检查的构建才能更新公开下载及 OTA 清单。编译、模拟、实机证据分别记录。
+打包器为每块主板生成对应的版本、长度、校验值及 `ota.json` 清单。固件文件名见[安装表](INSTALLATION.md#install)。
 
 <a id="website"></a>
 ## 网页与文档
@@ -121,7 +121,7 @@ python scripts/build_web.py --firmware-dir boards/build-cyd/artifacts --ota-mani
 python -m http.server 8895 --directory _site
 ```
 
-公开网站打包读取已有镜像，不替代固件构建。检查选择板型、保留数据分段、配置生成器的能力及后台 Token 与 BLE Key 教程双语链接。README 展示六张独立 P4 截图，每行两张，完整示例在[图集](SCREENSHOTS.md)。故障码目录由源数据生成，内部验收记录不放进用户指南。
+网站使用已有固件及匹配清单生成。界面示例见[图集](SCREENSHOTS.md)，故障码页面由源数据库生成。
 
 ### 连接诊断
 
@@ -129,7 +129,7 @@ python -m http.server 8895 --directory _site
 
 ## 共用UI组件
 
-新增界面从共用规格取得参数，不为每个控件重新选择一套数值：
+界面组件通过以下入口共用尺寸、配色和字库：
 
 | 内容 | 入口 |
 |---|---|
@@ -143,8 +143,12 @@ python -m http.server 8895 --directory _site
 | 配网选择卡与二维码 | `ui_layout_setup_choice_content()` / `ui_layout_qr_size()`；原生尺寸、固定图标与独立滚动文字 |
 | 耗材卡片内容 | `ui_specs_material_content()`；色条、均衡的读数／材料行与底边距 |
 
-以上接口使用原生像素；设计坐标只在边界转换一次。资源缩放用于选择画布的字号层级，动作文字过长不再缩小该字号。动态修改标题后调用同一布局接口。普通单标题按钮由组件创建钩子统一规范化，动态页面工厂也调用同一份共享C实现。数字遥测保留独立的紧凑数据布局。
+以上接口使用原生像素；设计坐标只在边界转换一次。资源缩放用于选择画布的字号层级，长动作文字使用当前字号滚动显示。动态修改标题后调用同一布局接口。普通单标题按钮由组件创建钩子统一规范化，动态页面工厂也调用同一份共享C实现。数字遥测保留独立的紧凑数据布局。
 
-## 回归检查
+[主板适配接口](PORTING.md)
 
-发布前检查固件编译、网页管理、配网、界面布局及 OTA 分区切换；硬件测试与私有诊断记录单独保存在本地。
+### 文件浏览与像素屏模块
+
+ESP32-S3 / ESP32-P4 标准构建默认启用文件浏览和像素屏联动；CYD 因存储容量限制默认关闭。`--without gcode_browser pixel_screen` 可关闭，`--gcode-browser --pixel-screen` 可显式启用。文件浏览需要可用SD卡；像素屏与蓝牙配网互斥，温湿度计与像素屏共用蓝牙生命周期和主机租约。蓝牙配网构建默认关闭像素屏。直接 CMake 构建使用 `XTOUCH_FEATURE_GCODE_BROWSER` 与 `XTOUCH_FEATURE_PIXEL_SCREEN`；`boards/common/interactive_modules.cmake` 在选择 SDK 蓝牙默认值前决定模块。
+
+文件浏览仅在主板已有 `storage.cpp` 存储适配时默认启用。未映射SD的目标不编入文件浏览及其文件名字库消费者；像素屏模块独立选择。

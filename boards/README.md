@@ -25,7 +25,7 @@ python boards/build.py p4
 python boards/build.py es3c35p
 ```
 
-构建、模块、依赖审计及打包统一见[开发指南](../docs/DEVELOPMENT.md)。首次安装与应用升级使用不同镜像，见[安装表](../docs/INSTALLATION.md#install)。内部测试构建不是公开发行版。
+构建、模块、依赖审计及打包统一见[开发指南](../docs/DEVELOPMENT.md)。首次安装与应用升级使用不同镜像，见[安装表](../docs/INSTALLATION.md#install)。
 
 ## 适配入口
 

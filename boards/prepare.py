@@ -1,13 +1,16 @@
 """Fetch pinned source dependencies; ESP-IDF is installed separately."""
-import json,pathlib,subprocess
+import json,pathlib,subprocess,os
+git_env=dict(os.environ)
+count=int(git_env.get('GIT_CONFIG_COUNT','0'))
+git_env.update({f'GIT_CONFIG_KEY_{count}':'core.autocrlf',f'GIT_CONFIG_VALUE_{count}':'false','GIT_CONFIG_COUNT':str(count+1)})
 root=pathlib.Path(__file__).resolve().parent
 lock=json.loads((root/'dependencies.json').read_text('utf-8'))
 for name,dep in lock['libraries'].items():
  target=root/'.deps'/name
  if not target.exists():
-  subprocess.run(['git','clone','--filter=blob:none','--no-checkout',dep['url'],str(target)],check=True)
-  subprocess.run(['git','-C',str(target),'checkout','--detach',dep['commit']],check=True)
- actual=subprocess.check_output(['git','-C',str(target),'rev-parse','HEAD'],text=True).strip()
+  subprocess.run(['git','clone','--filter=blob:none','--no-checkout',dep['url'],str(target)],check=True,env=git_env)
+  subprocess.run(['git','-C',str(target),'checkout','--detach',dep['commit']],check=True,env=git_env)
+ actual=subprocess.check_output(['git','-C',str(target),'rev-parse','HEAD'],text=True,env=git_env).strip()
  if actual!=dep['commit']:raise SystemExit(f'{name}: unexpected revision; review local changes before updating')
 # Preserve the same negative refinement value without undefined signed left shift.
 codec=root/'.deps/JPEGDEC/src/jpeg.inl'

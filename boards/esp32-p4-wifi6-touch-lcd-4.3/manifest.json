@@ -3,12 +3,14 @@
   "flashBytes": 33554432,
   "applicationSlotBytes": 12582912,
   "chip": "esp32p4",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "application": "esp32-p4-wifi6-touch-lcd-4.3.bin",
   "fullImage": "esp32-p4-wifi6-touch-lcd-4.3-full.bin",
-  "applicationBytes": 4981152,
+  "applicationBytes": 6975904,
   "applicationOffset": 131072,
-  "sha256": "d625f0bac06742a29fdddf126d2cd0fedc24ba28e73bb3468e2cc6068054c8a5",
-  "fullSha256": "cd37b7da65111f9d5787c68ae7354531e066c847cd459e80d8e73f777893385f",
-  "project": "xtouch_waveshare"
+  "sha256": "58c98f542318e74979d2c85114026c630834fef4d3b9a51cf9415d15ef39d328",
+  "fullSha256": "44f954a36ebaab207404d86e68d69140d8ab190abd0998823516e199aa6205b4",
+  "project": "xtouch_waveshare",
+  "releaseTag": "1.0.2",
+  "prerelease": false
 }

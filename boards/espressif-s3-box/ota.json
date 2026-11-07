@@ -1,8 +1,8 @@
 {
-  "version": "1.0.1-test",
-  "releaseTag": "1.0.1-test",
+  "version": "1.0.2-test",
+  "releaseTag": "1.0.2-test",
   "prerelease": true,
-  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.1-test/espressif-s3-box.bin",
-  "size": 3400000,
-  "md5": "514ed3b7b2438766ef0edf66e93dbf9a"
+  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.2-test/espressif-s3-box.bin",
+  "size": 3554848,
+  "md5": "894e22ee2798f29923a891c46fc0a2b2"
 }

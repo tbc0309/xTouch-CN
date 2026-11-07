@@ -73,6 +73,7 @@ extern "C"
         int mc_print_percent;
         int mc_print_sub_stage;
         int mc_print_stage;
+        int print_stage_current;
         int mc_print_error_code;
         int mc_print_line_number;
         int print_error;
@@ -133,6 +134,7 @@ extern "C"
         uint16_t ams_nozzle_min[XTOUCH_MAX_AMS_SLOTS];
         uint16_t ams_nozzle_max[XTOUCH_MAX_AMS_SLOTS];
         uint32_t external_color;
+        uint8_t external_color_valid;
         bool external_present, external_multi_protocol;
         uint8_t external_routes, external_materials;
         uint32_t external_color2;
@@ -160,6 +162,7 @@ extern "C"
         int16_t nozzle_loaded[2];
         int ams_status_sub;
         int ams_status_main;
+        bool ams_status_valid, ams_current_valid, ams_target_valid;
         long int ams_version;
         bool ams_support_use_ams;
         int ams_rfid_status;

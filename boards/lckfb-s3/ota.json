@@ -1,8 +1,8 @@
 {
-  "version": "1.0.1-test",
-  "releaseTag": "1.0.1-test",
+  "version": "1.0.2-test",
+  "releaseTag": "1.0.2-test",
   "prerelease": true,
-  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.1-test/lckfb-s3.bin",
-  "size": 3424704,
-  "md5": "a939c8dc3be9148bcb200ab76e1fb56e"
+  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.2-test/lckfb-s3.bin",
+  "size": 3580448,
+  "md5": "967340bf70a2cebf8e2c7604cdd447b6"
 }

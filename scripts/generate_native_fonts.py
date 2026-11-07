@@ -1,5 +1,5 @@
 """Generate native text sizes for small and large displays; font inputs stay local."""
-import argparse,re,shutil,subprocess,tempfile
+import argparse,re,shutil,subprocess,tempfile,sys
 from pathlib import Path
 from fontTools.ttLib import TTFont
 from fontTools.varLib.instancer import instantiateVariableFont
@@ -67,4 +67,7 @@ const lv_font_t *ui_native_font_select(const lv_font_t *source,unsigned zoom,con
     chunks.append(f' if(source==&{base}){{sizes={family};count=sizeof({family})/sizeof(*{family});pixels={pixel};}}\n')
    chunks.append(' if(!sizes)return NULL;unsigned wanted=pixels*zoom/256;for(unsigned i=0;i<count;++i)if(sizes[i].pixels<=wanted&&covers(sizes[i].font,text))return sizes[i].font;return NULL;\n}\n')
    target=(small if profile=='small' else large)/'ui_font_native.c';target.write_text('\n'.join(chunks),'utf-8');print('Wrote',target.relative_to(ROOT),flush=True)
+  # UI coverage changes automatically add/remove matching supplement glyphs.
+  subprocess.run([sys.executable,str(ROOT/'scripts/generate_filename_fonts.py'),
+                  '--font',str(f),*[v for path in a.fallback_font for v in ('--fallback-font',str(path))]],check=True)
 if __name__=='__main__':main()
