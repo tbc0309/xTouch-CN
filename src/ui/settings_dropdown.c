@@ -1,7 +1,8 @@
 #include "settings_dropdown.h"
 #include "features/xiaomi_ble/display_preferences.h"
+#include "features/pixel_screen/display_preferences.h"
 
-lv_obj_t *ui_settings_dropdown_row(lv_obj_t *parent,const char *title,lv_obj_t **caption,lv_obj_t **select){
+static lv_obj_t *settings_row(lv_obj_t *parent,const char *title,lv_obj_t **caption){
  lv_obj_t *row=lv_obj_create(parent);lv_obj_remove_style_all(row);
  lv_obj_set_size(row,lv_pct(100),48);lv_obj_set_style_bg_color(row,lv_color_hex(0x222222),0);
  lv_obj_set_style_bg_opa(row,LV_OPA_COVER,0);lv_obj_set_style_radius(row,6,0);
@@ -11,6 +12,10 @@ lv_obj_t *ui_settings_dropdown_row(lv_obj_t *parent,const char *title,lv_obj_t *
  lv_obj_t *label=lv_label_create(row);lv_label_set_text(label,title);
  lv_obj_set_width(label,0);lv_obj_set_flex_grow(label,1);lv_label_set_long_mode(label,LV_LABEL_LONG_CLIP);
  lv_obj_add_event_cb(label,ui_layout_single_line_event,LV_EVENT_SIZE_CHANGED,NULL);
+ if(caption)*caption=label;return row;
+}
+lv_obj_t *ui_settings_dropdown_row(lv_obj_t *parent,const char *title,lv_obj_t **caption,lv_obj_t **select){
+ lv_obj_t *row=settings_row(parent,title,caption);
  lv_obj_t *dropdown=lv_dropdown_create(row);lv_obj_set_size(dropdown,112,34);
  lv_obj_set_style_bg_color(dropdown,lv_color_hex(0x333333),0);lv_obj_set_style_text_color(dropdown,lv_color_white(),0);
  lv_obj_set_style_border_width(dropdown,0,0);lv_obj_set_style_pad_ver(dropdown,6,0);
@@ -18,7 +23,7 @@ lv_obj_t *ui_settings_dropdown_row(lv_obj_t *parent,const char *title,lv_obj_t *
  lv_obj_set_style_text_color(dropdown,lv_color_hex(0x888888),LV_PART_INDICATOR|LV_STATE_DISABLED);
  lv_obj_t *list=lv_dropdown_get_list(dropdown);lv_obj_set_style_bg_color(list,lv_color_hex(0x333333),0);
  lv_obj_set_style_text_color(list,lv_color_white(),0);lv_obj_set_style_bg_color(list,lv_color_hex(0x555555),LV_PART_SELECTED|LV_STATE_CHECKED);
- ui_layout_dropdown(dropdown);if(caption)*caption=label;if(select)*select=dropdown;return row;
+ ui_layout_dropdown(dropdown);if(select)*select=dropdown;return row;
 }
 static void refresh(lv_timer_t *timer){
  lv_obj_t *select=lv_timer_get_user_data(timer);uint8_t mode=0;bool bound=xtouch_environment_display_get(&mode);
@@ -41,3 +46,30 @@ lv_obj_t *ui_environment_setting_create(lv_obj_t *parent,lv_obj_t **caption,lv_o
  else lv_obj_add_state(dropdown,LV_STATE_DISABLED);
  if(select)*select=dropdown;return row;
 }
+
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+static void pixel_refresh(lv_timer_t *timer){
+ lv_obj_t *control=lv_timer_get_user_data(timer);bool on=true;bool ready=xtouch_pixel_display_get(&on);
+ if(ready)lv_obj_clear_state(control,LV_STATE_DISABLED);else lv_obj_add_state(control,LV_STATE_DISABLED);
+ if(on)lv_obj_add_state(control,LV_STATE_CHECKED);else lv_obj_clear_state(control,LV_STATE_CHECKED);
+}
+static void pixel_changed(lv_event_t *event){
+ lv_obj_t *control=lv_event_get_target_obj(event);
+ if(lv_obj_has_state(control,LV_STATE_DISABLED))return;
+ xtouch_pixel_display_request(lv_obj_has_state(control,LV_STATE_CHECKED));
+}
+lv_obj_t *ui_pixel_setting_create(lv_obj_t *parent){
+ lv_obj_t *row=settings_row(parent,xtouch_local("像素屏显","32-pixel screen"),NULL);
+ lv_obj_t *control=lv_switch_create(row);lv_obj_set_size(control,50,25);
+ lv_obj_set_style_bg_color(control,lv_color_hex(0x2AFF00),LV_PART_INDICATOR|LV_STATE_CHECKED);
+ lv_obj_set_style_bg_color(control,lv_color_hex(0x2AFF00),LV_PART_KNOB);
+ lv_obj_set_style_bg_color(control,lv_color_hex(0x000000),LV_PART_KNOB|LV_STATE_CHECKED);
+ lv_obj_set_style_bg_color(control,lv_color_hex(0x666666),LV_PART_INDICATOR|LV_STATE_DISABLED);
+ lv_obj_set_style_bg_color(control,lv_color_hex(0x888888),LV_PART_KNOB|LV_STATE_DISABLED);
+ lv_obj_add_event_cb(control,pixel_changed,LV_EVENT_VALUE_CHANGED,NULL);
+ lv_timer_t *timer=lv_timer_create(pixel_refresh,500,control);
+ if(timer){lv_obj_add_event_cb(control,deleted,LV_EVENT_DELETE,timer);pixel_refresh(timer);}
+ else lv_obj_add_state(control,LV_STATE_DISABLED);
+ return row;
+}
+#endif

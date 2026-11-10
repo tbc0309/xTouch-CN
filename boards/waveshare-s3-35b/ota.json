@@ -1,8 +1,8 @@
 {
-  "version": "1.0.1-test",
-  "releaseTag": "1.0.1-test",
+  "version": "1.0.2-test",
+  "releaseTag": "1.0.2-test",
   "prerelease": true,
-  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.1-test/waveshare-s3-35b.bin",
-  "size": 4849152,
-  "md5": "d9d84897f8c93e7f1639e4cc528525fd"
+  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.2-test/waveshare-s3-35b.bin",
+  "size": 5033328,
+  "md5": "96cd360e1ab9698f440d995553d4cdc5"
 }

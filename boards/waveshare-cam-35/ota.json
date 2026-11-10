@@ -1,8 +1,8 @@
 {
-  "version": "1.0.1-test",
-  "releaseTag": "1.0.1-test",
+  "version": "1.0.2-test",
+  "releaseTag": "1.0.2-test",
   "prerelease": true,
-  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.1-test/waveshare-cam-35.bin",
-  "size": 4826768,
-  "md5": "bbd655b8c1e723413dc0ee46a0673f33"
+  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.2-test/waveshare-cam-35.bin",
+  "size": 5010464,
+  "md5": "0021bfa72f5cd71812343cf46f6e1d88"
 }

@@ -3,6 +3,7 @@
 #include <initializer_list>
 #include "ui/layout_shared.h"
 #include "ui/chrome_metrics.h"
+#include "ui/layouts/shape.h"
 LV_FONT_DECLARE(ui_font_camera_14);
 LV_FONT_DECLARE(ui_font_xlcdmin);
 LV_FONT_DECLARE(ui_font_text_24);
@@ -14,6 +15,9 @@ struct CameraUi {
  int iconInk=0;
 };
 inline void cameraUiShow(CameraUi &u,bool show,uint32_t now){
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ show=true;
+#endif
  u.touched=now;u.visible=show;
  for(auto *o:{u.top,u.tools})if(show)lv_obj_clear_flag(o,LV_OBJ_FLAG_HIDDEN);else lv_obj_add_flag(o,LV_OBJ_FLAG_HIDDEN);
 }
@@ -66,6 +70,18 @@ inline void cameraUiCreate(CameraUi &u,const char *message,void (*action)(Camera
   lv_obj_set_style_text_font(label,font,0);lv_label_set_text(label,symbols[i]);
   cameraUiFitIcon(u,i);lv_obj_set_style_text_color(label,lv_color_white(),0);
  }
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ const bool round=XTOUCH_UI_LAYOUT==UI_LAYOUT_ROUND;
+ lv_obj_set_align(u.top,LV_ALIGN_TOP_LEFT);lv_obj_set_align(u.tools,LV_ALIGN_TOP_LEFT);
+ const int titleWidth=w*(round?52:94)/100, titleY=h*(round?10:4)/100;
+ lv_obj_set_size(u.top,titleWidth,side);lv_obj_set_pos(u.top,(w-titleWidth)/2,titleY);lv_obj_set_style_bg_opa(u.top,LV_OPA_TRANSP,0);
+ lv_obj_set_width(u.caption,titleWidth-side-edge);lv_obj_align(u.caption,LV_ALIGN_LEFT_MID,0,0);lv_obj_align(u.buttons[0],LV_ALIGN_RIGHT_MID,0,0);
+ const int tw=w*(round?44:94)/100, gap=LV_MAX(4,w/70), button=(tw-2*gap)/3;
+ lv_obj_set_size(u.tools,tw,side);lv_obj_set_pos(u.tools,(w-tw)/2,h*(round?82:77)/100);lv_obj_set_style_bg_opa(u.tools,LV_OPA_TRANSP,0);
+ for(unsigned i=1;i<4;i++){lv_obj_set_size(u.buttons[i],button,side);lv_obj_set_pos(u.buttons[i],(i-1)*(button+gap),0);cameraUiFitIcon(u,i);}
+ lv_obj_set_pos(u.image,w/2,h*49/100);lv_obj_set_align(u.image,LV_ALIGN_CENTER);lv_obj_set_pos(u.image,0,-h/100);
+#endif
+ ui_shape_theme(u.overlay);
 }
 inline void cameraUiTick(CameraUi &u,uint32_t now,bool live,bool paused,bool light,bool online){
  if(!u.overlay)return;

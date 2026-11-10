@@ -6,6 +6,7 @@
 #include "power.h"
 #include "ui/settings_gesture.h"
 #include "board.h"
+#include "features/gcode_browser/browser.h"
 
 static bool xtouch_sdcard_firmware_waiting = false;
 
@@ -29,8 +30,10 @@ bool xtouch_sdcard_setup()
 
 void xtouch_sdcard_poll(bool runtime = true)
 {
+    SD.poll();
     static uint32_t next = 0;
     if ((int32_t)(millis() - next) < 0) return;
+    if(xtouch_files_network_busy())return;
     // No empty-slot retries in boot Wi-Fi wait or network standby.
     if ((!runtime && !xtouch_storage_sd_available()) || (runtime && xtouch_power_status().screenSleeping)) return;
     // Do not perform card insertion probes immediately after user interaction.
@@ -38,7 +41,9 @@ void xtouch_sdcard_poll(bool runtime = true)
     next = millis() + (xtouch_storage_sd_available()?10000u:60000u);
     if (xtouch_storage_sd_available()) {
         uint8_t sector[512];
-        if (!SD.readRAW(sector, 0)) {
+        auto probe=SD.probeRaw(sector,0);
+        if(probe==CardProbeResult::Busy)return;
+        if (probe==CardProbeResult::Failed) {
             xtouch_storage_set_sd(false); SD.end();
             ConsoleInfo.println("[SD] removed; internal configuration remains active");
             return;

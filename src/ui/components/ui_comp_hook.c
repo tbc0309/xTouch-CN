@@ -1,4 +1,5 @@
 #include "../ui.h"
+#include "../layouts/shape.h"
 
 void ui_comp_sidebarComponent_create_hook(lv_obj_t *comp)
 {
@@ -27,11 +28,13 @@ void ui_comp_settingsComponent_create_hook(lv_obj_t *comp)
 }
 void ui_comp_confirmPanel_create_hook(lv_obj_t *comp)
 {
+    ui_shape_dialog(comp,false);
     ui_text_guard_tree(comp);
     ui_layout_captions_tree(comp);
 }
 void ui_comp_hmsPanel_create_hook(lv_obj_t *comp)
 {
+    ui_shape_dialog(comp,true);
     ui_text_guard_tree(comp);
     ui_layout_captions_tree(comp);
 }

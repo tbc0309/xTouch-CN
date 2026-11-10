@@ -55,7 +55,8 @@ def package(build,name):
  manifest['releaseTag']=release['tag'];manifest['prerelease']=release['prerelease']
  (out/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n','utf-8')
  (out/(name+'-manifest.json')).write_text(json.dumps(manifest,indent=2)+'\n','utf-8')
- ota={'version':version,'releaseTag':release['tag'],'prerelease':release['prerelease'],'url':f'https://github.com/tbc0309/xTouch-CN/releases/download/{release["tag"]}/{name}.bin','size':len(data),'md5':hashlib.md5(data).hexdigest()}
+ repository=json.loads((pathlib.Path(__file__).resolve().parents[1]/'resources/ota_channels.json').read_text('utf8'))['repository']
+ ota={'version':version,'releaseTag':release['tag'],'prerelease':release['prerelease'],'url':f'https://github.com/{repository}/releases/download/{release["tag"]}/{name}.bin','size':len(data),'md5':hashlib.md5(data).hexdigest()}
  if laboratory:(out/'ota.json').unlink(missing_ok=True)
  else:(out/'ota.json').write_text(json.dumps(ota,indent=2)+'\n','utf-8')
  (out/'SHA256SUMS.txt').write_text(f"{manifest['sha256']}  {name}.bin\n{manifest['fullSha256']}  {name}-full.bin\n",'utf-8')

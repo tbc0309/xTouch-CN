@@ -1,13 +1,41 @@
 #pragma once
-/* Final shared screen palette. Printer/material/frame pixels remain content. */
+/* Surface hierarchy: screen < modal surface < interactive card < pressed.
+ * Text: white primary / TEXT_SECONDARY secondary. Semantic status, connection
+ * sources and material/image pixels retain their own colours. */
 #define UI_COLOR_BLUE 0x39A1FD
 #define UI_COLOR_BLUE_PRESSED 0x106296
 #define UI_COLOR_WARNING 0xFAA61E
 #define UI_COLOR_ERROR 0xFF0000
 #define UI_COLOR_TEXT_SECONDARY 0xCCCCCC
+#define UI_COLOR_TEXT_PRIMARY 0xF3F5F6
+#define UI_COLOR_TEXT_DISABLED 0x8D9AA2
+#define UI_COLOR_SCREEN 0x000000
+/* Passive telemetry blends into the screen; interactive surfaces rise gently. */
+#define UI_COLOR_SURFACE_SUBTLE 0x151B1F
+#define UI_COLOR_SURFACE 0x1B242A
+#if defined(XTOUCH_UI_LAYOUT) && XTOUCH_UI_LAYOUT != 0
+#define UI_COLOR_BORDER 0x36444C
+#define UI_COLOR_BUTTON 0x232E35
+#define UI_COLOR_BUTTON_SECONDARY 0x2B3942
+#define UI_COLOR_BUTTON_PRESSED 0x3A4D59
+#define UI_COLOR_CONTROL_ACCENT 0x176DA3
+#define UI_COLOR_CONTROL_ACCENT_PRESSED 0x12547E
+#define UI_COLOR_CONTROL_SUCCESS 0x237A36
+#define UI_COLOR_CONTROL_DISABLED 0x1D252A
+#else
+#define UI_COLOR_BORDER 0x777777
 #define UI_COLOR_BUTTON 0x555555
 #define UI_COLOR_BUTTON_SECONDARY 0x666666
 #define UI_COLOR_BUTTON_PRESSED 0x777777
+#define UI_COLOR_CONTROL_ACCENT UI_COLOR_BLUE
+#define UI_COLOR_CONTROL_ACCENT_PRESSED UI_COLOR_BLUE_PRESSED
+#define UI_COLOR_CONTROL_SUCCESS UI_COLOR_ACTION_POSITIVE
+#endif
+/* Image wells and navigation use quiet neutral / teal surfaces. */
+#define UI_COLOR_IMAGE_SURFACE 0x182126
+#define UI_COLOR_NAV 0x14282C
+#define UI_COLOR_NAV_ACTIVE 0x25464B
+#define UI_COLOR_NAV_PRESSED 0x345B62
 #define UI_COLOR_ACTION_POSITIVE 0x2AAA00
 #define UI_COLOR_ACTION_POSITIVE_PRESSED 0x2A5500
 #define UI_COLOR_ACTION_DANGER 0xAA2A00

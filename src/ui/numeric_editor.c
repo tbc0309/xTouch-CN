@@ -1,5 +1,6 @@
 #include "numeric_editor.h"
 #include "detail_page.h"
+#include "layouts/shape.h"
 #include <stdio.h>
 #include <stdlib.h>
 extern lv_obj_t *ui_temperatureComponent_input_target;
@@ -85,7 +86,7 @@ void ui_numeric_show(const struct ui_numeric_field *fields, unsigned count, unsi
         lv_obj_set_pos(b, 0, i * (compact ? 29 : 38));
         lv_obj_set_size(b, 90, compact ? 27 : 34);
         lv_obj_set_style_bg_color(b, lv_color_hex(0x555555), 0);
-        lv_obj_set_style_bg_color(b, lv_color_hex(0x39A1FD), LV_STATE_CHECKED);
+        lv_obj_set_style_bg_color(b, lv_color_hex(UI_COLOR_CONTROL_ACCENT), LV_STATE_CHECKED);
         lv_obj_t *l = lv_label_create(b);
         lv_label_set_text(l, numericNames[i]);
         lv_obj_add_event_cb(b, numeric_tab, LV_EVENT_CLICKED, (void *)(uintptr_t)i);
@@ -137,6 +138,7 @@ void ui_numeric_show(const struct ui_numeric_field *fields, unsigned count, unsi
         ui_comp_get_child(ui_temperatureComponent,UI_COMP_TEMPERATURECOMPONENT_TEMPERATURECOMPONENTKEYBOARD_NUMPADKEY7),
         ui_comp_get_child(ui_temperatureComponent,UI_COMP_TEMPERATURECOMPONENT_TEMPERATURECOMPONENTKEYBOARD_NUMPADKEY0));
     ui_layout_captions_tree(left);
+    ui_shape_keypad(ui_temperatureComponent,ui_temperatureComponent_input_target,numericTabs,count,moreButton);
 }
 
 bool ui_numeric_active(void) { return numericActive; }

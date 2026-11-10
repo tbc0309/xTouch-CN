@@ -74,7 +74,15 @@ static bool xtouch_ota_fetch_manifest(String &body,bool manual=false){
         const bool complete=http.complete()&&candidate.length()>0&&candidate.length()<=16384&&(length<0||candidate.length()==unsigned(length));
         http.end();return complete;
     };
-    return XTouchOtaSelection::choose(xtouch_ota_manifest_paths,fetch,XTOUCH_FIRMWARE_FILENAME,XTOUCH_FIRMWARE_MAX_BYTES,body);
+#if XTOUCH_OTA_ALLOW_TEST_VERSION
+    return XTouchOtaSelection::choose(xtouch_ota_manifest_paths,fetch,XTOUCH_FIRMWARE_FILENAME,XTOUCH_FIRMWARE_MAX_BYTES,body,true,XTOUCH_OTA_REPOSITORY);
+#else
+    // Stable has one endpoint. The OTA consumer validates its parsed document;
+    // do not instantiate a second JSON reader merely to select one channel.
+    body="";
+    if(fetch(xtouch_ota_manifest_paths[0],body))return true;
+    body="";return false;
+#endif
 }
 
 static bool xtouch_ota_open(XTouchHttpClient &http,

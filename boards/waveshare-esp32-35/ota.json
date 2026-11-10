@@ -1,8 +1,8 @@
 {
-  "version": "1.0.1-test",
-  "releaseTag": "1.0.1-test",
+  "version": "1.0.2-test",
+  "releaseTag": "1.0.2-test",
   "prerelease": true,
-  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.1-test/waveshare-esp32-35.bin",
-  "size": 4795424,
-  "md5": "0f9400c442e0b71297915899ff662f70"
+  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.2-test/waveshare-esp32-35.bin",
+  "size": 4851856,
+  "md5": "e7bb2810bb239b7a7b3a1c1e3fd2d21e"
 }

@@ -93,6 +93,7 @@ static void refresh(lv_event_t *e) {
 static lv_obj_t *label(lv_obj_t *parent, const char *text, int x, int y) {
     lv_obj_t *o = lv_label_create(parent);
     lv_label_set_text(o, text);
+    ui_shape_text(o,18);
     lv_obj_set_pos(o, x, y);
     return o;
 }
@@ -161,7 +162,9 @@ void ui_ams_details_show(unsigned selected) {
     lv_obj_add_event_cb(stop, action, LV_EVENT_CLICKED, NULL);
     ui_action_style(start,UI_ACTION_COMPLETE);
     ui_action_style(stop,UI_ACTION_DESTRUCTIVE);
+#if XTOUCH_UI_LAYOUT==UI_LAYOUT_LANDSCAPE
     for(unsigned i=0;i<2;++i){lv_obj_t *button=i?stop:start;lv_obj_set_style_bg_color(button,lv_color_hex(0x555555),LV_STATE_DISABLED);lv_obj_set_style_text_color(button,lv_color_hex(0x888888),LV_STATE_DISABLED);}
+#endif
     ui_detail_page_block(dialog,readings,38,0);
     ui_detail_page_block(dialog,parameterHeading,119,0);
     ui_detail_page_split(dialog,temperature,duration,142,32,1,1);
@@ -176,4 +179,6 @@ void ui_ams_details_show(unsigned selected) {
     lv_obj_add_event_cb(dialog, refresh, LV_EVENT_MSG_RECEIVED, NULL);
     refresh(NULL);
     ui_layout_captions_tree(dialog);
+    ui_shape_text(title,22);ui_shape_text(readings,20);ui_shape_text(parameterHeading,16);
+    ui_shape_text(lv_obj_get_child(temperature,0),24);ui_shape_text(lv_obj_get_child(duration,0),24);
 }

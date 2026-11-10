@@ -7,9 +7,16 @@
 #include "native_fonts.h"
 #include "chrome_metrics.h"
 #include "ui_specs.h"
+#include "layouts/shape.h"
 /* Native drawing entry points, captured before legacy design-coordinate aliases. */
 static inline void ui_layout_native_content(const lv_obj_t *object,lv_area_t *area){lv_obj_get_content_coords(object,area);}
 static inline void ui_layout_native_bounds(const lv_obj_t *object,lv_area_t *area){lv_obj_get_coords(object,area);}
+static inline void ui_layout_native_size(lv_obj_t *object,int width,int height){lv_obj_set_size(object,width,height);}
+static inline void ui_layout_native_square(lv_obj_t *o,int side){
+ lv_obj_set_layout(o,0);lv_obj_set_flex_grow(o,0);lv_obj_set_style_pad_all(o,0,0);lv_obj_set_style_radius(o,2,0);
+ lv_obj_set_style_min_width(o,side,0);lv_obj_set_style_max_width(o,side,0);
+ lv_obj_set_style_min_height(o,side,0);lv_obj_set_style_max_height(o,side,0);lv_obj_set_size(o,side,side);
+}
 static inline void ui_layout_native_rect(lv_draw_ctx_t *layer,const lv_draw_rect_dsc_t *style,const lv_area_t *area){lv_draw_rect(layer,style,area);}
 static inline void ui_layout_native_measure(lv_point_t *size,const char *text,const lv_font_t *font){lv_text_get_size(size,text,font,0,0,LV_COORD_MAX,LV_TEXT_FLAG_EXPAND);}
 #if XTOUCH_UI_HIDPI_ASSETS
@@ -101,12 +108,17 @@ static inline void ui_layout_ink_place(lv_obj_t *label,int x,int y,int w,int h){
 extern "C" {
 #endif
 void ui_layout_captions_tree(lv_obj_t *root);
+/* Reflow a factory-owned caption after its final typography has been selected. */
+void ui_layout_caption_refresh(lv_obj_t *button);
 void ui_layout_setup_choice_content(lv_obj_t *card,const char *symbol,const char *title,const char *detail);
 #ifdef __cplusplus
 }
 #endif
 static inline void ui_layout_temperature_arrange(lv_obj_t *row,bool horizontal){
  int w=lv_obj_get_width(row),h=lv_obj_get_height(row);int scale=lv_disp_get_hor_res(NULL)>=600?2:1;lv_obj_t *icon=lv_obj_get_child(row,0),*value=lv_obj_get_child(row,1);
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ if(h<lv_disp_get_ver_res(NULL)/7)horizontal=true;
+#endif
  lv_area_t ib=ui_layout_ink(lv_obj_get_style_text_font(icon,(lv_part_t)(0)),lv_label_get_text(icon)),vb=ui_layout_ink(lv_obj_get_style_text_font(value,(lv_part_t)(0)),lv_label_get_text(value));
  int ih=ib.y2-ib.y1+1,vh=vb.y2-vb.y1+1,vw=vb.x2-vb.x1+1;
  if(horizontal){ui_text_guard(icon);lv_obj_set_align(icon,LV_ALIGN_TOP_LEFT);lv_obj_set_pos(icon,w/2-34*scale-ib.x1-lv_obj_get_style_pad_left(icon,(lv_part_t)(0)),(h-ih)/2-ib.y1-lv_obj_get_style_pad_top(icon,(lv_part_t)(0)));ui_layout_ink_place(value,w/2-7*scale,0,vw,h);}
@@ -242,13 +254,21 @@ static inline void ui_layout_print_button(lv_obj_t *button){
  font=&ui_font_actions;
 #endif
  lv_area_t base=ui_layout_ink(font,lv_label_get_text(button));
- int target=lv_obj_get_height(button)/2,available=lv_obj_get_width(button)/2;
+ int w=lv_obj_get_width(button),h=lv_obj_get_height(button);
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ /* A telemetry refresh must not reuse padding from the landscape icon size.
+  * The shape composer owns the physical hit box, including its padding. */
+ w=LV_MIN(w,lv_obj_get_style_max_width(button,LV_PART_MAIN));
+ h=LV_MIN(h,lv_obj_get_style_max_height(button,LV_PART_MAIN));
+ lv_obj_add_flag(button,UI_TEXT_EXACT_BOUNDS|LV_OBJ_FLAG_USER_3);
+ lv_obj_set_style_pad_all(button,0,0);
+#endif
+ int target=h/2,available=w/2;
  unsigned zoom=ui_layout_base_zoom();
  if(base.y2>=base.y1&&base.y2-base.y1+1>target)zoom=target*256/(base.y2-base.y1+1);
  if(base.x2>=base.x1&&base.x2-base.x1+1>available&&(unsigned)(available*256/(base.x2-base.x1+1))<zoom)zoom=available*256/(base.x2-base.x1+1);
  ui_text_scale(button,font,zoom);font=lv_obj_get_style_text_font(button,(lv_part_t)(0));
  lv_area_t ink=ui_layout_ink(font,lv_label_get_text(button));
- int w=lv_obj_get_width(button),h=lv_obj_get_height(button);
  lv_obj_set_style_text_align(button,LV_TEXT_ALIGN_LEFT,0);
  lv_obj_set_style_pad_left(button,(w-(ink.x2-ink.x1+1))/2-ink.x1,0);
  lv_obj_set_style_pad_top(button,(h-(ink.y2-ink.y1+1))/2-ink.y1,0);
@@ -256,25 +276,39 @@ static inline void ui_layout_print_button(lv_obj_t *button){
 }
 static inline void ui_layout_notice(lv_obj_t *box,lv_obj_t *label){
  int sw=lv_disp_get_hor_res(NULL),sh=lv_disp_get_ver_res(NULL),pad=sw/40,w=sw-2*pad;
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ w=ui_shape_area(sw,sh,true).w;
+#endif
  const lv_font_t *captionFont=lv_obj_get_style_text_font(label,(lv_part_t)(0));
  lv_obj_remove_style_all(box);lv_obj_set_style_text_font(label,captionFont,0);lv_obj_set_style_bg_color(box,lv_color_hex(0x555555),0);lv_obj_set_style_bg_opa(box,LV_OPA_COVER,0);lv_obj_set_style_radius(box,pad,0);lv_obj_set_style_pad_all(box,pad,0);
  lv_obj_set_width(label,w-2*pad);lv_obj_set_style_text_color(label,lv_color_white(),0);lv_obj_set_style_text_align(label,LV_TEXT_ALIGN_LEFT,0);ui_text_guard(label);
  ui_dialog_text_layout(label,w-2*pad);lv_obj_update_layout(label);int h=lv_obj_get_height(label);if(h>sh/2-2*pad)h=sh/2-2*pad;
  lv_obj_set_size(box,w,h+2*pad);lv_obj_align(box,LV_ALIGN_BOTTOM_MID,0,-pad);
  lv_obj_clear_flag(box,LV_OBJ_FLAG_SCROLLABLE);lv_obj_add_flag(box,LV_OBJ_FLAG_CLICKABLE|LV_OBJ_FLAG_FLOATING);
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ lv_obj_center(box);lv_obj_set_scroll_dir(box,LV_DIR_VER);lv_obj_set_scrollbar_mode(box,LV_SCROLLBAR_MODE_AUTO);lv_obj_add_flag(box,LV_OBJ_FLAG_SCROLLABLE);
+#endif
 }
 static inline void ui_layout_dialog(lv_obj_t *panel,lv_obj_t *body,lv_obj_t **buttons,unsigned count,bool content){
  int sw=lv_disp_get_hor_res(NULL),sh=lv_disp_get_ver_res(NULL);int width=sw*(content?4:3)/5,pad=sw/40,bh=sh*2/15,gap=sw*3/200;unsigned visible=0;
+ int limit=sh*13/15;
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ ui_shape_area_t safe=ui_shape_area(sw,sh,true);width=safe.w;limit=safe.h;pad=gap=safe.gap;bh=safe.hit;
+#endif
  lv_obj_set_layout(panel,0);lv_obj_set_style_pad_all(panel,0,0);lv_obj_set_style_border_width(panel,0,0);lv_obj_set_style_radius(panel,sw/50,0);
  for(unsigned i=0;i<count;i++)visible+=!lv_obj_has_flag(buttons[i],LV_OBJ_FLAG_HIDDEN);
  int bodyInset=lv_obj_get_style_pad_left(body,(lv_part_t)(0))+lv_obj_get_style_pad_right(body,(lv_part_t)(0));
  lv_obj_t *caption=lv_obj_get_child(body,0);lv_obj_set_align(caption,LV_ALIGN_TOP_LEFT);ui_text_guard(caption);ui_dialog_text_layout(caption,width-2*pad-bodyInset);lv_obj_update_layout(caption);
  int verticalInset=lv_obj_get_style_pad_top(body,LV_PART_MAIN)+lv_obj_get_style_pad_bottom(body,LV_PART_MAIN);
- int needed=lv_obj_get_height(caption)+verticalInset+2*pad+(visible?bh+gap:0);
+ int footer=visible?bh+gap:0;
+#if XTOUCH_UI_LAYOUT==UI_LAYOUT_ROUND
+ if(visible>2)footer=2*(bh+gap);
+#endif
+ int needed=lv_obj_get_height(caption)+verticalInset+2*pad+footer;
  /* Fit the current content; only cap at the available screen height. */
- int height=needed<sh*13/15?needed:sh*13/15;
+ int height=needed<limit?needed:limit;
  lv_obj_set_size(panel,width,height);lv_obj_center(panel);
- lv_obj_set_pos(body,pad,pad);lv_obj_set_size(body,width-2*pad,height-2*pad-(visible?bh+gap:0));lv_obj_set_style_max_height(body,height,0);
+ lv_obj_set_pos(body,pad,pad);lv_obj_set_size(body,width-2*pad,height-2*pad-footer);lv_obj_set_style_max_height(body,height,0);
  bool overflow=needed>height;
  lv_obj_set_scroll_dir(body,LV_DIR_VER);
  lv_obj_set_scrollbar_mode(body,overflow?LV_SCROLLBAR_MODE_AUTO:LV_SCROLLBAR_MODE_OFF);
@@ -285,6 +319,17 @@ static inline void ui_layout_dialog(lv_obj_t *panel,lv_obj_t *body,lv_obj_t **bu
  for(unsigned i=0;i<count;i++){if(lv_obj_has_flag(buttons[i],LV_OBJ_FLAG_HIDDEN))continue;lv_obj_set_flex_grow(buttons[i],0);lv_obj_set_flex_align(buttons[i],LV_FLEX_ALIGN_CENTER,LV_FLEX_ALIGN_CENTER,LV_FLEX_ALIGN_CENTER);lv_obj_set_pos(buttons[i],pad+slot*(buttonWidth+gap),height-pad-bh);lv_obj_set_size(buttons[i],buttonWidth,bh);lv_obj_set_style_pad_all(buttons[i],0,0);lv_obj_set_style_border_width(buttons[i],0,0);lv_obj_set_style_pad_column(buttons[i],0,0);
  ui_layout_action_fit(buttons[i],buttonWidth,bh,sw/100,sw/100);
  slot++;}
+#if XTOUCH_UI_LAYOUT==UI_LAYOUT_ROUND
+ slot=0;
+ for(unsigned i=0;i<count;i++){
+  if(lv_obj_has_flag(buttons[i],LV_OBJ_FLAG_HIDDEN))continue;
+  int bw=(visible==1||(visible>2&&slot==visible-1))?width*3/5:(width-2*pad-gap)/2;
+  int bx=(visible==1||(visible>2&&slot==visible-1))?(width-bw)/2:pad+(slot%2)*(bw+gap);
+  int by=height-pad-bh-((visible>2&&slot<visible-1)?bh+gap:0);
+  lv_obj_set_pos(buttons[i],bx,by);lv_obj_set_size(buttons[i],bw,bh);
+  ui_layout_action_fit(buttons[i],bw,bh,sw/100,sw/100);slot++;
+ }
+#endif
 }
 
 static inline void ui_layout_numeric_center(lv_obj_t *ta){
@@ -542,6 +587,12 @@ static inline void ui_layout_single_line(lv_obj_t *label){
 static inline void ui_layout_single_line_event(lv_event_t *e){ui_layout_single_line(lv_event_get_target_obj(e));}
 static inline void ui_layout_project_text(lv_obj_t *label,int width){
  const lv_font_t *source=ui_text_source(lv_obj_get_style_text_font(label,(lv_part_t)(0)));unsigned lo=1,hi=ui_layout_base_zoom();
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ /* Fit the address to the available row, independently of the UI body font. */
+ hi=26*256/LV_MAX(1,source->line_height);
+ lv_obj_add_flag(label,LV_OBJ_FLAG_USER_3);
+ lv_obj_set_style_text_letter_space(label,0,0);
+#endif
  lv_obj_add_flag(label,UI_TEXT_EXACT_BOUNDS);
  int spacing=lv_obj_get_style_text_letter_space(label,(lv_part_t)(0));
  while(lo<hi){unsigned mid=(lo+hi+1)/2;ui_text_scale(label,source,mid);const lv_font_t *f=lv_obj_get_style_text_font(label,(lv_part_t)(0));lv_point_t extent;
@@ -551,13 +602,22 @@ static inline void ui_layout_project_text(lv_obj_t *label,int width){
  ui_text_scale(label,source,lo);const lv_font_t *f=lv_obj_get_style_text_font(label,(lv_part_t)(0));lv_point_t extent;lv_text_get_size(&extent,lv_label_get_text(label),f,spacing,0,LV_COORD_MAX,LV_TEXT_FLAG_EXPAND);lv_area_t ink=ui_layout_ink(f,lv_label_get_text(label));ink.x2+=((int)_lv_txt_get_encoded_length(lv_label_get_text(label))-1)*spacing;
  lv_obj_set_style_pad_left(label,1+(ink.x1<0?-ink.x1:0),0);lv_obj_set_style_pad_right(label,1+(ink.x2+1>extent.x?ink.x2+1-extent.x:0),0);
  int top=2+(ink.y1<0?-ink.y1:0),bottom=2+(ink.y2>=f->line_height?ink.y2+1-f->line_height:0);
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ int height=LV_MAX(f->line_height,ink.y2-ink.y1+1)+4;
+ top=(height-(ink.y2-ink.y1+1))/2-ink.y1;
+ bottom=height-f->line_height-top;
+#endif
  lv_obj_set_style_pad_top(label,top,0);lv_obj_set_style_pad_bottom(label,bottom,0);
  lv_obj_set_height(label,f->line_height+top+bottom);
 }
 static inline void ui_layout_project_event(lv_event_t *e){
  lv_obj_t *row=lv_event_get_target_obj(e),*icon=lv_obj_get_child(row,0),*label=lv_obj_get_child(row,1);lv_img_header_t image;
  int h=lv_obj_get_content_height(row),w=lv_obj_get_content_width(row);if(h<1||w<1)return;
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ h=26;
+#else
  if(lv_disp_get_hor_res(NULL)<=480)h=20;
+#endif
  if(lv_img_decoder_get_info(lv_img_get_src(icon),&image)==LV_RES_OK){lv_image_set_inner_align(icon,LV_IMAGE_ALIGN_CONTAIN);lv_obj_set_size(icon,h*image.w/image.h,h);}
  int available=w-lv_obj_get_width(icon)-lv_obj_get_style_pad_column(row,(lv_part_t)(0));if(available<1)return;
  lv_obj_set_width(label,available);lv_obj_set_style_text_align(label,LV_TEXT_ALIGN_LEFT,0);
@@ -565,6 +625,12 @@ static inline void ui_layout_project_event(lv_event_t *e){
 }
 
 static inline void ui_layout_qr_title(lv_obj_t *title,lv_obj_t *code){
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ int w=lv_disp_get_hor_res(NULL),h=lv_disp_get_ver_res(NULL);
+ ui_text_scale(title,ui_text_source(lv_obj_get_style_text_font(title,LV_PART_MAIN)),ui_layout_base_zoom());ui_text_guard(title);
+ lv_obj_set_width(title,w*64/100);lv_label_set_long_mode(title,LV_LABEL_LONG_SCROLL);
+ lv_obj_set_style_text_align(title,LV_TEXT_ALIGN_CENTER,0);lv_obj_align(title,LV_ALIGN_TOP_MID,0,h*(XTOUCH_UI_LAYOUT==UI_LAYOUT_ROUND?15:12)/100);return;
+#endif
  lv_obj_update_layout(title);ui_layout_single_line(title);
  /* Placement uses native top-left coordinates, regardless of the caller's anchor. */
  lv_obj_set_style_text_align(title,LV_TEXT_ALIGN_LEFT,0);lv_obj_set_size(title,LV_SIZE_CONTENT,LV_SIZE_CONTENT);
@@ -630,8 +696,9 @@ static inline void ui_layout_draw_text(lv_draw_ctx_t *ctx,const lv_draw_label_ds
 /* Shared appearance for screen-side network entry and return buttons. */
 static inline void ui_layout_setup_button(lv_obj_t *button,bool management){
  lv_obj_set_style_radius(button,8,0);
- lv_obj_set_style_bg_color(button,lv_color_hex(management?0x555555:0x555555),0);
- lv_obj_set_style_bg_color(button,lv_color_hex(management?0x777777:0x777777),LV_STATE_PRESSED);
+ (void)management;
+ lv_obj_set_style_bg_color(button,lv_color_hex(UI_COLOR_BUTTON),0);
+ lv_obj_set_style_bg_color(button,lv_color_hex(UI_COLOR_BUTTON_PRESSED),LV_STATE_PRESSED);
  lv_obj_set_style_text_color(button,lv_color_hex(0xFFFFFF),0);
  lv_obj_set_style_border_width(button,0,0);
  lv_obj_set_style_shadow_width(button,0,0);
@@ -660,6 +727,10 @@ static inline void ui_layout_qr_size(lv_obj_t *code){
  lv_obj_t *root=lv_obj_get_parent(code);lv_obj_update_layout(root);
  int height=lv_obj_get_content_height(root),width=lv_obj_get_content_width(root);
  int side=LV_MIN(height*128/240,width-32);
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ side=LV_MIN(width,height)*(XTOUCH_UI_LAYOUT==UI_LAYOUT_ROUND?48:52)/100;
+ lv_qrcode_set_size(code,side);lv_obj_align(code,LV_ALIGN_CENTER,0,-height*3/100);return;
+#endif
  lv_qrcode_set_size(code,side);lv_obj_align(code,LV_ALIGN_TOP_MID,0,height*38/240);
 }
 static inline lv_obj_t *ui_layout_qr_details(lv_obj_t *code,lv_obj_t *back,const char *primary,const char *secondary,bool address){
@@ -689,5 +760,11 @@ static inline lv_obj_t *ui_layout_qr_details(lv_obj_t *code,lv_obj_t *back,const
  lv_obj_update_layout(parent);lv_area_t qr,limit,origin;lv_obj_get_coords(code,&qr);lv_obj_get_coords(back?back:parent,&limit);lv_obj_get_coords(parent,&origin);
  int bottom=back?limit.y1:limit.y2+1;
  lv_obj_set_pos(box,(lv_obj_get_width(parent)-lv_obj_get_width(box))/2,qr.y2+1-origin.y1+(bottom-qr.y2-1-lv_obj_get_height(box))/2);
- return box;
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ int sw=lv_disp_get_hor_res(NULL),sh=lv_disp_get_ver_res(NULL);
+ for(unsigned i=0;i<lv_obj_get_child_cnt(box);i++)ui_text_scale(lv_obj_get_child(box,i),LV_FONT_DEFAULT,ui_layout_base_zoom());
+ lv_obj_set_width(box,sw*64/100);lv_obj_align_to(box,code,LV_ALIGN_OUT_BOTTOM_MID,0,sh/80);
+ if(back){lv_obj_set_size(back,sw*44/100,sh*9/100);lv_obj_align(back,LV_ALIGN_TOP_MID,0,sh*(XTOUCH_UI_LAYOUT==UI_LAYOUT_ROUND?84:86)/100);}
+#endif
+ ui_shape_theme(parent);return box;
 }

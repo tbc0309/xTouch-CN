@@ -15,6 +15,8 @@ inline bool parse(const char *s, Version &out) {
     for (unsigned n = 0; n < 3; ++n) {
         if (*s < '0' || *s > '9')
             return false;
+        if (*s == '0' && s[1] >= '0' && s[1] <= '9')
+            return false;
         while (*s >= '0' && *s <= '9') {
             unsigned digit = unsigned(*s++ - '0');
             if (values[n] > (UINT_MAX - digit) / 10)

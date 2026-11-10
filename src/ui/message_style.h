@@ -43,9 +43,13 @@ static inline void ui_message_caption(lv_obj_t *label,ui_message_kind kind){
 /* Shared action roles: blue primary, green completion, gray dismissal, red destructive. */
 typedef enum { UI_ACTION_PRIMARY, UI_ACTION_COMPLETE, UI_ACTION_SECONDARY, UI_ACTION_DESTRUCTIVE } ui_action_role;
 static inline void ui_action_style(lv_obj_t *button,ui_action_role role){
- static const uint32_t normal[]={UI_COLOR_BLUE,UI_COLOR_ACTION_POSITIVE,UI_COLOR_BUTTON_SECONDARY,UI_COLOR_ACTION_DANGER};
- static const uint32_t pressed[]={UI_COLOR_BLUE_PRESSED,UI_COLOR_ACTION_POSITIVE_PRESSED,UI_COLOR_BUTTON_PRESSED,UI_COLOR_ACTION_DANGER_PRESSED};
+ static const uint32_t normal[]={UI_COLOR_CONTROL_ACCENT,UI_COLOR_CONTROL_SUCCESS,UI_COLOR_BUTTON_SECONDARY,UI_COLOR_ACTION_DANGER};
+ static const uint32_t pressed[]={UI_COLOR_CONTROL_ACCENT_PRESSED,UI_COLOR_ACTION_POSITIVE_PRESSED,UI_COLOR_BUTTON_PRESSED,UI_COLOR_ACTION_DANGER_PRESSED};
  lv_obj_set_style_bg_color(button,lv_color_hex(normal[role]),LV_PART_MAIN|LV_STATE_DEFAULT);
  lv_obj_set_style_bg_color(button,lv_color_hex(pressed[role]),LV_PART_MAIN|LV_STATE_PRESSED);
  lv_obj_set_style_text_color(button,lv_color_white(),LV_PART_MAIN|LV_STATE_DEFAULT);
+#if defined(XTOUCH_UI_LAYOUT) && XTOUCH_UI_LAYOUT != 0
+ lv_obj_set_style_bg_color(button,lv_color_hex(UI_COLOR_CONTROL_DISABLED),LV_STATE_DISABLED);
+ lv_obj_set_style_text_color(button,lv_color_hex(UI_COLOR_TEXT_DISABLED),LV_STATE_DISABLED);
+#endif
 }

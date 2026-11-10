@@ -6,16 +6,35 @@ root = Path(__file__).resolve().parents[1]
 font = (root / 'src/ui/fonts/ui_font_text_14.c').read_text('utf-8')
 covered = {int(cp,16) for cp in re.findall(r'/\* U\+([0-9A-Fa-f]+)',font)}
 missing = []
+source_coverage = {}
 for path in (root / 'src').rglob('*'):
     if path.suffix not in ('.c', '.cpp', '.h') or 'fonts' in path.parts:
         continue
     source = path.read_text('utf-8-sig')
+    source_covered = covered
+    if path.relative_to(root / 'src').as_posix() == 'features/gcode_browser/view.cpp':
+        # The optional file browser has its own fixed-caption font subset.
+        # Check every compiled size rather than expanding the global font.
+        subsets = []
+        for size in (14, 18, 28):
+            dedicated = path.with_name(f'font_{size}.c').read_text('utf-8')
+            subsets.append({int(cp, 16) for cp in re.findall(r'/\* U\+([0-9A-Fa-f]+)', dedicated)})
+        from filename_font_coverage import ui_profiles, families, points, check
+        check(root)
+        for variant, base in ui_profiles(root).items():
+            combined = set(base)
+            for family in ("common_zh", "punctuation"):
+                path_font = root / ('resources/fonts/file-names/' + family + '_' + variant.replace('-', '_') + '.c')
+                combined |= points(path_font)
+            subsets.append(combined)
+        source_covered = set.intersection(*subsets)
+    source_coverage[path] = source_covered
     # Only string literals are relevant; comments must not enlarge the subset.
     for token in re.findall(r'"(?:\\.|[^"\\])*"|/\*[\s\S]*?\*/|//[^\n]*', source):
         if not token.startswith('"'):
             continue
         for ch in token[1:-1]:
-            if ord(ch)>=160 and ch.isprintable() and ord(ch) not in covered:
+            if ord(ch)>=160 and ch.isprintable() and ord(ch) not in source_covered:
                 missing.append((str(path.relative_to(root)), ch))
 assert not missing, f'Missing UI font glyphs: {missing}'
 assert 'lv_font_get_glyph_dsc_fmt_txt' in font
@@ -114,5 +133,9 @@ for path in (root/'src').rglob('*'):
         if not token.startswith('"'):continue
         try:value=json.loads(token)
         except ValueError:continue
-        assert all(ord(ch)<32 or 0xf000<=ord(ch)<=0xf8ff or ord(ch) in covered for ch in value),(path,'decoded Unicode glyph missing')
+        assert all(ord(ch)<32 or 0xf000<=ord(ch)<=0xf8ff or ord(ch) in source_coverage.get(path, covered) for ch in value),(path,'decoded Unicode glyph missing')
 print('PASS: decoded Unicode literals and every UI catalog translation covered')
+
+from filename_font_coverage import check as check_filename_supplements
+check_filename_supplements(root)
+print("PASS: filename supplement coverage and UI deduplication")

@@ -50,8 +50,23 @@ bool xtouch_test_frame_prepare(){
 }
 const uint8_t *xtouch_test_frame(){return (const uint8_t*)xtouch_test_frame_pixels;}
 #endif
+/* Allocate a capture only for an authenticated request; never retain a
+ * second framebuffer or fall back to scarce internal/DMA memory. */
+static uint16_t *screenCapturePixels=nullptr;
+uint8_t *xtouch_screen_capture(){
+ if(xtouch_screen_touchFromPowerOff||screenCapturePixels)return nullptr;
+ const size_t bytes=size_t(wsWidth)*wsHeight*2;
+ if(heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM)<bytes+65536)return nullptr;
+ screenCapturePixels=(uint16_t*)heap_caps_calloc(1,bytes,MALLOC_CAP_SPIRAM|MALLOC_CAP_8BIT);
+ if(!screenCapturePixels)return nullptr;
+ lv_obj_invalidate(lv_screen_active());lv_refr_now(nullptr);
+ uint8_t *result=(uint8_t*)screenCapturePixels;screenCapturePixels=nullptr;return result;
+}
 static void wsFlush(lv_display_t *d,const lv_area_t *a,uint8_t *data){
  uint16_t *pixels=reinterpret_cast<uint16_t*>(data);
+ if(screenCapturePixels&&a->x1>=0&&a->y1>=0&&a->x2<wsWidth&&a->y2<wsHeight)
+  for(int y=a->y1;y<=a->y2;y++)memcpy(screenCapturePixels+y*wsWidth+a->x1,pixels+(y-a->y1)*(a->x2-a->x1+1),(a->x2-a->x1+1)*2);
+
 #if defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && !defined(XTOUCH_BOARD_CYD)
  if(xtouch_test_frame_pixels)for(int y=a->y1;y<=a->y2;++y)memcpy(xtouch_test_frame_pixels+y*wsWidth+a->x1,pixels+(y-a->y1)*(a->x2-a->x1+1),(a->x2-a->x1+1)*2);
 #endif

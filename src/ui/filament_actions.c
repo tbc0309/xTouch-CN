@@ -276,6 +276,15 @@ static void draw_reread(lv_event_t *e) {
         lv_area_t icon=ui_layout_ink(d.font,"n");int ih=lv_area_get_height(&icon);
         const lv_font_t *font=ui_layout_canvas_font(LV_FONT_DEFAULT,text);
         lv_area_t ink=ui_layout_ink(font,text);int th=lv_area_get_height(&ink),gap=LV_MAX(2,font->line_height/5);
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+        int iconWidth=lv_area_get_width(&icon),textWidth=lv_area_get_width(&ink);
+        int contentGap=6,total=iconWidth+contentGap+textWidth;
+        int start=a.x1+LV_MAX(4,((int)width-total)/2);
+        lv_area_t left={start,a.y1,start+iconWidth-1,a.y2};
+        ui_layout_draw_native_text(ctx,&d,left,"n",true);
+        d.font=font;lv_area_t right={left.x2+1+contentGap,a.y1,LV_MIN(a.x2-4,left.x2+contentGap+textWidth),a.y2};
+        ui_layout_draw_native_text(ctx,&d,right,text,true);return;
+#endif
         int top=a.y1+(lv_area_get_height(&a)-ih-gap-th)/2;
         ui_layout_draw_native_text(ctx,&d,(lv_area_t){a.x1,top,a.x2,top+ih-1},"n",true);
         d.font=font;ui_layout_draw_native_text(ctx,&d,(lv_area_t){a.x1,top+ih+gap,a.x2,top+ih+gap+th-1},text,true);
@@ -289,7 +298,7 @@ static void draw_reread(lv_event_t *e) {
         lv_draw_rect_dsc_t r;
         lv_draw_rect_dsc_init(&r);
         r.bg_opa = LV_OPA_COVER;
-        r.bg_color = lv_color_hex(0x555555);
+        r.bg_color = lv_color_hex(UI_COLOR_BUTTON);
         r.radius = lv_disp_get_ver_res(NULL)*6/240;
         ui_layout_native_rect(ctx, &r, &cell);
         lv_draw_label_dsc_t label;
@@ -297,7 +306,11 @@ static void draw_reread(lv_event_t *e) {
         const char *text=side ? xtouch_local("烘干", "Dry") : xtouch_local("重读", "RFID");
         label.font = ui_layout_canvas_font(LV_FONT_DEFAULT,text);
         label.align = LV_TEXT_ALIGN_CENTER;
+#if XTOUCH_UI_LAYOUT==UI_LAYOUT_LANDSCAPE
         label.color = lv_color_hex(side ? UI_COLOR_BLUE : ready ? 0xFFFFFF : 0x777777);
+#else
+        label.color = lv_color_hex(side ? UI_COLOR_BLUE : ready ? UI_COLOR_TEXT_PRIMARY : UI_COLOR_TEXT_DISABLED);
+#endif
         ui_layout_draw_native_text(ctx,&label,cell,text,true);
     }
 }
@@ -308,8 +321,13 @@ void ui_filament_bind(lv_obj_t *component) {
     lv_obj_set_style_text_font(reread, &ui_font_xlcdmin, 0);
     lv_obj_set_style_pad_all(reread, 0, 0);
     lv_obj_set_style_pad_top(reread, 1, 0);
+#if XTOUCH_UI_LAYOUT==UI_LAYOUT_LANDSCAPE
     lv_obj_set_style_text_color(reread, lv_color_hex(0x777777), LV_STATE_DISABLED);
     lv_obj_set_style_bg_color(reread, lv_color_hex(0x444444), LV_STATE_DISABLED);
+#else
+    lv_obj_set_style_text_color(reread, lv_color_hex(UI_COLOR_TEXT_DISABLED), LV_STATE_DISABLED);
+    lv_obj_set_style_bg_color(reread, lv_color_hex(UI_COLOR_CONTROL_DISABLED), LV_STATE_DISABLED);
+#endif
     lv_obj_t *caption = lv_label_create(reread);
     lv_obj_set_size(caption, lv_pct(100), 18);
     lv_obj_set_pos(caption, 0, 24);

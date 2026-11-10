@@ -1,8 +1,8 @@
 {
-  "version": "1.0.1-test",
-  "releaseTag": "1.0.1-test",
+  "version": "1.0.2-test",
+  "releaseTag": "1.0.2-test",
   "prerelease": true,
-  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.1-test/chd-s3-box35.bin",
-  "size": 4853072,
-  "md5": "5eb5196e13f5a51dc3a4f7c02839de35"
+  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.2-test/chd-s3-box35.bin",
+  "size": 5037264,
+  "md5": "c4861dd9879dc118e02935ffe569ce87"
 }

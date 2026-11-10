@@ -36,6 +36,20 @@ void hms_dismiss(void){pending=authorization_pending=false;}
 bool hms_authorization_advisory_pending(void){return authorization_pending&&hms_command_verification_failed();}
 bool hms_health_visible(unsigned i){return i<health_count&&(!authorization_health(health[i])||authorization_pending);}
 uint32_t hms_visible_print_error(void){return print_error==84033543UL&&!authorization_pending?0:print_error;}
+hms_severity_t hms_severity(void){
+ if(hms_health_truncated())return HMS_SEVERITY_ERROR;
+ uint32_t print=hms_visible_print_error();
+ if(print&&print!=84033543UL&&((print>>12)&15)!=12)return HMS_SEVERITY_ERROR;
+ hms_severity_t severity=hms_authorization_advisory_pending()?HMS_SEVERITY_WARNING:HMS_SEVERITY_INFO;
+ for(unsigned i=0;i<hms_health_count();i++){
+  if(!hms_health_visible(i))continue;
+  uint64_t code=hms_health_at(i);unsigned level=(unsigned)(code>>16)&65535;
+  if(code==0x0500050000010007ULL){if(severity==HMS_SEVERITY_INFO)severity=HMS_SEVERITY_WARNING;continue;}
+  if(level!=2&&level!=3)return HMS_SEVERITY_ERROR;
+  if(level==2)severity=HMS_SEVERITY_WARNING;
+ }
+ return severity;
+}
 uint32_t hms_revision(void){return revision;}
 unsigned hms_popup_timeout_ms(void){
  // Only known informational telemetry may disappear on a timer. Unknown

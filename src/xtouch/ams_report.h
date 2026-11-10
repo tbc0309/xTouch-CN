@@ -58,12 +58,15 @@ static void xtouch_mqtt_parse_ams(JsonDocument &incomingJson) {
         }
         if (ams.containsKey("tray_now")) {
             bambuStatus.m_tray_now = xtouch_ams_tray_index(integer(ams["tray_now"]));
+            bambuStatus.ams_current_valid = bambuStatus.m_tray_now >= 0;
             char value[12];
             snprintf(value, sizeof(value), "%d", bambuStatus.m_tray_now);
             xtouch_ams_parse_tray_now(value);
         }
-        if (ams.containsKey("tray_tar"))
+        if (ams.containsKey("tray_tar")) {
             bambuStatus.m_tray_tar = xtouch_ams_tray_index(integer(ams["tray_tar"]));
+            bambuStatus.ams_target_valid = bambuStatus.m_tray_tar >= 0;
+        }
         if (ams.containsKey("version"))
             bambuStatus.ams_version = integer(ams["version"]);
         if (ams.containsKey("tray_is_bbl_bits"))

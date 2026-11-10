@@ -1,5 +1,6 @@
 #include "../ui.h"
 #include "../layout_shared.h"
+#include "../layouts/shape.h"
 
 void ui_introScreen_screen_init()
 {
@@ -51,4 +52,11 @@ void ui_introScreen_screen_init()
     lv_obj_set_style_text_font(introScreenCaption, LV_FONT_DEFAULT, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_align(introScreenCaption, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_style_text_color(introScreenCaption, lv_color_hex(0x555555), LV_PART_MAIN | LV_STATE_DEFAULT);
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+    lv_obj_set_style_pad_top(introScreenIcon,0,0);
+    lv_obj_set_style_pad_bottom(introScreenIcon,0,0);
+    lv_obj_set_style_pad_row(introScreen,12,0);
+    lv_obj_set_width(introScreenCaption,lv_pct(64));
+    lv_label_set_long_mode(introScreenCaption,LV_LABEL_LONG_SCROLL);
+#endif
 }

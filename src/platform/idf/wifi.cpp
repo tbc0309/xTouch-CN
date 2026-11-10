@@ -33,6 +33,12 @@ bool NativeWifi::init(){
  if(!sta)sta=esp_netif_create_default_wifi_sta();
  if(!ap)ap=esp_netif_create_default_wifi_ap();
  if(!sta||!ap)return false;
+ esp_netif_ip_info_t apIp{};
+ if(esp_netif_get_ip_info(ap,&apIp)!=ESP_OK)return false;
+ esp_netif_dns_info_t dns{};dns.ip.type=ESP_IPADDR_TYPE_V4;dns.ip.u_addr.ip4=apIp.ip;
+ if(esp_netif_set_dns_info(ap,ESP_NETIF_DNS_MAIN,&dns)!=ESP_OK)return false;
+ uint8_t offerDns=2;
+ if(esp_netif_dhcps_option(ap,ESP_NETIF_OP_SET,ESP_NETIF_DOMAIN_NAME_SERVER,&offerDns,sizeof(offerDns))!=ESP_OK)return false;
  wifi_init_config_t cfg=WIFI_INIT_CONFIG_DEFAULT();if(esp_wifi_init(&cfg)!=ESP_OK)return false;
  esp_wifi_set_storage(WIFI_STORAGE_RAM);
  if(esp_event_handler_register(WIFI_EVENT,ESP_EVENT_ANY_ID,events,this)!=ESP_OK||esp_event_handler_register(IP_EVENT,IP_EVENT_STA_GOT_IP,events,this)!=ESP_OK)return false;

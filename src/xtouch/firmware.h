@@ -49,8 +49,8 @@ static bool xtouch_firmware_manifest_valid(JsonDocument &doc)
     const char *url = doc["url"] | "";
     const char *md5 = doc["md5"] | "";
     SemVer parsed;
-    if (!parseSemVer(version, parsed) || strlen(md5) != 32 ||
-        !XTouchOtaSelection::imageUrl(url, version, XTOUCH_FIRMWARE_FILENAME) ||
+    if (!parseSemVer(version, parsed) || (parsed.test && !XTOUCH_OTA_ALLOW_TEST_VERSION) || strlen(md5) != 32 ||
+        !XTouchOtaSelection::imageUrl(url, version, XTOUCH_FIRMWARE_FILENAME, XTOUCH_OTA_REPOSITORY) ||
         !doc["size"].is<unsigned>() || doc["size"].as<unsigned>() == 0 ||
         doc["size"].as<unsigned>() > XTOUCH_FIRMWARE_MAX_BYTES) return false;
     for (unsigned i = 0; i < 32; i++) if (!isxdigit(md5[i])) return false;
