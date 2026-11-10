@@ -16,7 +16,7 @@
 
 Let lists stop scrolling before selecting. Out-of-range values are not sent. Switching devices clears the old selection and alerts. Source colors identify LAN/Token/phone/email, not online status.
 
-The original filament color shows remaining material: bright right/faded left on the filament page and bright bottom/faded top on home. Unknown amounts stay solid. AMS names remain fixed; temperature precedes humidity. External sources use compact fixed buttons. Visible AMS cards divide the remaining header width equally with consistent gaps. Additional AMS units can be browsed horizontally. One AMS fills the header when no external source is present. Readings stay centered and static when they fit, otherwise they scroll across the remaining area. Readings are hidden when a complete temperature cannot fit. Unchanged reports do not restart scrolling.
+Filament colour indicates remaining material: bright right/faded left on the filament page, bright bottom/faded top on Home. Unknown amounts remain solid. AMS temperature and humidity appear when space permits; long readings and additional AMS units can be browsed horizontally.
 
 ### Camera
 
@@ -57,3 +57,15 @@ HMS and print errors retain original codes. S3/P4/ES3C35P add English descriptio
 - Authorization error `84033543` or HMS `0500-0500-0001-0007` adds a yellow LAN/developer-mode warning. See [permissions](PRINTERS.en.md#authorization).
 
 Sign in again when the management session expires, or update the affected cloud account when its credentials expire. Ordinary network errors do not erase accounts or settings.
+
+## Print files
+
+With an available SD card on an ESP32-S3 / ESP32-P4 controller, tap the home printer image to browse files. Names and cached images appear first; new thumbnails load progressively. Switch list/image mode or refresh manually. Sorting uses file modification time, not the mobile app's cloud print history.
+
+Open a file to inspect its plate, thumbnail and available estimated time/weight. Reprinting is enabled only for verified printable files and plates. Check the printer, material and build plate before confirming. Cloud devices require a saved LAN profile with the same serial number to access printer storage. The controller SD caches listings, images and metadata, not entire print files.
+
+## 32-pixel display
+
+Expand pixel-display settings, scan and select a device, or choose manual MAC entry from the device dropdown. Enter the six-digit device password if configured, optionally saving it encrypted and device-bound. Enable and save to connect. Successful authentication collapses connection settings; reopen them to edit. Disconnect the mobile app first to avoid occupying the display connection.
+
+Display power turns the screen on/off. Disabling linking disconnects while keeping settings and does not turn off the screen. Adjust brightness, rotation and printing layout. Choose Colour printer or Progress view while printing. The completed progress section flows right in rainbow colours; the rest uses the filament colour. Standby defaults to the autonomous built-in clock. Enable idle temperature and humidity to alternate every 10 seconds when valid readings are available; missing readings keep the clock. Printer changes settle for 3 seconds before updating the display. The display and thermometer are configured independently and can run together.

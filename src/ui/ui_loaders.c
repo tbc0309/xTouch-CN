@@ -1,5 +1,6 @@
 
 #include "ui.h"
+#include "layouts/shape.h"
 #include "detail_page.h"
 #include "ui_msgs.h"
 #if defined(XTOUCH_ENABLE_SCREEN_PROTECTION) && XTOUCH_ENABLE_SCREEN_PROTECTION
@@ -92,6 +93,10 @@ void loadScreen(int screen)
     /* The LVGL pool cannot hold two full pages. Load a lightweight screen
        without refreshing it, release the old page, then construct the next. */
     lv_obj_t *transition = lv_obj_create(NULL);
+#if XTOUCH_UI_LAYOUT != UI_LAYOUT_LANDSCAPE
+    lv_obj_set_style_bg_color(transition,lv_color_hex(UI_COLOR_SCREEN),0);
+    lv_obj_set_style_bg_opa(transition,LV_OPA_COVER,0);
+#endif
     lv_disp_load_scr(transition);
     if (current != NULL) lv_obj_del(current);
 
@@ -133,6 +138,7 @@ void loadScreen(int screen)
     {
         ui_sidebarComponent_set_active(screen);
     }
+    ui_shape_screen(lv_scr_act(),screen);
     lv_obj_invalidate(lv_scr_act());
 }
 

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="iDotMatrix × Bambu Lab · ESP32 开发板在线刷机">
+  <meta name="referrer" content="no-referrer">
+  <title>iDotMatrix × Bambu Lab · 在线刷机</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="idotmatrix.css">
+  <script type="module" src="idotmatrix.js"></script>
+</head>
+<body class="pixel-project">
+  <header class="top">
+    <a class="brand" href="idotmatrix.html">iDotMatrix <span>× Bambu Lab</span></a>
+    <nav>
+      <a href="index.html" data-t="xtouch">xTouch-CN 刷机</a>
+      <a href="https://github.com/tbc0309/idotmatrix-bambulab" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <select id="language" aria-label="语言 / Language"><option value="zh">简体中文</option><option value="en">English</option></select>
+    </nav>
+  </header>
+  <main>
+    <section class="hero pixel-hero">
+      <div>
+        <p class="eyebrow" data-t="eyebrow">ESP32 · 蓝牙像素屏联动</p>
+        <h1 data-t="title">让拓竹打印状态，亮在身边。</h1>
+        <p data-t="intro">为 ESP32 开发板安装固件，通过蓝牙将打印状态显示在 iDotMatrix 32×32 像素屏上。带 OLED 的 ESP32-C3 也可在板载屏查看状态。</p>
+        <p class="subtle" data-t="independent">一款运行于 ESP32 的独立像素屏控制器。</p>
+        <div class="pills"><span id="board-name">—</span><span id="board-screen">—</span><span id="board-specs" hidden></span><span id="version">—</span></div>
+      </div>
+      <img class="pixel-demo" src="https://raw.githubusercontent.com/tbc0309/xTouch-CN/main/docs/images/pixel-screen/printing.gif" alt="iDotMatrix printing animation" width="240" height="240">
+    </section>
+    <div class="flash-grid">
+      <section class="card" id="pixel-install-card">
+        <span class="tag" data-t="usb">USB 在线安装</span>
+        <h3 data-t="install">连接并刷写</h3>
+        <label for="board" data-t="board">选择 ESP32 开发板</label>
+        <select id="board" disabled></select>
+        <p class="subtle board-memory" hidden></p>
+        <ol class="instructions"><li data-t="step1">电脑使用 Chrome 或 Edge，通过 USB 连接开发板。</li><li data-t="step2">关闭占用串口的软件，确认主板型号后加载刷写工具。</li><li data-t="step3">选择开发板串口，按提示完成安装。</li></ol>
+        <p class="notice" data-t="preserve">保留设置时不要勾选 Erase device；擦除会清除 Wi-Fi、打印机、像素屏绑定和管理密码。安装过程请保持 USB 连接。</p>
+        <div id="installer"><button id="load-installer" class="button primary" disabled data-t="load">加载刷写工具</button><div id="installer-widget"></div></div>
+        <p id="installer-status" role="status" aria-live="polite"></p>
+        <p class="subtle" data-t="toolLanguage">刷写工具的连接、进度和确认窗口由 ESP Web Tools 提供，目前为英文。</p>
+        <div class="pixel-downloads"><a id="release-link" hidden target="_blank" rel="noopener noreferrer" data-t="downloads">固件下载与发布说明</a></div>
+      </section>
+      <section class="card">
+        <span class="tag" data-t="setupTag">Wi-Fi 与像素屏</span><h3 data-t="setup">首次使用</h3>
+        <ol class="instructions"><li data-t="setup1">连接开发板的 PrintPixel-xxxxxx 热点，密码 12345678。</li><li data-t="setup2">打开 http://192.168.4.1/，直接扫描并设置 Wi-Fi，无需登录。</li><li data-t="setup3">连接同一网络，在设备地址首次登录（初始密码 12345678），按提示修改密码，再添加打印机。</li><li data-t="setup4">断开手机 App 与像素屏的连接，扫描选择像素屏，按需填写设备密码，启用联动。</li></ol>
+        <p class="subtle" data-t="power">开发板和像素屏分别供电，无需连接信号线。</p>
+        <p class="subtle" data-t="boot">BOOT 长按 3 秒清除 Wi-Fi，长按 10 秒清除全部配置。</p>
+      </section>
+    </div>
+    <footer><div><a href="index.html" data-t="xtouch">xTouch-CN 刷机</a><a href="https://github.com/tbc0309/idotmatrix-bambulab" target="_blank" rel="noopener noreferrer" data-t="project">项目与功能介绍</a><a href="https://imnks.com/" target="_blank" rel="noopener noreferrer">我不是矿神</a></div></footer>
+  </main>
+</body>
+</html>

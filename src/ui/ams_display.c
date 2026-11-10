@@ -1,4 +1,5 @@
 #include "ams_display.h"
+#include "layouts/shape.h"
 #include "filament_actions.h"
 #include "xtouch/ams_units.h"
 #include "ams_details.h"
@@ -53,7 +54,11 @@ static void refresh_strip(lv_obj_t *strip)
     lv_obj_set_user_data(strip,(void *)(uintptr_t)unit);
     for(unsigned i=0;i<4;++i){
         lv_obj_t *o=lv_obj_get_child(strip,i+1);
-        if(i>=xtouch_ams_slot_count(unit)){lv_obj_add_flag(o,LV_OBJ_FLAG_HIDDEN);continue;}else lv_obj_clear_flag(o,LV_OBJ_FLAG_HIDDEN);
+        if(i>=xtouch_ams_slot_count(unit)
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+           || !bambuStatus.ams || !bambuStatus.ams_exist_bits
+#endif
+        ){lv_obj_add_flag(o,LV_OBJ_FLAG_HIDDEN);continue;}else lv_obj_clear_flag(o,LV_OBJ_FLAG_HIDDEN);
         lv_obj_set_style_bg_color(o,lv_color_hex(ui_ams_slot_color(base+i)),0);
         lv_obj_set_style_border_color(o,lv_color_hex(slot_border(base+i)),0);
         lv_obj_set_style_border_width(o,bambuStatus.ams && (ui_filament_is_loaded((int)(base+i)) || (bambuStatus.tray_reading_bits&(1ULL<<(base+i))))?2:1,0);
@@ -100,6 +105,13 @@ void ui_ams_strip_bind(lv_obj_t *strip)
     /* Physical square swatches for every display aspect ratio. */
     const unsigned swatches[]={1,2,3,4,6,7};
     for(unsigned i=0;i<sizeof(swatches)/sizeof(swatches[0]);i++)ui_layout_square(lv_obj_get_child(strip,swatches[i]),16);
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+    ui_layout_native_size(strip,LV_SIZE_CONTENT,22);
+    for(unsigned i=0;i<sizeof(swatches)/sizeof(swatches[0]);i++){
+        lv_obj_t *o=lv_obj_get_child(strip,swatches[i]);
+        ui_layout_native_square(o,14);
+    }
+#endif
     lv_obj_set_style_pad_column(strip,2,0);
     lv_obj_set_flex_align(strip,LV_FLEX_ALIGN_START,LV_FLEX_ALIGN_CENTER,LV_FLEX_ALIGN_CENTER);
     for(unsigned i=0;i<4;++i)lv_obj_add_event_cb(lv_obj_get_child(strip,i+1),draw_strip_material,LV_EVENT_DRAW_MAIN_END,(void *)(uintptr_t)i);
@@ -133,7 +145,15 @@ bool ui_ams_select_unit(unsigned unit)
 unsigned ui_ams_selected_unit(void){return panel_base()/4;}
 bool ui_ams_drying_available(void){if(ui_filament_selected()>=253)return false;unsigned unit=ui_ams_selected_unit();return (bambuStatus.ams_exist_bits&(1U<<unit))&&(bambuStatus.ams_kind[unit]==3||bambuStatus.ams_kind[unit]==4);}
 /* AMS shares the remaining width; external sources keep a compact hit target. */
-enum { AMS_PANEL_WIDTH=264, AMS_HEADER_GAP=4 };
+enum { AMS_HEADER_GAP=4 };
+static int ams_panel_width(void){
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ ui_shape_area_t a=ui_shape_area(lv_disp_get_hor_res(NULL),lv_disp_get_ver_res(NULL),false);return ui_design_unx(a.w);
+#else
+ return 264;
+#endif
+}
+#define AMS_PANEL_WIDTH (ams_panel_width())
 static unsigned external_sources(unsigned sources[2]){
     if(!bambuStatus.external_present)return 0;
     unsigned count=0;
@@ -210,6 +230,11 @@ static void header_readings(lv_obj_t *content,unsigned count,const unsigned *uni
             row=lv_obj_create(content);lv_obj_remove_style_all(row);
             lv_obj_clear_flag(row,LV_OBJ_FLAG_CLICKABLE|LV_OBJ_FLAG_SCROLLABLE);
             name=lv_label_create(row);values=lv_label_create(row);
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+            /* These measured labels own their font; the page-wide typography
+             * pass must not enlarge them after their scroll window is laid out. */
+            lv_obj_add_flag(name,LV_OBJ_FLAG_USER_3);lv_obj_add_flag(values,LV_OBJ_FLAG_USER_3);
+#endif
             lv_obj_set_style_text_color(name,lv_color_white(),0);
             lv_obj_set_style_text_color(values,lv_color_hex(UI_COLOR_BLUE),0);
             lv_obj_set_style_anim_speed(values,22,0);
@@ -226,8 +251,11 @@ static void header_readings(lv_obj_t *content,unsigned count,const unsigned *uni
         if(strcmp(lv_label_get_text(values),text))lv_label_set_text(values,text);
         /* One fixed compact body tier for every header, never shrink per value. */
         unsigned headerZoom=ui_layout_base_zoom()*7/8;
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+        headerZoom=20*256/LV_MAX(1,LV_FONT_DEFAULT->line_height);
+#endif
         ui_text_scale(name,LV_FONT_DEFAULT,headerZoom);ui_text_scale(values,LV_FONT_DEFAULT,headerZoom);
-        ui_layout_caption_value(name,values,minimum,LV_MAX(3,lv_obj_get_style_text_font(values,(lv_part_t)0)->line_height/6));
+        ui_layout_caption_value(name,values,minimum,LV_MAX(XTOUCH_UI_LAYOUT==UI_LAYOUT_LANDSCAPE?3:6,lv_obj_get_style_text_font(values,(lv_part_t)0)->line_height/6));
     }
 }
 static void header_sync(lv_obj_t *panel)
@@ -305,7 +333,7 @@ static void draw_header(lv_event_t *e)
             a.x1+header_card_end(index),a.y1+21};
         bool active=selection<253 && base/4==id;
         lv_draw_rect_dsc_t r;lv_draw_rect_dsc_init(&r);
-        r.bg_color=lv_color_hex(active ? 0x777777 : 0x555555);r.bg_opa=LV_OPA_COVER;r.radius=4;
+        r.bg_color=lv_color_hex(active ? (XTOUCH_UI_LAYOUT==UI_LAYOUT_LANDSCAPE?0x777777:UI_COLOR_BUTTON_SECONDARY) : UI_COLOR_BUTTON);r.bg_opa=LV_OPA_COVER;r.radius=4;
         lv_draw_rect(ctx,&r,&tab);
 
     }
@@ -349,7 +377,7 @@ static void draw_panel(lv_event_t *e)
     for(unsigned n=0;n<external;++n){
         bool active=selection==(sources[n]?253:254);
         lv_area_t area={a.x1+external_start(n),a.y1,a.x1+external_start(n)+external_width()-1,a.y1+21};
-        lv_draw_rect_dsc_t tab;lv_draw_rect_dsc_init(&tab);tab.bg_color=lv_color_hex(active?0x777777:0x555555);
+        lv_draw_rect_dsc_t tab;lv_draw_rect_dsc_init(&tab);tab.bg_color=lv_color_hex(active?(XTOUCH_UI_LAYOUT==UI_LAYOUT_LANDSCAPE?0x777777:UI_COLOR_BUTTON_SECONDARY):UI_COLOR_BUTTON);
         tab.bg_opa=LV_OPA_COVER;tab.radius=4;lv_draw_rect(ctx,&tab,&area);
         char caption[8];snprintf(caption,sizeof(caption),"EXT%u",sources[n]);
         bool dual=bambuStatus.nozzle_count==2&&bambuStatus.external_multi_protocol;
@@ -371,7 +399,7 @@ static void draw_panel(lv_event_t *e)
         lv_area_t card = {bounds.x1+(int)i*(total+gap)/slots,bounds.y1+material_y(26),
                          bounds.x1+(int)(i+1)*(total+gap)/slots-gap-1,bounds.y2};
         lv_draw_rect_dsc_t r; lv_draw_rect_dsc_init(&r);
-        r.bg_color = lv_color_hex(0x555555); r.bg_opa = LV_OPA_COVER;
+        r.bg_color = lv_color_hex(UI_COLOR_BUTTON); r.bg_opa = LV_OPA_COVER;
         r.radius = material_y(6); r.border_width = selection == (int)slot ? material_y(3) : LV_MAX(1,material_y(1));
         r.border_color = lv_color_hex(selection == (int)slot ? UI_COLOR_BLUE : slot_border(slot));
         ui_layout_native_rect(ctx, &r, &card);
@@ -418,8 +446,15 @@ void ui_ams_filament_layout(lv_obj_t *component)
     lv_obj_set_layout(component, 0);
     lv_obj_t *nozzle = ui_comp_get_child(component, 1);
     lv_obj_t *filament = ui_comp_get_child(component, 6);
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+    const ui_shape_area_t shape=ui_shape_area(lv_disp_get_hor_res(NULL),lv_disp_get_ver_res(NULL),false);
+    const int half=(shape.w-shape.gap)/2,top=shape.h/2;
+    ui_shape_place(nozzle,0,top,half,shape.h-top);
+    ui_shape_place(filament,half+shape.gap,top,shape.w-half-shape.gap,shape.h-top);
+#else
     position(nozzle, 0, 88, 126, 144);
     position(filament, 130, 88, 134, 144);
+#endif
     lv_obj_set_style_pad_row(nozzle, 4, 0);
     lv_obj_set_style_pad_row(filament, 4, 0);
     const unsigned controls[] = {2, 3, 5, 7, 8, 9};
@@ -449,7 +484,12 @@ void ui_ams_filament_layout(lv_obj_t *component)
     ui_layout_status_text(icon);ui_layout_status_text(temperature);
 
     lv_obj_t *panel = lv_obj_create(component);
-    lv_obj_remove_style_all(panel); position(panel, 0, 0, 264, 80);
+    lv_obj_remove_style_all(panel);
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+    ui_shape_place(panel,0,0,shape.w,shape.h/2-shape.gap);
+#else
+    position(panel,0,0,264,80);
+#endif
     lv_obj_clear_flag(panel, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_flag(panel, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_t *viewport=lv_obj_create(panel);

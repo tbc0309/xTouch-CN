@@ -101,6 +101,7 @@ void xtouch_environment_status(JsonObject out){
  float t,rh;uint32_t age,ta,ha,seen;bool has=xtouch_xiaomi_ble_measurement(t,rh,age,&ta,&ha,&seen);xtouch_xiaomi_ble_model_status(out);out["available"]=present&&has;out["fresh"]=present&&has&&age<=freshMs;out["keyRequired"]=xtouch_xiaomi_ble_key_required();out["keyUnavailable"]=protect&&!ready;
  if(has){out["temperature"]=t;out["humidity"]=rh;out["ageMs"]=age;out["temperatureAgeMs"]=ta;out["humidityAgeMs"]=ha;out["lastSeenAgeMs"]=seen;}
 }
+bool xtouch_environment_fresh_measurement(float &temperature,float &humidity){uint32_t age=0;return xtouch_xiaomi_ble_measurement(temperature,humidity,age)&&age<=freshMs;}
 extern "C" void ui_home_environment_bind(lv_obj_t *strip,lv_obj_t *clockGap){
  HomeEnvironment::bind(strip,clockGap,{
   [](){

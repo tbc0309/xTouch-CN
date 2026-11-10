@@ -1,9 +1,27 @@
+#include "features/config.h"
+#include "features/network/print_phase.h"
+#include "features/gcode_browser/browser.h"
+#if XTOUCH_FEATURE_GCODE_BROWSER
+#include "features/gcode_browser/browser_internal.h"
+#endif
+#include "platform/idf/ble_runtime.h"
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+#include "features/pixel_screen/settings.h"
+#include "features/pixel_screen/filament.h"
+#include "features/pixel_screen/chamber.h"
+#include "ui/printer_models.h"
+#include "xtouch/clock.h"
+#if XTOUCH_FEATURE_XIAOMI_BLE
+#include "features/xiaomi_ble/environment.h"
+#endif
+#endif
 #if XTOUCH_FEATURE_XIAOMI_BLE
 #include "xiaomi_ble.h"
 #endif
 #include "platform/idf/runtime.h"
 #include "platform/idf/ota_health.h"
 #include "features/xiaomi_ble/display_preferences.h"
+#include "features/pixel_screen/display_preferences.h"
 #include <cmath>
 using std::isfinite;
 #include "xtouch/message_adapter.h"
@@ -169,6 +187,9 @@ void setup()
   xtouch_chamber_timer_init();
   xtouch_power_begin();xtouch_sound_begin();xtouch_indicator_begin();
   xtouch_portal_boot_complete();
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+  pixel_screen::begin();
+#endif
 #if XTOUCH_FEATURE_XIAOMI_BLE
   xtouch_xiaomi_ble_begin();
 #endif
@@ -200,6 +221,31 @@ void loop()
   {XTouchLoopScope timing(XTOUCH_PHASE_PORTAL);xtouch_portal_loop();}
   xtouch_runtime_config_apply();
   xtouch_environment_display_poll();
+  xtouch_pixel_display_poll();
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+  pixel_screen::source(xtouch_printer_active(),xTouchConfig.xTouchSerialNumber,xtouch_printer_switch_pending(),millis());
+  static uint32_t pixelAt=0;
+  if(uint32_t(millis()-pixelAt)>=500){pixelAt=millis();
+   auto pixelFilament=pixel_screen::filamentColors(bambuStatus);
+   pixel_screen::update(xtouch_printer_online(),bambuStatus.print_status,bambuStatus.mc_print_percent,hms_print_error()!=0,
+       xtouch_print_preparing(bambuStatus.print_status==XTOUCH_PRINT_STATUS_PREPARE,
+           bambuStatus.print_status==XTOUCH_PRINT_STATUS_RUNNING,
+           bambuStatus.current_layer_valid,bambuStatus.current_layer),
+       bambuStatus.current_layer_valid?bambuStatus.current_layer:-1,bambuStatus.total_layers,
+       bambuStatus.print_stage_current,pixelFilament.current,pixelFilament.feed,pixelFilament.known,
+       bambuStatus.ams_status_valid?bambuStatus.ams_status_main:-1,
+       bambuStatus.ams_current_valid?bambuStatus.m_tray_now:-1,
+       bambuStatus.ams_target_valid?bambuStatus.m_tray_tar:-1,pixel_screen::chamberWarming(bambuStatus));
+   char text[6]={};xtouch_clock_text(text,sizeof(text));float temperature=0,humidity=0;bool environmentKnown=false;
+#if XTOUCH_FEATURE_XIAOMI_BLE
+   environmentKnown=xtouch_environment_fresh_measurement(temperature,humidity);
+#endif
+   pixel_screen::telemetry(ui_printer_model_short_name(xtouch_printer_model_at(xtouch_printer_active())),text,bambuStatus.mc_left_time,(bambuStatus.temperature_valid&4)?int(std::round(bambuStatus.nozzle_temper)):-1,(bambuStatus.temperature_valid&1)?int(std::round(bambuStatus.bed_temper)):-1,environmentKnown,temperature,humidity);
+  }
+#endif
+#if XTOUCH_FEATURE_XIAOMI_BLE || XTOUCH_FEATURE_PIXEL_SCREEN
+  xtouch_ble::poll();
+#endif
   xtouch_settings_poll();
 #ifdef XTOUCH_WAVESHARE
   xtouch_camera_poll();
@@ -210,6 +256,10 @@ void loop()
     []{XTouchLoopScope timing(XTOUCH_PHASE_MQTT);xtouch_mqtt_loop();},
     []{xtouch_cloud_job_result();});
   {XTouchLoopScope timing(XTOUCH_PHASE_PREVIEW);xtouch_print_preview_poll();}
+  xtouch_files_poll();
+#if XTOUCH_FEATURE_GCODE_BROWSER
+  xtouch_files::printPoll([](const char *wire){return xtouch_device_publish(String(wire));},xtouch_device_next_sequence);
+#endif
   static bool clockReady = false;
   if (!clockReady && time(NULL) > 1577836800 && lv_disp_get_inactive_time(NULL) >= 3000 && !ui_scroll_busy(3000)) {
     xtouch_storage_clock_ready();
@@ -232,7 +282,7 @@ void loop()
   if(xtouch_printer_online())printingPreviously=printingNow||bambuStatus.print_status==XTOUCH_PRINT_STATUS_PAUSED;
   printingOwner=xtouch_printer_active();
   xtouch_indicator_poll(xtouch_printer_online(),hms_print_error()!=0,xtouch_screen_touchFromPowerOff,xTouchConfig.xTouchStatusLed);
-  xtouch_display_poll(xtouch_deep_idle_reported(lastPrintState.c_str())&&xtouch_deep_idle_allowed(bambuStatus.print_status,xtouch_printer_online(),hms_print_error()!=0,xtouch_portal_maintenance(),xtouch_print_preview_status().busy));
+  xtouch_display_poll(xtouch_deep_idle_reported(lastPrintState.c_str())&&xtouch_deep_idle_allowed(bambuStatus.print_status,xtouch_printer_online(),hms_print_error()!=0,xtouch_portal_maintenance(),xtouch_print_preview_status().busy||xtouch_files_network_busy()));
 
   delay(xtouch_screen_touchFromPowerOff?20:2);
 

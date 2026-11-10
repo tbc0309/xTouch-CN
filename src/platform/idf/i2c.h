@@ -26,6 +26,11 @@ class NativeI2cBus {
     NativeI2cBus(const NativeI2cBus &) = delete;
     NativeI2cBus &operator=(const NativeI2cBus &) = delete;
     bool begin(int dataPin, int clockPin, uint32_t hz = 100000);
+    // Board-owned IDF peripheral adapters share this bus; they must not install
+    // another controller or delete it. IDF serializes complete bus transactions.
+    i2c_master_bus_handle_t native_handle() const {
+        return bus;
+    }
     esp_err_t end();
     esp_err_t probe(uint8_t address, unsigned timeoutMs = 20);
     esp_err_t transfer(uint8_t address, const uint8_t *write, size_t writeBytes, uint8_t *read,

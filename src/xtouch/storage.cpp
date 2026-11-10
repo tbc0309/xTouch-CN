@@ -1,5 +1,8 @@
 #include "features/settings_validation.h"
 #include "storage.h"
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+#include "features/pixel_screen/settings.h"
+#endif
 #if XTOUCH_FEATURE_XIAOMI_BLE
 #include "environment.h"
 #endif
@@ -12,9 +15,13 @@
 #include <cmath>
 #include <time.h>
 #include <utility>
+#include <atomic>
 
 namespace {
 const char *paths[] = {"/xtouch.json", "/xtouch/settings.json", "/xtouch/touch.json", "/xtouch/hardware.json"
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+,pixel_screen::config_path
+#endif
 #if XTOUCH_FEATURE_XIAOMI_BLE
 ,xtouch_environment_config_path
 #endif
@@ -24,7 +31,8 @@ size_t capacityFor(const char *path) {
     if (!strcmp(path, paths[1])) return 2048;
     return 1024;
 }
-bool ready = false, sdAvailable = false, restartRequired = false;
+bool ready=false,restartRequired=false;
+std::atomic<bool> sdAvailable{false};
 
 bool knownPath(const char *path) {
     for (auto candidate : paths) if (!strcmp(candidate, path)) return true;
@@ -53,6 +61,9 @@ struct Record {
     bool valid = false, deleted = false, dirty = false, external = false;
 };
 bool validPayload(const char *path, JsonDocument &doc) {
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+ if(!strcmp(path,pixel_screen::config_path))return pixel_screen::valid(doc.as<JsonVariantConst>(), true);
+#endif
 #if XTOUCH_FEATURE_XIAOMI_BLE
  if(!strcmp(path,xtouch_environment_config_path))return xtouch_environment_valid(doc.as<JsonVariantConst>());
 #endif
@@ -227,7 +238,7 @@ bool xtouch_storage_begin() {
 }
 bool xtouch_storage_ready() { return ready; }
 void xtouch_storage_set_sd(bool available) { sdAvailable = available; }
-bool xtouch_storage_sd_available() { return sdAvailable; }
+bool xtouch_storage_sd_available() { return sdAvailable.load() && SD.cardType()!=CARD_NONE; }
 bool xtouch_storage_has(const char *path) {
     if (!ready || !knownPath(path)) return false;
     Record record(capacityFor(path)); read(SPIFFS, path, record, true); return record.valid && !record.deleted;

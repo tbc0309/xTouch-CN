@@ -19,9 +19,11 @@ XTouchPrintPreviewStatus xtouch_print_preview_status() { return {}; }
 #include "platform/idf/wifi.h"
 #include "preview_transport.h"
 #include "preview_ftp_cleanup.h"
+#include "features/network/ftps_session.h"
 #include "features/diagnostics/stack_margin.h"
 #include "features/network/task_budget.h"
 #include <PNGdec.h>
+#include "png_pixels.h"
 #include "xtouch/http_client.h"
 #include "preview_ca.h"
 #include "preview_api_ca.h"
@@ -50,89 +52,9 @@ void *allocate(size_t n){
 }
 std::atomic<int> ftpTransferReply{0},ftpAbortReply{0},ftpQuitReply{0};
 std::atomic<unsigned> ftpCleanupResult{0};
-struct Ftps {
- PreviewTransport control{cancelled},data{cancelled};
- bool closing=false,closed=false,usableControl=false,dataClosed=false;
- size_t received=0;
- uint32_t cleanupStarted=0;
- XTouchPreviewFtp::Transfer transfer=XTouchPreviewFtp::Transfer::None;
- bool stopped()const{return closing?uint32_t(millis()-cleanupStarted)>=3000:cancelled();}
- ~Ftps(){finish();}
- void beginCleanup(){closing=true;cleanupStarted=millis();control.beginCleanup(3000);data.beginCleanup(3000);}
- void closeData(){
-  if(dataClosed)return;dataClosed=true;
-  bool wasOpen=data.connected();
-  data.stop(true);
-  received+=data.shutdownDiscardedBytes();
-  if(wasOpen)Serial.printf("[PREVIEW] FTPS data closed notifySent=%u peerNotify=%u discarded=%u tls=%d\n",
-   unsigned(data.closeNotifySent()),unsigned(data.peerCloseNotify()),data.shutdownDiscardedBytes(),data.lastError(nullptr,0));
- }
- void closeControl(){control.stop();}
- bool closePrefix(){
-  dataClosed=true;
-  data.stop(false);control.stop(false);
-  return data.isClosed()&&control.isClosed();
- }
- bool usable(){return usableControl&&control.connected()&&!stopped();}
- bool send(const char *wire){
-  size_t bytes=stopped()?0:control.print(wire);
-  Serial.printf("[PREVIEW] FTPS cleanup tx=%.4s bytes=%u expected=%u tls=%d connected=%u deadline=%u\n",
-   wire,unsigned(bytes),unsigned(strlen(wire)),control.lastError(nullptr,0),unsigned(control.connected()),unsigned(stopped()));
-  return bytes==strlen(wire);
- }
- bool requestTransfer(const String &path){
-  transfer=XTouchPreviewFtp::Transfer::Pending;
-  String wire="RETR "+path+"\r\n";
-  return !stopped()&&control.print(wire)==wire.length();
- }
- bool finish(){
-  if(closed)return ftpCleanupResult.load()==1||ftpCleanupResult.load()==3;
-  closed=true;
-  Serial.printf("[PREVIEW] FTPS cleanup begin control=%u data=%u tls=%d\n",unsigned(control.connected()),unsigned(data.connected()),control.lastError(nullptr,0));
-  auto result=XTouchPreviewFtp::close(*this,transfer);
-  ftpTransferReply=result.transfer;ftpAbortReply=result.abort;ftpQuitReply=result.quit;
-  ftpCleanupResult=result.confirmed?1:result.released?3:2;
-  Serial.printf("[PREVIEW] FTPS close mode=%s transfer=%d abort=%d quit=%d confirmed=%u released=%u sockets=closed elapsed=%u\n",
-   transfer==XTouchPreviewFtp::Transfer::Pending?"cancel":transfer==XTouchPreviewFtp::Transfer::Complete?"complete":transfer==XTouchPreviewFtp::Transfer::Prefix?"prefix":"idle",
-   result.transfer,result.abort,result.quit,unsigned(result.confirmed),unsigned(result.released),unsigned(millis()-cleanupStarted));
-  return result.confirmed||result.released;
- }
- bool readLine(String &line){
-  line="";uint32_t at=millis();
-  while(!stopped()&&uint32_t(millis()-at)<4000){
-   while(control.available()) {int c=control.read();if(c=='\n')return true;if(c!='\r'){if(line.length()>=384)return false;line+=(char)c;}}
-   if(!control.connected())return false;delay(1);
-  }return false;
- }
- int reply(String *text=nullptr){
-  String line;int multiline=0;
-  for(unsigned i=0;i<48&&!stopped();++i){
-   if(!readLine(line)){if(closing)Serial.printf("[PREVIEW] FTPS cleanup rx=none bytes=%u tls=%d connected=%u deadline=%u\n",unsigned(line.length()),control.lastError(nullptr,0),unsigned(control.connected()),unsigned(stopped()));return -1;}
-   int code=XTouchPreviewFtp::replyLine(line.c_str(),line.length(),multiline);
-   if(code==-2)continue;
-   if(text)*text=line;
-   if(closing)Serial.printf("[PREVIEW] FTPS cleanup rx=%d bytes=%u tls=%d\n",code,unsigned(line.length()),control.lastError(nullptr,0));
-   return code;
-  }return -1;
- }
- int command(const String &line,String *text=nullptr){
-  if(cancelled()||!control.connected())return -1;
-  // Some printer FTP servers parse each TLS record as a complete command.
-  // Keep the command and its terminator in one write (including PASS).
-  String wire=line+"\r\n";if(control.print(wire)!=wire.length())return -1;return reply(text);
- }
- bool connect(){
-  control.setHandshakeTimeoutMs(4000);control.setIoTimeoutMs(2000);
-  if(cancelled()||!control.connect(job.host,job.port,4000)){Serial.printf("[PREVIEW] FTPS stage=tls heap=%u\n",unsigned(ESP.getFreeHeap()));return false;}
-  int greeting=reply();if(greeting!=220){Serial.printf("[PREVIEW] FTPS stage=greeting rc=%d\n",greeting);return false;}
-  usableControl=true;
-  int rc=command("USER bblp");if(rc==331)rc=command(String("PASS ")+job.code);
-  if(rc!=230){Serial.printf("[PREVIEW] FTPS stage=login rc=%d\n",rc);return false;}
-  for(const char *cmd:{"PBSZ 0",job.plainData?"PROT C":"PROT P","TYPE I"}){rc=command(cmd);if(rc!=200){Serial.printf("[PREVIEW] FTPS stage=%s rc=%d\n",cmd,rc);return false;}}
-  return true;
- }
- bool size(const String &path,uint32_t &value){String s;if(command("SIZE "+path,&s)!=213)return false;long n=s.substring(4).toInt();if(n<=0||n>0x7fffffffL)return false;value=n;return true;}
-
+void ftpClosed(const XTouchPreviewFtp::CloseResult &r){ftpTransferReply=r.transfer;ftpAbortReply=r.abort;ftpQuitReply=r.quit;ftpCleanupResult=r.confirmed?1:r.released?3:2;}
+struct Ftps:xtouch_network::FtpsSession {
+ Ftps():FtpsSession(job.host,job.code,job.port,job.plainData,cancelled,ftpClosed){}
 };
 // Read only the bounded ZIP prefix required for the exact task and plate.
 int fetchPng(uint8_t *&png,size_t &pngSize){
@@ -305,12 +227,13 @@ int fetchCloud(uint8_t *&png,size_t &pngSize){
  if(cancelled()||oversized||!pngSize||(length>0&&pngSize!=unsigned(length))){free(png);png=nullptr;return oversized?11:13;}
  return 0;
 }
-struct Decode {PNG *png;uint16_t *pixels;unsigned sourceW,sourceH,w,h,next=0;uint16_t row[512];};
+struct Decode {PNG *png;uint16_t *pixels;unsigned sourceW,sourceH,w,h,next=0;};
 int draw(PNGDRAW *line){
  Decode *d=(Decode*)line->pUser;if(cancelled())return 0;
- d->png->getLineAsRGB565(line,d->row,PNG_RGB565_LITTLE_ENDIAN,0x555555);
  while(d->next<d->h&&d->next*d->sourceH/d->h==unsigned(line->y)){
-  for(unsigned x=0;x<d->w;++x){uint16_t color=d->row[x*d->sourceW/d->w];size_t index=d->next*d->w+x;d->pixels[index]=color;}++d->next;
+  size_t offset=size_t(d->next)*d->w;
+  if(!XTouchPngPixels::row(*d->png,*line,d->pixels+offset,XTouchPngPixels::alpha(d->pixels,d->w,d->h)+offset,d->w,d->sourceW))return 0;
+  ++d->next;
  }delay(1);return 1;
 }
 int decode(uint8_t *bytes,size_t size){
@@ -322,7 +245,7 @@ int decode(uint8_t *bytes,size_t size){
  constexpr unsigned limit=XTouchPreviewArchive::thumbnailEdge;
  unsigned dw=w,dh=h;if(dw>limit||dh>limit){dw=w>=h?limit:w*limit/h;dh=h>=w?limit:h*limit/w;}
  if(!dw||!dh){png->close();return 20;}
- uint16_t *pixels=(uint16_t*)allocate(dw*dh*2);if(!pixels){png->close();return 21;}
+ uint16_t *pixels=(uint16_t*)allocate(XTouchPngPixels::bytes(dw,dh));if(!pixels){png->close();return 21;}
  Decode context={};context.png=png.get();context.pixels=pixels;context.sourceW=w;context.sourceH=h;context.w=dw;context.h=dh;int rc=png->decode(&context,PNG_CHECK_CRC);png->close();
  if(rc!=PNG_SUCCESS||context.next!=dh||cancelled()){free(pixels);return 22;}
  ready={pixels,dw,dh};return 0;
@@ -366,8 +289,8 @@ void xtouch_print_preview_poll(){
  if(complete.exchange(false,std::memory_order_acquire)){
   publishedResult=lastResult;
   if(job.generation==generation.load()&&ready.pixels&&!lastResult){
-   clearShown();shown=ready;ready={};descriptor.header.magic=LV_IMAGE_HEADER_MAGIC;descriptor.header.cf=LV_IMG_CF_TRUE_COLOR;descriptor.header.w=shown.w;descriptor.header.stride=shown.w*2;descriptor.header.h=shown.h;
-   descriptor.data=(const uint8_t*)shown.pixels;descriptor.data_size=shown.w*shown.h*2;
+   clearShown();shown=ready;ready={};descriptor.header.magic=LV_IMAGE_HEADER_MAGIC;descriptor.header.cf=LV_COLOR_FORMAT_RGB565A8;descriptor.header.w=shown.w;descriptor.header.stride=shown.w*2;descriptor.header.h=shown.h;
+   descriptor.data=(const uint8_t*)shown.pixels;descriptor.data_size=XTouchPngPixels::bytes(shown.w,shown.h);
   }else{free(ready.pixels);ready={};}
   unsigned wait=XTouchPreview::retryDelay(publishedResult,networkStatus.load(),tries,jsonStatus.load());
   nextAttempt=millis()+(job.generation==generation.load()?(wait?wait:30000):1200);

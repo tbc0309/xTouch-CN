@@ -1,8 +1,16 @@
+#include "platform/idf/ble_runtime.h"
 #include "features/config.h"
 #include "features/provisioning/navigation.h"
 #if XTOUCH_FEATURE_XIAOMI_BLE
 #include "xiaomi_ble.h"
 #include "environment.h"
+#endif
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+#include "features/pixel_screen/settings.h"
+#include "features/pixel_screen/display_policy.h"
+#include "features/pixel_screen/connection.h"
+#include "features/pixel_screen/portal_assets.h"
+#include <memory>
 #endif
 #include "clock.h"
 #include "features/power/controller.h"
@@ -33,6 +41,9 @@
 #include "platform/idf/ota.h"
 #include "firmware_target.h"
 #include "ui/settings_gesture.h"
+#include "ui/ams_details.h"
+#include "ui/ams_display.h"
+#include "ui/detail_page.h"
 #include "printers.h"
 #include "ui/i18n/language.h"
 #include "platform/idf/runtime.h"
@@ -58,6 +69,7 @@
 
 extern "C" { LV_FONT_DECLARE(ui_font_symbols_28); LV_FONT_DECLARE(ui_font_portal_title_22); void ui_confirmPanel_show(const char*,void(*)(void)); void ui_confirmPanel_show_danger(const char*,void(*)(void)); void loadScreen(int); extern lv_obj_t *introScreen; extern lv_obj_t *introScreenCaption; extern lv_obj_t *introScreenIcon; }
 extern void xtouch_portal_release_transport();
+extern uint8_t *xtouch_screen_capture();
 #if defined(XTOUCH_BOARD_CYD) && defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && !defined(XTOUCH_TEST_PROVISIONING_ONLY)
 void board_display_test(bool,bool);
 void board_display_test_polling(bool);
@@ -255,6 +267,10 @@ void configSave(){if(!authenticated())return;if(xtouch_cloud_busy()||background)
 #if XTOUCH_FEATURE_XIAOMI_BLE
  DynamicJsonDocument environment(1024);bool environmentProvided=doc.containsKey("environmentSensor");if(environmentProvided){environment.set(doc["environmentSensor"]);if(environment.overflowed()||!xtouch_environment_valid(environment.as<JsonVariantConst>())){error(400,"invalid_settings");return;}doc.remove("environmentSensor");}
 #endif
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+ DynamicJsonDocument pixel(512);bool pixelProvided=doc.containsKey("pixelScreen");
+ if(pixelProvided){pixel.set(doc["pixelScreen"]);if(pixel.overflowed()||!pixel_screen::valid(pixel.as<JsonVariantConst>(), true)){error(400,"invalid_settings");return;}doc.remove("pixelScreen");}
+#endif
  JsonVariantConst editedConnection;
  if(!xtouch_printer_cloud())for(JsonVariantConst p:doc["printers"].as<JsonArrayConst>()){
   JsonVariantConst origin=p["credentialSource"];
@@ -291,11 +307,17 @@ for(JsonVariantConst p:doc["printers"].as<JsonArrayConst>())if(!XTouchSchema::as
  #if XTOUCH_FEATURE_XIAOMI_BLE
  if(environmentProvided)storageScratch=max(storageScratch,XTouchConfigMemory::storagePool(environment.memoryUsage(),1024));
  #endif
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+ if(pixelProvided)storageScratch=max(storageScratch,XTouchConfigMemory::storagePool(pixel.memoryUsage(),512));
+#endif
  if(storageScratch&&!XTouchConfigMemory::available(storageScratch,heap_caps_get_free_size(MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_8BIT))){error(503,"low_memory");return;}
  if(rootChanged&&!xtouch_storage_write("/xtouch.json",doc)){error(507,"storage_failed");return;}
  if(settingsChanged&&!settings.isNull()&&!xtouch_storage_write("/xtouch/settings.json",settings)){error(507,"settings_failed");return;}
  #if XTOUCH_FEATURE_XIAOMI_BLE
  if(environmentProvided&&!xtouch_environment_store(environment.as<JsonVariantConst>())){error(507,"storage_failed");return;}
+#endif
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+ if(pixelProvided&&!pixel_screen::store(pixel.as<JsonVariantConst>())){error(507,"storage_failed");return;}
 #endif
 if(profilesChanged){
  xtouch_printer_edit_hint(editedConnection["serialNumber"]|"",editedConnection["host"]|"");
@@ -458,11 +480,15 @@ void setupFrame(const char *text){
  loadScreen(-1);qrActive=true;
  lv_obj_add_flag(introScreenIcon,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(introScreenCaption,LV_OBJ_FLAG_HIDDEN);
  lv_obj_set_layout(introScreen,0);lv_obj_set_style_pad_all(introScreen,0,0);
- lv_obj_set_style_bg_color(introScreen,lv_color_hex(0x222222),0);
+ lv_obj_set_style_bg_color(introScreen,lv_color_hex(XTOUCH_UI_LAYOUT==UI_LAYOUT_LANDSCAPE?0x222222:UI_COLOR_SCREEN),0);
+ lv_obj_set_style_bg_opa(introScreen,LV_OPA_COVER,0);
  lv_obj_t *title=lv_label_create(introScreen);setupTitle=title;lv_obj_set_style_text_font(title,&ui_font_portal_title_22,0);
  lv_obj_set_style_text_color(title,lv_color_white(),0);lv_obj_set_width(title,304);
  lv_obj_set_style_text_align(title,LV_TEXT_ALIGN_CENTER,0);lv_label_set_long_mode(title,LV_LABEL_LONG_CLIP);
  lv_label_set_text(title,text);lv_obj_align(title,LV_ALIGN_TOP_MID,0,6);
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ ui_layout_qr_title(title,nullptr);
+#endif
 }
 lv_obj_t *setupButton(const char *text,int y,int request,bool management=false){
  lv_obj_t *button=lv_btn_create(introScreen);lv_obj_set_size(button,240,28);lv_obj_align(button,LV_ALIGN_TOP_MID,0,y);
@@ -509,6 +535,7 @@ void setupChooser(){
   ui_layout_setup_choice_content(card,method?LV_SYMBOL_BLUETOOTH:LV_SYMBOL_WIFI,method?"Bluetooth":"Wi-Fi",method?"ESP BLE Provisioning app":setupText("手机或电脑浏览器","Phone or computer browser"));
  }
  setupCaption("xTouch-CN",6,true);
+ ui_shape_setup_choices(introScreen,setupTitle);
 }
 void bluetoothQrView(const char *service){
  setupFrame(setupText("扫码蓝牙配网","Scan to join Bluetooth"));
@@ -573,7 +600,7 @@ void xtouch_portal_begin(){
  server.on("/",HTTP_GET,[]{headers();server.sendHeader("Content-Encoding","gzip");server.send_P(200,"text/html; charset=utf-8",(const char*)portal_index,sizeof(portal_index));});
  server.on("/portal.js",HTTP_GET,[]{headers();server.sendHeader("Content-Encoding","gzip");server.send_P(200,"text/javascript; charset=utf-8",(const char*)portal_script,sizeof(portal_script));});
  server.on("/portal.css",HTTP_GET,[]{headers();server.sendHeader("Content-Encoding","gzip");server.send_P(200,"text/css; charset=utf-8",(const char*)portal_style,sizeof(portal_style));});
- server.on("/api/info",HTTP_GET,[]{const bool privateInfo=hasSession()&&!mustChange;if(privateInfo&&xtouch_cloud_busy()){error(409,"busy");return;}DynamicJsonDocument d(privateInfo?size_t(4096+healthCount*64+(XTOUCH_FEATURE_XIAOMI_BLE?4096:0)):size_t(256));d["ap"]=setupAccess();d["portalLanguage"]=xTouchConfig.xTouchPortalLanguage[0]?xTouchConfig.xTouchPortalLanguage:"en";if(privateInfo){JsonObject accountHealth=d.createNestedObject("accountHealth");for(unsigned i=0;i<healthCount;++i)accountHealth[health[i].id]=health[i].state;d["ip"]=WiFi.localIP().toString();d["ssid"]=WiFi.SSID();lv_mem_monitor_t graphics;lv_mem_monitor(&graphics);d["lvglFree"]=graphics.free_size;d["lvglLargest"]=graphics.free_biggest_size;xtouch_feature_diagnostics(d);d["cpuMHz"]=ESP.getCpuFreqMHz();
+ server.on("/api/info",HTTP_GET,[]{const bool privateInfo=hasSession()&&!mustChange;if(privateInfo&&xtouch_cloud_busy()){error(409,"busy");return;}DynamicJsonDocument d(privateInfo?size_t(4096+healthCount*64+(XTOUCH_FEATURE_XIAOMI_BLE?4096+JSON_OBJECT_SIZE(18):0)+(XTOUCH_FEATURE_PIXEL_SCREEN?1536:0)):size_t(256));d["ap"]=setupAccess();d["portalLanguage"]=xTouchConfig.xTouchPortalLanguage[0]?xTouchConfig.xTouchPortalLanguage:"en";if(privateInfo){JsonObject accountHealth=d.createNestedObject("accountHealth");for(unsigned i=0;i<healthCount;++i)accountHealth[health[i].id]=health[i].state;d["ip"]=WiFi.localIP().toString();d["ssid"]=WiFi.SSID();lv_mem_monitor_t graphics;lv_mem_monitor(&graphics);d["lvglFree"]=graphics.free_size;d["lvglLargest"]=graphics.free_biggest_size;xtouch_feature_diagnostics(d);d["cpuMHz"]=ESP.getCpuFreqMHz();
 #if defined(XTOUCH_BOARD_P4)
  d["cacheLineBytes"]=CONFIG_CACHE_L2_CACHE_LINE_SIZE;
 #endif
@@ -584,6 +611,9 @@ auto power=xtouch_power_status();auto pm=d.createNestedObject("power");pm["scree
 
 #if XTOUCH_FEATURE_XIAOMI_BLE
 xtouch_xiaomi_ble_status(d.createNestedObject("xiaomiBle"));xtouch_environment_status(d.createNestedObject("environment"));
+#endif
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+pixel_screen::status(d.createNestedObject("pixelScreen"));
 #endif
 d["online"]=xtouch_printer_online();d["printer"]=xtouch_printer_name();d["version"]=XTOUCH_FIRMWARE_VERSION;d["resetReason"]=(int)esp_reset_reason();auto preview=xtouch_print_preview_status();JsonObject pv=d.createNestedObject("preview");pv["busy"]=preview.busy;pv["visible"]=preview.visible;pv["width"]=preview.width;pv["height"]=preview.height;pv["attempts"]=preview.attempts;pv["result"]=preview.result;pv["stage"]=preview.stage;pv["httpStatus"]=preview.httpStatus;pv["tlsError"]=preview.tlsError;pv["renderedLines"]=preview.renderedLines;pv["tlsPhase"]=preview.tlsPhase;pv["jsonError"]=preview.jsonError;pv["workerStackBytes"]=preview.workerStackBytes;pv["workerStackMin"]=preview.workerStackMin;pv["ftpTransferReply"]=preview.ftpTransferReply;pv["ftpAbortReply"]=preview.ftpAbortReply;pv["ftpQuitReply"]=preview.ftpQuitReply;pv["ftpCleanupResult"]=preview.ftpCleanupResult;pv["plateIndex"]=bambuStatus.plate_index;pv["plateKnown"]=bambuStatus.plate_index_valid;pv["printState"]=(int)bambuStatus.print_status;pv["hasTaskId"]=bambuStatus.task_id[0]&&strcmp(bambuStatus.task_id,"0");pv["hasSubtaskId"]=bambuStatus.obj_subtask_id[0]&&strcmp(bambuStatus.obj_subtask_id,"0");pv["hasFile"]=bool(bambuStatus.gcode_file[0]||bambuStatus.subtask_name[0]);
 #ifdef XTOUCH_WAVESHARE
@@ -598,10 +628,36 @@ d["clockEpoch"]=(uint32_t)time(nullptr);}d["profileLimits"]["accounts"]=XTouchSc
   if(!saveSetupLanguage(value,false)){error(507,"settings_failed");return;}
   json(200,"{\"ok\":true}");
  });
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+ server.on("/api/bluetooth",HTTP_GET,[]{if(!authenticated())return;StaticJsonDocument<512> doc;xtouch_ble::status(doc.to<JsonObject>());String out;serializeJson(doc,out);json(200,out);});
+#endif
 #if XTOUCH_FEATURE_XIAOMI_BLE
  server.on("/api/environment",HTTP_GET,[]{if(!authenticated())return;StaticJsonDocument<768> doc;xtouch_environment_status(doc.to<JsonObject>());String out;serializeJson(doc,out);json(200,out);});
  server.on("/api/environment",HTTP_POST,[]{if(!authenticated(true))return;StaticJsonDocument<768> doc;if(!body(doc,512))return;if(!xtouch_environment_save(doc.as<JsonVariantConst>())){error(400,"invalid_settings");return;}json(200,"{\"ok\":true}");});
 
+#endif
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+ server.on("/pixel-screen.js",HTTP_GET,[]{headers();server.sendHeader("Content-Encoding","gzip");server.send_P(200,"text/javascript; charset=utf-8",(const char*)pixel_portal_script,sizeof(pixel_portal_script));});
+ server.on("/api/pixel-screen/scan",HTTP_GET,[]{if(!authenticated())return;DynamicJsonDocument doc(4096);pixel_screen::connectionScanStatus(doc.to<JsonObject>());String out;serializeJson(doc,out);json(200,out);});
+ server.on("/api/pixel-screen/scan",HTTP_POST,[]{if(!authenticated(true))return;if(!pixel_screen::connectionScanStart()){error(409,"radio_busy");return;}json(200,"{\"ok\":true}");});
+ server.on("/api/pixel-screen",HTTP_GET,[]{if(!authenticated())return;StaticJsonDocument<1536> doc;pixel_screen::status(doc.to<JsonObject>());String out;serializeJson(doc,out);json(200,out);});
+ server.on("/api/pixel-screen",HTTP_POST,[]{if(!authenticated(true))return;StaticJsonDocument<512> doc;if(!body(doc,384))return;if(!pixel_screen::save(doc.as<JsonVariantConst>())){error(400,"invalid_settings");return;}json(200,"{\"ok\":true}");});
+ server.on("/api/pixel-screen/preview",HTTP_GET,[]{
+  if(!authenticated())return;
+  auto state=pixel_screen::snapshot();
+  const String selected=server.arg("state");
+  if(selected.length()&&selected!="live"){
+   bool found=false;for(unsigned i=0;i<9;++i)if(selected==pixel_screen::stateName(static_cast<pixel_screen::State>(i))){state.state=static_cast<pixel_screen::State>(i);found=true;break;}
+   if(!found){error(400,"invalid_config");return;}state.stage=-1;state.amsMain=-1;state.filamentKnown=true;state.filamentColor=state.feedColor=0xff9000;state.currentLayer=state.state==pixel_screen::State::Preparing?0:84;state.totalLayers=200;state.percent=42;state.leftMinutes=130;state.nozzle=215;state.bed=60;state.environmentKnown=true;state.temperature=24.6;state.humidity=46;strcpy(state.model,"P1S");strcpy(state.clock,"12:34");
+  }
+  const String layout=server.arg("layout");
+  if(layout.length()){if(!pixel_screen::printLayoutValid(layout.c_str())){error(400,"invalid_config");return;}state.progressLayout=layout=="progress";}
+  constexpr size_t capacity=48000;std::unique_ptr<uint8_t[]> memory(new(std::nothrow) uint8_t[capacity+pixel_screen::pixels]);
+  if(!memory){error(503,"low_memory");return;}
+  size_t size=pixel_screen::gif(state,pixel_screen::animationFrames(state),memory.get()+capacity,memory.get(),capacity);
+  if(!size){error(500,"render_failed");return;}
+  headers();server.send_P(200,"image/gif",(const char*)memory.get(),size);
+ });
 #endif
  server.on("/api/login",HTTP_POST,login);
  server.on("/api/password",HTTP_POST,changePassword);
@@ -702,11 +758,41 @@ d["clockEpoch"]=(uint32_t)time(nullptr);}d["profileLimits"]["accounts"]=XTouchSc
   server.send_P(200,"application/octet-stream",(const char*)pixels,w*h*2);
  });
 #endif
+ server.on("/api/display/screenshot",HTTP_GET,[]{
+  if(!authenticated())return;
+  static uint32_t lastCapture=0;
+  if(lastCapture&&millis()-lastCapture<2000){error(429,"busy");return;}
+  if(xtouch_cloud_busy()){error(409,"busy");return;}
+#if XTOUCH_FEATURE_CAMERA
+  if(xtouch_camera_status().running){error(409,"busy");return;}
+#endif
+  lastCapture=millis();uint8_t *pixels=xtouch_screen_capture();
+  if(!pixels){error(503,"capture_unavailable");return;}
+  const unsigned w=lv_display_get_horizontal_resolution(nullptr),h=lv_display_get_vertical_resolution(nullptr);
+  headers();server.sendHeader("Cache-Control","no-store");server.sendHeader("X-Width",String(w));server.sendHeader("X-Height",String(h));
+  server.sendHeader("X-Pixel-Format","RGB565-LE");server.sendHeader("X-Stride",String(w*2));
+  server.send_P(200,"application/octet-stream",(const char*)pixels,size_t(w)*h*2);heap_caps_free(pixels);
+ });
+ server.on("/api/display/page",HTTP_POST,[]{
+  if(!authenticated())return;
+  DynamicJsonDocument d(128);if(!body(d,128))return;const char *page=d["page"]|"";
+  if(!strcmp(page,"ams-details")){
+   if(qrActive){error(409,"busy");return;}
+   unsigned unit=ui_ams_selected_unit();ui_ams_details_show(unit);json(200,"{\"ok\":true}");return;
+  }
+  int id=!strcmp(page,"home")?0:!strcmp(page,"temperature")?1:!strcmp(page,"motion")?2:!strcmp(page,"filament")?3:!strcmp(page,"settings")?4:-1;
+  if(id<0){error(400,"invalid_page");return;}
+  if(qrActive){error(409,"busy");return;}
+  ui_detail_page_end(false);loadScreen(id);json(200,"{\"ok\":true}");
+ });
  server.on("/api/display/power",HTTP_POST,[]{if(!authenticated())return;DynamicJsonDocument d(192);if(!body(d))return;const char *mode=d["mode"]|"";unsigned value=!strcmp(mode,"standby")?1:!strcmp(mode,"wake")?2:!strcmp(mode,"deep")?3:0;if(!xtouch_display_request(value)){error(409,"power_unavailable");return;}json(202,"{\"ok\":true}");});
  server.on("/api/sound/test",HTTP_POST,[]{if(!authenticated())return;DynamicJsonDocument d(128);if(!body(d))return;const char *kind=d["kind"]|"warning";if(strcmp(kind,"touch")&&strcmp(kind,"warning")&&strcmp(kind,"error")&&strcmp(kind,"complete")){error(400,"invalid_config");return;}XTouchSoundEvent event=!strcmp(kind,"touch")?XTOUCH_SOUND_TOUCH:!strcmp(kind,"error")?XTOUCH_SOUND_ERROR:!strcmp(kind,"complete")?XTOUCH_SOUND_COMPLETE:XTOUCH_SOUND_WARNING;if(!xtouch_sound_test(event)){error(409,"sound_unavailable");return;}json(202,"{\"ok\":true}");});
  server.on("/api/backup",HTTP_GET,[]{if(!authenticated())return;prepareCloudTransport();DynamicJsonDocument saved=xtouch_storage_read("/xtouch.json",0);saved.shrinkToFit();DynamicJsonDocument doc(saved.capacity()+4096);doc.set(saved);saved.clear();saved.shrinkToFit();doc["settings"]=xtouch_storage_read("/xtouch/settings.json",0);
 #if XTOUCH_FEATURE_XIAOMI_BLE
  doc["environmentSensor"]=xtouch_storage_read(xtouch_environment_config_path,0);if(doc["environmentSensor"].isNull())doc.remove("environmentSensor");
+#endif
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+ doc["pixelScreen"]=xtouch_storage_read(pixel_screen::config_path,0);if(doc["pixelScreen"].isNull())doc.remove("pixelScreen");
 #endif
  jsonDocument(doc,true);});
  server.on("/api/lab/discover",HTTP_POST,labDiscover);
@@ -730,7 +816,7 @@ d["clockEpoch"]=(uint32_t)time(nullptr);}d["profileLimits"]["accounts"]=XTouchSc
   if(!strcmp(d["error"]|"","cloud_blocked"))cloudNext=millis()+60000;
   for(unsigned i=0;i<healthCount;++i)if(health[i].id==manualAccount){if(d["ok"].as<bool>())health[i].state=1;else if(!strcmp(d["error"]|"","authentication_rejected"))health[i].state=-1;}
  }json(200,value);});
- server.onNotFound([]{if(apMode){server.sendHeader("Location","http://192.168.4.1/");server.send(302,"text/plain","");}else error(404,"not_found");});server.begin();
+ server.onNotFound([]{if(setupAccess()){server.sendHeader("Location","http://192.168.4.1/");server.sendHeader("Cache-Control","no-store");server.send(302,"text/plain","Open Wi-Fi setup");}else error(404,"not_found");});server.begin();
  DynamicJsonDocument config=xtouch_storage_read("/xtouch.json",0);for(JsonObject a:config["cloudAccounts"].as<JsonArray>())if(!a["simulator"].as<bool>()&&healthCount<XTouchSchema::MaxAccounts)health[healthCount++].id=a["id"].as<String>();String ssid=config["ssid"]|"",password=config["pwd"]|"";
  if(ssid.isEmpty()){
 #if XTOUCH_FEATURE_BLE_PROVISIONING

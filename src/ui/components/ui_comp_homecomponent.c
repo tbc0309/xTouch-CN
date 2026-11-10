@@ -1,4 +1,6 @@
 #include "features/ui_profile.h"
+#include "features/network/print_phase.h"
+#include "features/gcode_browser/browser.h"
 #if XTOUCH_FEATURE_XIAOMI_BLE
 #include "home_environment.h"
 #endif
@@ -10,8 +12,13 @@ static void cameraClick(lv_event_t *event){(void)event;if(xtouch_camera_availabl
 #include "platform/idf/runtime.h"
 #include <stdio.h>
 #include "../ui.h"
+#if XTOUCH_FEATURE_GCODE_BROWSER
+static void filesClick(lv_event_t *event){(void)event;if(xtouch_files_available())xtouch_files_open();}
+#endif
+
 #include "../printer_models.h"
 #include "../home_clock.h"
+#include "../layouts/shape.h"
 
 static lv_obj_t *printPreviewBox,*printPreviewImage,*printPreviewEmpty;
 static const lv_img_dsc_t *printPreviewSource;
@@ -291,12 +298,15 @@ static void cameraBlink(void *target,int32_t opacity)
 }
 static void refreshCameraIcon(lv_obj_t *target)
 {
-    bool present=xtouch_printer_online() && bambuStatus.has_ipcam;
+    const bool online=xtouch_printer_online();
     bool recording=bambuStatus.camera_recording_when_printing;
     bool available=false;
 #if defined(XTOUCH_HAS_CAMERA) && XTOUCH_HAS_CAMERA
-    available=present && xtouch_camera_available();
+    available=online && xtouch_camera_available();
 #endif
+    // Reconnecting can clear the camera telemetry before its next report.
+    // Keep the entry visible when the current printer can still be previewed.
+    const bool present=online && (bambuStatus.has_ipcam || available);
     if(available) {
         lv_obj_add_flag(lv_obj_get_parent(target),LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_flag(target,LV_OBJ_FLAG_CLICKABLE);
@@ -320,7 +330,7 @@ static void refreshCameraIcon(lv_obj_t *target)
     if(present && bambuStatus.camera_timelapse) {
         if(!lv_anim_get(target,cameraBlink)) {
             lv_anim_t blink;lv_anim_init(&blink);lv_anim_set_var(&blink,target);
-            lv_anim_set_exec_cb(&blink,cameraBlink);lv_anim_set_values(&blink,LV_OPA_COVER,LV_OPA_TRANSP);
+            lv_anim_set_exec_cb(&blink,cameraBlink);lv_anim_set_values(&blink,LV_OPA_COVER,LV_OPA_50);
             lv_anim_set_time(&blink,500);lv_anim_set_playback_time(&blink,500);
             lv_anim_set_path_cb(&blink,lv_anim_path_step);
             lv_anim_set_repeat_count(&blink,LV_ANIM_REPEAT_INFINITE);lv_anim_start(&blink);
@@ -385,9 +395,9 @@ void onXTouchPrintStatus(lv_event_t *e)
     lv_slider_set_value(progress,percent,percent<lv_slider_get_value(progress)||percent==0?LV_ANIM_OFF:LV_ANIM_ON);
     /* Printers can report RUNNING during heating/levelling before layer one.
        A missing layer report is not evidence of layer zero. */
-    bool preparing=bambuStatus.print_status==XTOUCH_PRINT_STATUS_PREPARE ||
-        (bambuStatus.print_status==XTOUCH_PRINT_STATUS_RUNNING &&
-         bambuStatus.current_layer_valid && bambuStatus.current_layer==0);
+    bool preparing=xtouch_print_preparing(bambuStatus.print_status==XTOUCH_PRINT_STATUS_PREPARE,
+        bambuStatus.print_status==XTOUCH_PRINT_STATUS_RUNNING,
+        bambuStatus.current_layer_valid,bambuStatus.current_layer);
     lv_obj_set_style_bg_color(comp_homeComponent[UI_COMP_HOMECOMPONENT_MAINSCREENLEFT_MAINSCREENPLAYER_MAINSCREENPROGRESSBAR],lv_color_hex(preparing?UI_COLOR_WARNING:0x00FF00),LV_PART_INDICATOR);
 
     char remainingTimeText[48];
@@ -451,6 +461,7 @@ void onXTouchPrintStatus(lv_event_t *e)
     ui_layout_print_button(playPauseButton);
 
     lv_dropdown_set_selected(dropDown, printingLevelToIndex(bambuStatus.printing_speed_lvl));
+    ui_shape_home_state(ui_homeComponent);
 }
 
 // COMPONENT homeComponent
@@ -929,6 +940,10 @@ lv_obj_t *ui_homeComponent_create(lv_obj_t *comp_parent)
     printPreviewEmpty=lv_label_create(printPreviewBox);lv_label_set_text(printPreviewEmpty,LV_SYMBOL_IMAGE);
     lv_obj_set_style_text_font(printPreviewEmpty,&ui_font_symbols_14,0);lv_obj_set_style_text_color(printPreviewEmpty,lv_color_hex(0xAAAAAA),0);lv_obj_center(printPreviewEmpty);
     printPreviewImage=lv_img_create(printPreviewBox);lv_obj_add_flag(printPreviewImage,LV_OBJ_FLAG_HIDDEN);
+#if XTOUCH_FEATURE_GCODE_BROWSER
+    lv_obj_add_flag(printPreviewBox,LV_OBJ_FLAG_CLICKABLE);lv_obj_add_event_cb(printPreviewBox,filesClick,LV_EVENT_SHORT_CLICKED,NULL);
+    lv_obj_add_flag(printPreviewImage,LV_OBJ_FLAG_EVENT_BUBBLE);lv_obj_add_flag(printPreviewEmpty,LV_OBJ_FLAG_EVENT_BUBBLE);
+#endif
     lv_obj_add_event_cb(printPreviewBox,print_preview_fit,LV_EVENT_SIZE_CHANGED,NULL);
     lv_obj_add_event_cb(printPreviewBox,print_preview_deleted,LV_EVENT_DELETE,NULL);
     lv_obj_set_width(cui_mainScreenProgressBar,lv_pct(100));lv_obj_set_height(cui_mainScreenProgressBar,4);

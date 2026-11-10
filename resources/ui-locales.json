@@ -668,5 +668,35 @@
     "Обновление OTA…",
     "OTA 更新中…",
     "OTA 업데이트 중…"
+  ],
+  "Peripherals": [
+    "外设",
+    "外設",
+    "Peripherals",
+    "Périphériques",
+    "Peripheriegeräte",
+    "Периферия",
+    "周辺機器",
+    "주변 기기"
+  ],
+  "Pixel screen": [
+    "像素屏",
+    "像素屏",
+    "Pixel screen",
+    "Écran à pixels",
+    "Pixelanzeige",
+    "Пиксельный экран",
+    "ピクセル画面",
+    "픽셀 화면"
+  ],
+  "32-pixel screen": [
+    "像素屏显",
+    "像素屏顯",
+    "32-pixel screen",
+    "Écran 32 pixels",
+    "32-Pixel-Anzeige",
+    "32-пиксельный экран",
+    "32ピクセル画面",
+    "32픽셀 화면"
   ]
 }

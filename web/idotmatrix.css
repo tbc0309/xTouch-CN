@@ -1,0 +1,19 @@
+.pixel-project{--accent:#008434;background:#f2f6f3}
+.pixel-project .brand span{color:#00ae42}
+.pixel-project .top{gap:20px;flex-wrap:wrap}
+.pixel-project .top nav{gap:16px;flex-wrap:wrap}
+.pixel-project .brand{font-size:22px;letter-spacing:-.4px;white-space:normal}
+.pixel-hero{background:#17382a;grid-template-columns:minmax(0,1fr) 240px;align-items:center;gap:32px;margin-bottom:24px}
+.pixel-hero a{color:#72e59b}
+.pixel-project .board-memory{margin-top:8px;font-size:12px}
+.pixel-hero h1{font-size:clamp(25px,3.8vw,42px);line-height:1.25}
+.pixel-demo{width:240px;height:240px;object-fit:contain;justify-self:center;image-rendering:pixelated;border-radius:12px;background:#000}
+.pixel-project .primary{background:#008434;border-color:#008434}
+.pixel-project .primary:hover{background:#006c2b}
+.pixel-project .tag{background:#e0f1e5;color:#005723}
+.pixel-project .pills span{color:#005723;background:#e0f1e5}
+.pixel-project .card{min-width:0}
+.pixel-project #installer-status{overflow-wrap:anywhere}
+.pixel-project #installer-widget{margin-top:12px}
+.pixel-downloads{margin-top:16px}
+@media(max-width:680px){.pixel-hero{grid-template-columns:1fr;gap:20px}.pixel-demo{width:192px;height:192px}.pixel-project .top{padding:20px}.pixel-project .top nav{width:100%;justify-content:space-between;gap:10px}.pixel-project .brand{font-size:21px}.pixel-project .top select{max-width:140px}}

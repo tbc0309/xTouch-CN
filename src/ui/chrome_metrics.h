@@ -24,7 +24,13 @@ static inline ui_chrome_metrics_t ui_chrome_metrics(int width, int height) {
     /* Visual controls share one compact square; retain a separate outer
      * margin so intermediate canvases do not become dominated by chrome. */
     m.control = ui_chrome_px(reference, 28);
+#if defined(XTOUCH_UI_LAYOUT) && XTOUCH_UI_LAYOUT!=0
+    if(m.control<36)m.control=36;
+#endif
     m.bar = m.control + 2 * m.edge;
     m.icon = ui_chrome_px(reference, 14);
+#if defined(XTOUCH_UI_LAYOUT) && XTOUCH_UI_LAYOUT!=0
+    if(m.icon<18)m.icon=18;
+#endif
     return m;
 }

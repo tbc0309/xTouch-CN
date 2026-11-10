@@ -1,4 +1,7 @@
 CONFIG_COMPILER_OPTIMIZATION_SIZE=y
+# Retain assertion checks without embedding verbose file/expression strings.
+# This matches the validated 4 MB CYD release profile on clean builds.
+CONFIG_COMPILER_OPTIMIZATION_ASSERTIONS_SILENT=y
 CONFIG_FREERTOS_HZ=1000
 CONFIG_ESP_MAIN_TASK_STACK_SIZE=12288
 CONFIG_PARTITION_TABLE_CUSTOM=y
@@ -44,3 +47,6 @@ CONFIG_ESP_MAIN_TASK_AFFINITY_CPU1=y
 # Keep small spare MSYS pools rather than connection-oriented default budgets.
 CONFIG_BT_NIMBLE_MSYS_1_BLOCK_COUNT=4
 CONFIG_BT_NIMBLE_MSYS_2_BLOCK_COUNT=4
+
+# Keep assertion checks and backtraces, omitting verbose assertion strings on 4 MB boards.
+CONFIG_COMPILER_OPTIMIZATION_ASSERTIONS_SILENT=y

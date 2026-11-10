@@ -1,6 +1,8 @@
 {
-  "version": "1.0.1",
-  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.1/lcdwiki-es3c35p.bin",
-  "size": 4941776,
-  "md5": "f591308fa20cf9fee52fe5135832ffef"
+  "version": "1.0.2",
+  "releaseTag": "1.0.2",
+  "prerelease": false,
+  "url": "https://github.com/tbc0309/xTouch-CN/releases/download/1.0.2/lcdwiki-es3c35p.bin",
+  "size": 5931584,
+  "md5": "e896de91eac872c8dab1cb358e2cd5d4"
 }

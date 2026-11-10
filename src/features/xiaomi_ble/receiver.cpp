@@ -4,21 +4,13 @@
 #include "environment.h"
 #include "mibeacon.h"
 #include "platform/idf/runtime.h"
-#if CONFIG_IDF_TARGET_ESP32P4
-#include <esp_hosted.h>
-#include "hosted_bt_config.h"
-#endif
-#include <nimble/nimble_port.h>
-#include <nimble/nimble_port_freertos.h>
-#include <host/ble_hs.h>
-#include <host/ble_gap.h>
-#include <host/util/util.h>
+#include "platform/idf/ble_runtime.h"
 #include <psa/crypto.h>
 
 namespace {
 portMUX_TYPE guard=portMUX_INITIALIZER_UNLOCKED;
 struct Device {uint8_t mac[6]={};uint32_t packets=0,lastMs=0,encrypted=0,tAt=0,hAt=0;int rssi=0;bool used=false,authenticated=false;xiaomi_ble::Reading reading={};};
-Device devices[8];uint32_t packets=0,invalid=0,other=0,overflow=0;int scanError=0;bool scanning=false,selftest=false;
+Device devices[8];uint32_t packets=0,invalid=0,other=0,overflow=0;bool selftest=false;
 uint8_t bindingMac[6]={},bindingKey[16]={};bool bound=false,keyPresent=false;uint32_t authFailures=0,bindingRevision=0;
 // Bindkey is deliberately not guessed, bundled in firmware or written to logs.
 bool decrypt(const uint8_t *key,const uint8_t *nonce,const uint8_t *encrypted,size_t n,uint8_t *plain){
@@ -65,45 +57,21 @@ int gap(ble_gap_event *event,void*){
   portEXIT_CRITICAL(&guard);
  }return 0;
 }
-void onSync(){
- uint8_t type=0;int e=ble_hs_util_ensure_addr(0);if(!e)e=ble_hs_id_infer_auto(0,&type);
- if(!e){ble_gap_disc_params p={};p.passive=1;p.itvl=160;p.window=48;p.filter_duplicates=0;e=ble_gap_disc(type,BLE_HS_FOREVER,&p,gap,nullptr);}
- portENTER_CRITICAL(&guard);scanError=e;scanning=e==0;portEXIT_CRITICAL(&guard);
-}
-void host(void*){nimble_port_run();nimble_port_freertos_deinit();}
-}
-namespace {
-void initialize(){
- bool passed=test();int e=0;
-#if CONFIG_IDF_TARGET_ESP32P4
- auto config=xtouch_hosted_bt_config(false);
- e=esp_hosted_bt_host_stack_setup(&config);
- Serial.printf("[XIAOMI-BLE] Hosted 3 NimBLE binding=%d\n",e);
-#endif
- if(!e){e=nimble_port_init();Serial.printf("[XIAOMI-BLE] host init=%d\n",e);}
- portENTER_CRITICAL(&guard);selftest=passed;scanError=e;portEXIT_CRITICAL(&guard);if(e)return;
- ble_hs_cfg.sync_cb=onSync;nimble_port_freertos_init(host);
-}
-#if CONFIG_IDF_TARGET_ESP32P4
-void initializeTask(void*){initialize();vTaskDelete(nullptr);}
-#endif
+void initialize(){bool passed=test();portENTER_CRITICAL(&guard);selftest=passed;portEXIT_CRITICAL(&guard);xtouch_ble::observer(0,gap);}
 }
 void xtouch_xiaomi_ble_begin(){
  xtouch_environment_begin();
-#if CONFIG_IDF_TARGET_ESP32P4
- if(xTaskCreate(initializeTask,"xiaomi-ble",6144,nullptr,2,nullptr)!=pdPASS){portENTER_CRITICAL(&guard);scanError=ESP_ERR_NO_MEM;portEXIT_CRITICAL(&guard);}
-#else
 #if defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && defined(XTOUCH_TEST_DEFER_BLE) && XTOUCH_TEST_DEFER_BLE
  Serial.println("[XIAOMI-BLE TEST] initialization deferred");
 #else
  initialize();
 #endif
-#endif
 }
 
 void xtouch_xiaomi_ble_status(JsonObject out){
+ xtouch_ble::status(out.createNestedObject("radio"));
  Device snapshot[8];uint32_t total,bad,ignored,full;bool active,passed;int error;
- portENTER_CRITICAL(&guard);memcpy(snapshot,devices,sizeof(devices));total=packets;bad=invalid;ignored=other;full=overflow;active=scanning;passed=selftest;error=scanError;portEXIT_CRITICAL(&guard);
+ portENTER_CRITICAL(&guard);memcpy(snapshot,devices,sizeof(devices));total=packets;bad=invalid;ignored=other;full=overflow;passed=selftest;portEXIT_CRITICAL(&guard);active=xtouch_ble::scanning();error=xtouch_ble::error();
 
 #if defined(XTOUCH_TEST_AUTOMATION) && XTOUCH_TEST_AUTOMATION && CONFIG_IDF_TARGET_ESP32
  out["controllerState"]=xtouch_xiaomi_ble_test_controller_state();
@@ -123,10 +91,10 @@ bool xtouch_xiaomi_ble_bind(const char *mac,const char *key){
  if(supplied)for(int i=0;i<16;++i){int a=hex(key[2*i]),b=hex(key[2*i+1]);if(a<0||b<0){memset(k,0,sizeof(k));return false;}k[i]=(a<<4)|b;}
  portENTER_CRITICAL(&guard);memcpy(bindingMac,m,6);memcpy(bindingKey,k,16);bound=true;keyPresent=supplied;authFailures=0;++bindingRevision;
  for(auto &v:devices)if(v.used&&!memcmp(v.mac,m,6)){v.reading={};v.authenticated=false;v.tAt=v.hAt=0;}
- portEXIT_CRITICAL(&guard);memset(k,0,sizeof(k));return true;
+ portEXIT_CRITICAL(&guard);xtouch_ble::demand(0,true);memset(k,0,sizeof(k));return true;
 }
 
-void xtouch_xiaomi_ble_unbind(){portENTER_CRITICAL(&guard);bound=false;keyPresent=false;++bindingRevision;memset(bindingKey,0,sizeof(bindingKey));memset(bindingMac,0,sizeof(bindingMac));for(auto &v:devices)v={};portEXIT_CRITICAL(&guard);}
+void xtouch_xiaomi_ble_unbind(){portENTER_CRITICAL(&guard);bound=false;keyPresent=false;++bindingRevision;memset(bindingKey,0,sizeof(bindingKey));memset(bindingMac,0,sizeof(bindingMac));for(auto &v:devices)v={};portEXIT_CRITICAL(&guard);xtouch_ble::demand(0,false);}
 bool xtouch_xiaomi_ble_measurement(float &t,float &h,uint32_t &age,uint32_t *temperatureAge,uint32_t *humidityAge,uint32_t *seenAge){bool found=false;uint32_t now=millis();portENTER_CRITICAL(&guard);if(bound)for(const auto &v:devices)if(v.used&&(v.authenticated||(!v.reading.encrypted&&!xiaomi_ble::requires_encryption(v.reading.product)))&&!memcmp(v.mac,bindingMac,6)&&v.reading.temperature&&v.reading.humidity){t=v.reading.t;h=v.reading.h;age=max(now-v.tAt,now-v.hAt);if(temperatureAge)*temperatureAge=now-v.tAt;if(humidityAge)*humidityAge=now-v.hAt;if(seenAge)*seenAge=now-v.lastMs;found=true;break;}portEXIT_CRITICAL(&guard);return found;}
 
 const char *xtouch_xiaomi_ble_model(){uint16_t product=0;portENTER_CRITICAL(&guard);if(bound)for(const auto &v:devices)if(v.used&&!memcmp(v.mac,bindingMac,6)){product=v.reading.product;break;}portEXIT_CRITICAL(&guard);return xiaomi_ble::model_name(product);}
@@ -140,26 +108,21 @@ int xtouch_xiaomi_ble_test_controller_state(){return int(esp_bt_controller_get_s
 bool xtouch_xiaomi_ble_test_start(){
  static bool attempted=false;
  if(attempted||esp_bt_controller_get_status()!=ESP_BT_CONTROLLER_STATUS_IDLE)return false;
- attempted=true;initialize();
+ attempted=true;initialize();xtouch_ble::demand(0,true);xtouch_ble::begin();
+ uint32_t until=millis()+5000;while(!xtouch_ble::ready()&&int32_t(until-millis())>0)vTaskDelay(pdMS_TO_TICKS(10));
  return esp_bt_controller_get_status()==ESP_BT_CONTROLLER_STATUS_ENABLED;
 }
 bool xtouch_xiaomi_ble_test_stop(){
  if(esp_bt_controller_get_status()==ESP_BT_CONTROLLER_STATUS_IDLE)return true;
- int rc=nimble_port_stop();
- if(!rc)rc=nimble_port_deinit();
- portENTER_CRITICAL(&guard);scanning=false;scanError=rc;portEXIT_CRITICAL(&guard);
- return rc==0&&esp_bt_controller_get_status()==ESP_BT_CONTROLLER_STATUS_IDLE;
+ return xtouch_ble::testStop()&&esp_bt_controller_get_status()==ESP_BT_CONTROLLER_STATUS_IDLE;
 }
 bool xtouch_xiaomi_ble_test_sleep(bool enabled){
  return (enabled?esp_bt_sleep_enable():esp_bt_sleep_disable())==ESP_OK;
 }
 bool xtouch_xiaomi_ble_test_scan(bool enabled){
- if(enabled){if(!ble_gap_disc_active())onSync();}
- else{
-  int e=ble_gap_disc_cancel();if(e&&e!=BLE_HS_EALREADY)return false;
-  portENTER_CRITICAL(&guard);scanning=false;scanError=0;portEXIT_CRITICAL(&guard);
- }
- portENTER_CRITICAL(&guard);bool ok=scanning==enabled&&scanError==0;portEXIT_CRITICAL(&guard);return ok;
+ if(!xtouch_ble::pauseScan(!enabled))return false;
+ if(enabled)xtouch_ble::poll();
+ return xtouch_ble::scanning()==enabled&&xtouch_ble::error()==0;
 }
 #endif
 #endif

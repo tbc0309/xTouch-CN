@@ -41,4 +41,12 @@ template<class Profile>const Profile *cameraProfile(const Profile *profiles,size
  }
  return match;
 }
+
+template<class Profile>const Profile *fileProfile(const Profile *profiles,size_t count,size_t selected) {
+ if(!profiles||selected>=count||!profiles[selected].configured)return nullptr;
+ const auto &active=profiles[selected];
+ if(!active.cloud)return active.host[0]&&std::strlen(active.accessCode)==8?&active:nullptr;
+ return cameraProfile(profiles,count,selected);
+}
+
 }

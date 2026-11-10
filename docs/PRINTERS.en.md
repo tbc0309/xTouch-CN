@@ -45,7 +45,9 @@ Starting requires confirmation after editing parameters. Busy states restrict st
 
 LAN uses its address, serial and access code. Cloud uses its own account, region and serial. An account Token is not a command signature. The official signed cloud-command channel is not implemented; some commands require LAN-only and developer modes.
 
-For `84033543` or `HMS 0500-0500-0001-0007`, check printer permissions and the matching LAN entry. Replacing a Token does not remove this restriction. Permissions vary by model/firmware; one test does not establish all-printer behavior. Closing a local alert does not clear the printer/mobile authorization fault.
+For `84033543` or `HMS 0500-0500-0001-0007`, check printer permissions and the matching LAN entry. Replacing a Token does not remove this restriction. Permissions depend on the printer model and firmware version. Closing a local alert does not clear the printer/mobile authorization fault.
+
+Plan simultaneous access to the same printer for **at most two LAN connections and two cloud connections**, including Studio, apps and other clients. Saved device records are not concurrent connections. Reserve a slot when using multiple control screens and stagger reconnections. If existing clients remain online while new connections time out, check connection counts before blaming credentials or hardware. Changing transport does not change command authorization.
 
 CYD has limited internal memory. During cloud account verification it temporarily releases MQTT resources for HTTPS and reconnects afterwards. A brief offline indication does not mean the print stopped. Wait for current status before issuing controls and avoid repeatedly refreshing the account.
 

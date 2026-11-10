@@ -21,6 +21,9 @@ bool hms_command_verification_failed(void);
 bool hms_authorization_advisory_pending(void);
 bool hms_health_visible(unsigned index);
 uint32_t hms_visible_print_error(void);
+typedef enum {HMS_SEVERITY_INFO,HMS_SEVERITY_WARNING,HMS_SEVERITY_ERROR} hms_severity_t;
+/* Shared presentation severity, including authorization visibility filters. */
+hms_severity_t hms_severity(void);
 #ifdef XTOUCH_ERROR_SELFTEST
 bool hms_selftest(void);
 #endif

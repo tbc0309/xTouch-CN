@@ -1,5 +1,6 @@
 #include "board.h"
 #include "display_budget.h"
+#include "panel.h"
 #include "platform/idf/json.h"
 #include "xtouch/storage.h"
 #include "xtouch/paths.h"
@@ -11,6 +12,11 @@
 
 namespace {
 spi_device_handle_t lcd;
+#if defined(XTOUCH_CYD_ST7789) && XTOUCH_CYD_ST7789
+constexpr auto PanelType = XTouchCydPanel::Type::St7789;
+#else
+constexpr auto PanelType = XTouchCydPanel::Type::Ili9341;
+#endif
 using XTouchCydDisplay::DrawBytes;
 using XTouchCydDisplay::DrawPixels;
 portMUX_TYPE displayGuard = portMUX_INITIALIZER_UNLOCKED;
@@ -199,31 +205,10 @@ bool board_display_begin() {
     delay(20);
     digitalWrite(12, HIGH);
     delay(150);
-    command(0x01);
-    delay(150);
-    reg(0xcf, {0, 0xc1, 0x30});
-    reg(0xed, {0x64, 3, 0x12, 0x81});
-    reg(0xe8, {0x85, 0, 0x78});
-    reg(0xcb, {0x39, 0x2c, 0, 0x34, 2});
-    reg(0xf7, {0x20});
-    reg(0xea, {0, 0});
-    // Preserve the board's previously selected ILI9341_2 analog profile.
-    // Panel-specific analog settings are applied through the native SPI driver.
-    reg(0xc0, {0x10});
-    reg(0xc1, {0x00});
-    reg(0xc5, {0x30, 0x30});
-    reg(0xc7, {0xb7});
-    reg(0x36, {0x28});
-    reg(0x3a, {0x55});
-    reg(0xb1, {0, 0x1a});
-    reg(0xb6, {8, 0x82, 0x27});
-    reg(0xf2, {0});
-    reg(0x26, {1});
-    reg(0xe0, {0x0f, 0x2a, 0x28, 8, 0x0e, 8, 0x54, 0xa9, 0x43, 0x0a, 0x0f, 0, 0, 0, 0});
-    reg(0xe1, {0, 0x15, 0x17, 7, 0x11, 6, 0x2b, 0x56, 0x3c, 5, 0x10, 0x0f, 0x3f, 0x3f, 0x0f});
-    command(0x11);
-    delay(120);
-    command(0x29);
+    XTouchCydPanel::initialize(
+        PanelType, [](uint8_t value) { command(value); },
+        [](uint8_t value, std::initializer_list<uint8_t> data) { reg(value, data); },
+        [](unsigned milliseconds) { delay(milliseconds); });
     // A dedicated reference-clock timer keeps backlight PWM independent of APB/DFS.
     ledc_timer_config_t timer{};
     timer.speed_mode = LEDC_LOW_SPEED_MODE;
@@ -238,7 +223,7 @@ bool board_display_begin() {
     backlight.channel = LEDC_CHANNEL_0;
     backlight.timer_sel = LEDC_TIMER_1;
     ESP_ERROR_CHECK(ledc_channel_config(&backlight));
-    Serial.println("[PANEL] native ILI9341_2 power/VCOM/gamma profile");
+    Serial.printf("[PANEL] native %s profile\n", XTouchCydPanel::name(PanelType));
     Serial.println("[PANEL] LCD SPI 40 MHz");
     return true;
 }
@@ -402,7 +387,7 @@ bool board_display_sleep(bool sleeping) {
     return true;
 }
 void board_invert(bool invert) {
-    command(invert ? 0x21 : 0x20);
+    command(XTouchCydPanel::inversion(PanelType, invert) ? 0x21 : 0x20);
 }
 bool board_touch(int &x, int &y) {
     int rx, ry;

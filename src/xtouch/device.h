@@ -1,3 +1,4 @@
+#include "features/gcode_browser/browser.h"
 #include "ui/nozzle_details.h"
 #include "ui/ams_details.h"
 #include "ams_units.h"
@@ -88,6 +89,7 @@ bool xtouch_device_scoped_command(const char *name){
  for(const char *command:commands)if(!strcmp(name,command))return true;return false;
 }
 void xtouch_device_control_reply(JsonObjectConst report){
+ xtouch_files_control_reply(report["sequence_id"].as<String>().c_str(),report["command"]|"",report["result"]|"",report["reason"]|"",report["err_code"]|0UL);
  String sequence=report["sequence_id"].as<String>();
  if(!sequence.length())return;
  char *end=NULL;uint32_t id=strtoul(sequence.c_str(),&end,10);

@@ -1,0 +1,75 @@
+{
+  "version": 2,
+  "wantedCount": 7687,
+  "wantedHash": "d48248b27ab7924b3f12dedf50615264a65c8382b6cead34e632705af8b70b45",
+  "families": {
+    "common_zh": {
+      "count": 7588,
+      "hash": "93dbe88e5c4c2f145351cc8a8a6602a2097aa2ffdf47a4554d85ec21140d342a"
+    },
+    "punctuation": {
+      "count": 99,
+      "hash": "833bcca612b81c3da20058c0f6efb4c35666040007ce6d1cdda7378461ec2aad"
+    },
+    "ui_captions": {
+      "count": 395,
+      "hash": "1396f63140b598be429f6a8a51e65da56650349f562a77c324824a776cac8a08"
+    }
+  },
+  "profiles": {
+    "14": {
+      "uiCount": 928,
+      "uiHash": "d2c7665d79c06cd2b3d670afcee62017461986f754282d23d5bbe7ebac52d0b3",
+      "families": {
+        "common_zh": {
+          "count": 6954,
+          "hash": "f59f722eea20307c3e2cd37f8fa3a1882f2ace099fe23a24a924e19893ae7f0a"
+        },
+        "punctuation": {
+          "count": 61,
+          "hash": "6e2a8824679315566f8019b8c5e56e901aa9c92a602ec855a354098102896ba3"
+        },
+        "ui_captions": {
+          "count": 34,
+          "hash": "a36e23cd2f0851b69e4f6676b1aa6ffba5f2f0a3270f017526efd23677dab2e1"
+        }
+      }
+    },
+    "28": {
+      "uiCount": 928,
+      "uiHash": "d2c7665d79c06cd2b3d670afcee62017461986f754282d23d5bbe7ebac52d0b3",
+      "families": {
+        "common_zh": {
+          "count": 6954,
+          "hash": "f59f722eea20307c3e2cd37f8fa3a1882f2ace099fe23a24a924e19893ae7f0a"
+        },
+        "punctuation": {
+          "count": 61,
+          "hash": "6e2a8824679315566f8019b8c5e56e901aa9c92a602ec855a354098102896ba3"
+        },
+        "ui_captions": {
+          "count": 34,
+          "hash": "a36e23cd2f0851b69e4f6676b1aa6ffba5f2f0a3270f017526efd23677dab2e1"
+        }
+      }
+    },
+    "28-small": {
+      "uiCount": 434,
+      "uiHash": "23cc0ec2383d01423b33e1d0d9f1924f3b517a6e3ca5b382c388778139418320",
+      "families": {
+        "common_zh": {
+          "count": 7192,
+          "hash": "990f3c4f99dc3e0ffff84f726bfcbd76c65f9e4f34ab65456d314ba6d633b02f"
+        },
+        "punctuation": {
+          "count": 61,
+          "hash": "df5c8d81b9a381fb81628ac87b5d83205652222f9f0a32b0fbc627b13a802609"
+        },
+        "ui_captions": {
+          "count": 0,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    }
+  }
+}

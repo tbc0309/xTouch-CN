@@ -497,6 +497,7 @@ progress {
   min-width: 0;
 }
 .wifiRow button {
+  min-width: 120px;
   margin-bottom: 8px;
   white-space: nowrap;
 }
@@ -732,3 +733,71 @@ input[type=range].unsaved { outline: 1px solid var(--error); outline-offset: 2px
 .primary:active, #save:active, #saveWifi:active,
 #loginForm button:active, #passwordForm button:active { background: #08456b; }
 input[type=checkbox], input[type=range] { accent-color: var(--accent); }
+
+.pixelPreviewCanvas { display:block; width:256px; max-width:100%; height:auto; aspect-ratio:1; image-rendering:pixelated; background:#050607; filter:brightness(.84); }
+.pixelProduct { background:#15191c; border:10px solid #20272c; border-radius:14px; padding:5px; max-width:100%; box-sizing:border-box; }
+.pixelPanel { align-items:stretch; }
+.pixelPanel .settingsGroup { height:auto; }
+.pixelPanel .muted { margin:0; line-height:1.6; }
+#pixelConnection { border:1px solid var(--border); border-radius:8px; padding:12px; }
+#pixelConnection > summary { cursor:pointer; font-weight:600; }
+#pixelConnection[open] > summary { margin-bottom:12px; }
+#pixelScan { width:100%; min-height:42px; margin:12px 0 16px; }
+.pixelPreviewPane { min-width:0; }
+.pixelPreviewStage { display:flex; align-items:center; justify-content:center; padding:12px 0; }
+.pixelPreviewContent { position:sticky; top:16px; display:flex; flex-direction:column; gap:12px; min-width:0; align-self:flex-start; }
+.pixelPreviewContent > .muted { text-align:center; }
+@media(max-width:700px){.pixelPreviewContent{position:static}}
+
+.optionalPanelToggle{display:flex;align-items:center;gap:10px;background:transparent;color:inherit;border:0;padding:0;text-align:left;cursor:pointer}.optionalPanelToggle h2{margin:0}.optionalPanelToggle::before{content:'▸';font-size:18px}.optionalPanelToggle[aria-expanded="true"]::before{content:'▾'}.optionalPanelBody[hidden]{display:none}
+.sectionHead>.optionalPanelToggle{width:auto;flex:1 1 auto;margin:0;min-width:0;justify-content:flex-start}.optionalPanelToggle h2{flex:0 1 auto;text-align:left}
+
+.pixelControlRow{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;margin:8px 0}.pixelControlRow>.check{flex:0 1 auto;margin:0}
+
+/* Credential actions share one heading row; the input keeps full width. */
+.passwordActions { grid-column:2; grid-row:1; display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:4px 14px; min-width:0; }
+.passwordActions > .checkbox { flex-direction:row; margin:0; gap:6px; font-size:12px; line-height:1.4; min-height:28px; }
+.passwordActions input[type=checkbox] { width:15px; height:15px; }
+.passwordActions label:has(input:disabled) { color:#84909a; }
+/* Shared phone layout: readable fields, wrapping actions and usable tap targets. */
+@media(max-width:700px) {
+  header { flex-wrap:wrap; gap:12px; }
+  header > *, .grid > *, .settingsGroups > *, .accountToggle, .profile .pick { min-width:0; }
+  header select { max-width:100%; }
+  .tabs { width:100%; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+  .tabs button { min-height:44px; }
+  input:not([type=checkbox]):not([type=range]), select { font-size:16px; min-height:44px; max-width:100%; }
+  button, .button { min-height:44px; }
+  .profile { flex-wrap:wrap; gap:6px; }
+  .profile .pick { flex:1 1 100%; overflow-wrap:anywhere; }
+  .profile > button:not(.pick) { flex:1 1 0; }
+  .accountTools { flex-wrap:wrap; justify-content:flex-end; max-width:100%; }
+  .accountTools button { white-space:normal; }
+  .passwordField { display:flex; flex-direction:column; align-items:stretch; gap:6px; }
+  .passwordField > .checkbox, .passwordActions { align-self:flex-end; max-width:100%; }
+  .passwordActions { gap:4px 12px; }
+  .passwordField > .checkbox, .passwordActions > .checkbox { min-height:36px; }
+  .passwordField > input { min-width:0; }
+  .tokenHelp { white-space:normal; }
+  .settingsGroup { padding:12px; }
+  #pixelConnection { padding:10px; }
+  .settingsGroup legend { max-width:100%; overflow-wrap:anywhere; }
+  .soundChoices { gap:8px; }
+  .wifiRow { flex-wrap:wrap; align-items:stretch; }
+  .wifiRow label { flex-basis:100%; }
+  .wifiRow button {
+  min-width: 120px; width:100%; margin:0; }
+  .maintenanceGrid input[type=file] { overflow:hidden; }
+  .sectionTools { flex-wrap:wrap; }
+  .sectionTools .badge { white-space:normal; }
+  .savebar { flex-wrap:wrap; }
+  #saveFeedback { max-width:100%; flex:1 1 100%; }
+  footer { flex-wrap:wrap; padding:18px 12px; }
+}
+@media(max-width:360px) {
+  header, main { padding-left:10px; padding-right:10px; }
+  section { padding:12px; }
+  .stats > div { padding:10px; }
+  .accountHeader, .accountBody { padding:10px; }
+  .soundChoices { grid-template-columns:1fr; }
+}

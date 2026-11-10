@@ -3,6 +3,7 @@
 #include "../nozzle_details.h"
 #include "../numeric_editor.h"
 #include "../filament_actions.h"
+#include "../layouts/shape.h"
 
 lv_obj_t *ui_temperatureComponent_input_target;
 int ui_temperatureComponent_backToScreen = -1;
@@ -25,6 +26,13 @@ void ui_temperatureComponent_on_keypad(char *key)
 void ui_temperatureComponent_hide_keypad()
 {
     if(ui_numeric_active()){ui_numeric_cancel();return;}
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+    int back=ui_temperatureComponent_backToScreen;
+    ui_temperatureComponent_input_target=NULL;
+    ui_temperatureComponent_backToScreen=-1;
+    loadScreen(back>=0?back:1);
+    return;
+#endif
     lv_obj_t *keyboard = ui_comp_get_child(ui_temperatureComponent, UI_COMP_TEMPERATURECOMPONENT_TEMPERATURECOMPONENTKEYBOARD);
     lv_obj_t *temps = ui_comp_get_child(ui_temperatureComponent, UI_COMP_TEMPERATURECOMPONENT_TEMPERATURECOMPONENTTEMPS);
     lv_obj_t *fans = ui_comp_get_child(ui_temperatureComponent, UI_COMP_TEMPERATURECOMPONENT_TEMPERATURECOMPONENTFANS);
@@ -139,6 +147,10 @@ void ui_temperatureComponent_show_keypad(int type, int index)
     lv_obj_update_layout(ui_temperatureComponent_input_target);ui_layout_numeric_center(ui_temperatureComponent_input_target);
 
     update_back_key();lv_obj_clear_flag(keyboard, LV_OBJ_FLAG_HIDDEN);
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+    lv_obj_add_flag(temps,LV_OBJ_FLAG_HIDDEN);lv_obj_add_flag(fans,LV_OBJ_FLAG_HIDDEN);
+    ui_shape_keypad(ui_temperatureComponent,ui_temperatureComponent_input_target,NULL,0,NULL);
+#endif
 }
 
 void ui_temperatureComponent_show_keypad_and_back(int type, int index, int backToScreen)

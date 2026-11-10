@@ -1,3 +1,4 @@
+#include "../layouts/shape.h"
 #include "../settings_dropdown.h"
 #include "xtouch/ota_request.h"
 #include "features/config.h"
@@ -584,6 +585,9 @@ lv_obj_t *ui_settingsComponent_create(lv_obj_t *comp_parent)
 
     lv_obj_t *environmentLabel;
     lv_obj_t *environmentRow=ui_environment_setting_create(cui_settingsComponent,&environmentLabel,&ui_settings_environmentSelect);
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+    lv_obj_t *pixelRow=ui_pixel_setting_create(cui_settingsComponent);
+#endif
 
     lv_obj_t *cui_settings_ota;
     cui_settings_ota = lv_obj_create(cui_settingsComponent);
@@ -640,13 +644,23 @@ lv_obj_t *ui_settingsComponent_create(lv_obj_t *comp_parent)
     lv_obj_clear_flag(cui_reseDeviceButton, LV_OBJ_FLAG_SCROLLABLE); /// Flags
     lv_obj_set_scrollbar_mode(cui_reseDeviceButton, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_radius(cui_reseDeviceButton, 6, LV_PART_MAIN | LV_STATE_DEFAULT);
+#if XTOUCH_UI_LAYOUT==UI_LAYOUT_LANDSCAPE
     lv_obj_set_style_bg_color(cui_reseDeviceButton, lv_color_hex(0xFF682A), LV_PART_MAIN | LV_STATE_DEFAULT);
+#else
+    lv_obj_set_style_bg_color(cui_reseDeviceButton, lv_color_hex(UI_COLOR_BUTTON), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(cui_reseDeviceButton, lv_color_hex(UI_COLOR_BUTTON_PRESSED), LV_PART_MAIN | LV_STATE_PRESSED);
+#endif
     lv_obj_set_style_bg_opa(cui_reseDeviceButton, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_left(cui_reseDeviceButton, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_right(cui_reseDeviceButton, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_top(cui_reseDeviceButton, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_bottom(cui_reseDeviceButton, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_color(cui_reseDeviceButton, lv_color_hex(0x000), LV_PART_MAIN | LV_STATE_DEFAULT);
+#if XTOUCH_UI_LAYOUT==UI_LAYOUT_LANDSCAPE
+    lv_obj_set_style_text_color(cui_reseDeviceButton, lv_color_black(), LV_PART_MAIN | LV_STATE_DEFAULT);
+#else
+    lv_obj_set_style_text_color(cui_reseDeviceButton, lv_color_hex(UI_COLOR_TEXT_PRIMARY), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_color(cui_reseDeviceButton, lv_color_hex(UI_COLOR_TEXT_PRIMARY), LV_PART_MAIN | LV_STATE_PRESSED);
+#endif
     lv_obj_set_height(cui_reseDeviceButton,40);
     ui_layout_key(cui_reseDeviceButton);
 
@@ -694,12 +708,16 @@ lv_obj_t *ui_settingsComponent_create(lv_obj_t *comp_parent)
     lv_obj_add_event_cb(bleButton,portal_ble_event,LV_EVENT_CLICKED,NULL);
 #endif
     lv_obj_t *standbyTitle=settings_heading(cui_settingsComponent,xtouch_local("待机","Standby"));
-    lv_obj_t *printerTitle=settings_heading(cui_settingsComponent,xtouch_local("打印机","Printer"));
+    lv_obj_t *printerTitle=settings_heading(cui_settingsComponent,xtouch_local("外设","Peripherals"));
     lv_obj_t *ordered[]={cui_settingsTitle,cui_screenTitle,languageRow,cui_settingsBackLightPanel,cui_screenInvertSetting,cui_settingsTFTFlip,standbyTitle,cui_settingsTFTOFFPanel,cui_screenWOPSetting,
 #if XTOUCH_FEATURE_AUDIO
     soundTitle,touchSoundRow,warningSoundRow,volumeRow,
 #endif
-    printerTitle,cui_settings_auxFan,cui_settings_chamberFan,environmentRow,cui_deviceTitle,cui_settings_ota,cui_reseDeviceButton,projectRow,manageButton,wifiButton
+    printerTitle,cui_settings_auxFan,cui_settings_chamberFan,environmentRow,
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+    pixelRow,
+#endif
+    cui_deviceTitle,cui_settings_ota,cui_reseDeviceButton,projectRow,manageButton,wifiButton
 #if XTOUCH_FEATURE_BLE_PROVISIONING
     ,bleButton
 #endif
@@ -756,6 +774,23 @@ lv_obj_t *ui_settingsComponent_create(lv_obj_t *comp_parent)
     lv_obj_add_event_cb(ui_settings_otaSwitch, ui_event_comp_settingsComponent_onOTA, LV_EVENT_VALUE_CHANGED, NULL);
 
     ui_settings_gesture_bind(cui_settingsComponent);
+ #if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+    const ui_shape_setting_t shapeRows[]={
+        {languageRow,0},{cui_settingsBackLightPanel,0},{cui_screenInvertSetting,0},{cui_settingsTFTFlip,0},
+        {cui_settingsTFTOFFPanel,1},{cui_screenWOPSetting,1},
+        {volumeRow,2},{touchSoundRow,2},{warningSoundRow,2},
+        {cui_settings_auxFan,3},{cui_settings_chamberFan,3},{environmentRow,3},
+#if XTOUCH_FEATURE_PIXEL_SCREEN
+        {pixelRow,3},
+#endif
+        {cui_settings_ota,4},{cui_reseDeviceButton,4},{projectRow,4},
+        {manageButton,5},{wifiButton,5},
+#if XTOUCH_FEATURE_BLE_PROVISIONING
+        {bleButton,5},
+#endif
+    };
+    ui_shape_settings(cui_settingsComponent,shapeRows,sizeof(shapeRows)/sizeof(shapeRows[0]));
+#endif
     ui_comp_settingsComponent_create_hook(cui_settingsComponent);
     return cui_settingsComponent;
 }

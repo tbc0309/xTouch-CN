@@ -284,6 +284,7 @@ static void ui_layout_caption(lv_obj_t *button){
 static void ui_layout_caption_event(lv_event_t *e){
  lv_obj_t *obj=lv_event_get_target_obj(e);ui_layout_caption(lv_obj_check_type(obj,&lv_label_class)?lv_obj_get_parent(obj):obj);
 }
+void ui_layout_caption_refresh(lv_obj_t *button){ui_layout_caption(button);}
 void ui_layout_captions_tree(lv_obj_t *root){
  if(lv_obj_check_type(root,&lv_button_class)&&lv_obj_get_child_count(root)==1&&lv_obj_check_type(lv_obj_get_child(root,0),&lv_label_class)&&!lv_obj_has_flag(lv_obj_get_child(root,0),LV_OBJ_FLAG_IGNORE_LAYOUT)){
   lv_obj_t *label=lv_obj_get_child(root,0);

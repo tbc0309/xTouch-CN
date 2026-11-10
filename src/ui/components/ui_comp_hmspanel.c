@@ -16,17 +16,11 @@ static uint32_t activePrintError;
 static unsigned errorOwner;
 static uint32_t errorRevision;
 static ui_message_kind hms_message_kind(void){
- if(hms_health_truncated())return UI_MESSAGE_ERROR;
- uint32_t print=hms_visible_print_error();if(print&&print!=84033543UL&&((print>>12)&15)!=12)return UI_MESSAGE_ERROR;
- ui_message_kind kind=hms_authorization_advisory_pending()?UI_MESSAGE_WARNING:UI_MESSAGE_INFO;
- for(unsigned i=0;i<hms_health_count();++i){
-  if(!hms_health_visible(i))continue;
-  uint64_t code=hms_health_at(i);unsigned level=(unsigned)(code>>16)&65535;
-  if(code==0x0500050000010007ULL){if(kind==UI_MESSAGE_INFO)kind=UI_MESSAGE_WARNING;continue;}
-  if(level!=2&&level!=3)return UI_MESSAGE_ERROR;
-  if(level==2)kind=UI_MESSAGE_WARNING;
+ switch(hms_severity()){
+ case HMS_SEVERITY_ERROR:return UI_MESSAGE_ERROR;
+ case HMS_SEVERITY_WARNING:return UI_MESSAGE_WARNING;
+ default:return UI_MESSAGE_INFO;
  }
- return kind;
 }
 
 void ui_hmsPanel_show(const char *title, enum XtouchDialogButtonStyle btn_style)

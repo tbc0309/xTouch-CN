@@ -130,6 +130,10 @@ void startStream(){
  if(!valid||!CameraProtocol::lan(bytes)||strlen(code)!=8){result=4;return;}
 
  cameraWidth=lv_disp_get_hor_res(nullptr);cameraHeight=lv_disp_get_ver_res(nullptr);
+#if XTOUCH_UI_LAYOUT!=UI_LAYOUT_LANDSCAPE
+ cameraWidth=cameraWidth*(XTOUCH_UI_LAYOUT==UI_LAYOUT_ROUND?86:94)/100;
+ cameraHeight=cameraWidth*9/16;
+#endif
  if(!CameraFrame::memoryAllowed(cameraWidth,cameraHeight,
   heap_caps_get_free_size(MALLOC_CAP_SPIRAM|MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM|MALLOC_CAP_8BIT),
   heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),useRtsps)){result=5;return;}

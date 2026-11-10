@@ -1,0 +1,16 @@
+{
+  "laboratoryBuild": false,
+  "flashBytes": 4194304,
+  "applicationSlotBytes": 1966080,
+  "chip": "esp32",
+  "version": "1.0.2",
+  "application": "xtouch-2.8-st7789.bin",
+  "fullImage": "xtouch-2.8-st7789-full.bin",
+  "applicationBytes": 1935936,
+  "applicationOffset": 65536,
+  "sha256": "3dea1a8151165d3f748fc8508d61cca4929830c432f15958bfd4ab8a646524d9",
+  "fullSha256": "9d7b7cb060f5d7f5d912c4eb654fa3540ccd0b4ce19c589105571a8e3bcb9ed8",
+  "project": "xtouch_cyd_st7789",
+  "releaseTag": "1.0.2",
+  "prerelease": false
+}

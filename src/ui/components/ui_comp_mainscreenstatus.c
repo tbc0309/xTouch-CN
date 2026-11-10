@@ -1,4 +1,9 @@
+#include "features/gcode_browser/browser.h"
 #include "../ui.h"
+#if XTOUCH_FEATURE_GCODE_BROWSER
+static void filesClick(lv_event_t *event){(void)event;if(xtouch_files_available())xtouch_files_open();}
+#endif
+
 #include "../printer_models.h"
 
 static void update_printer_art(lv_event_t *e)
@@ -53,6 +58,10 @@ lv_obj_t *ui_mainScreenStatus_create(lv_obj_t *comp_parent)
     lv_obj_set_style_text_color(cui_mainScreenStatusLogo, lv_color_hex(0xAAAAAA), LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_t *printer = lv_img_create(cui_mainScreenStatus);
+#if XTOUCH_FEATURE_GCODE_BROWSER
+    lv_obj_add_flag(printer,LV_OBJ_FLAG_CLICKABLE);lv_obj_add_event_cb(printer,filesClick,LV_EVENT_SHORT_CLICKED,NULL);
+    lv_obj_add_flag(cui_mainScreenStatusLogo,LV_OBJ_FLAG_CLICKABLE);lv_obj_add_event_cb(cui_mainScreenStatusLogo,filesClick,LV_EVENT_SHORT_CLICKED,NULL);
+#endif
     lv_obj_add_event_cb(printer, update_printer_art, LV_EVENT_MSG_RECEIVED, NULL);
     lv_msg_subsribe_obj(XTOUCH_ON_MODEL, printer, NULL);
     lv_obj_send_event(printer, LV_EVENT_MSG_RECEIVED, NULL);

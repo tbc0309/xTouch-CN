@@ -12,6 +12,7 @@ extern "C" {
 bool xtouch_printer_configured(uint8_t slot);
 uint8_t xtouch_printer_active(void);
 const char *xtouch_printer_name(void);
+const char *xtouch_printer_serial(void);
 const char *xtouch_printer_name_at(uint8_t slot);
 const char *xtouch_printer_model_at(uint8_t slot);
 bool xtouch_printer_request(uint8_t slot);
@@ -19,6 +20,7 @@ bool xtouch_printer_switch_pending(void);
 bool xtouch_printer_online(void);
 bool xtouch_printer_cloud(void);
 bool xtouch_printer_camera_credentials(char *host,size_t hostSize,char *code,size_t codeSize);
+bool xtouch_printer_file_credentials(char *host,size_t hostSize,char *code,size_t codeSize);
 bool xtouch_printer_local_credentials(char *host,size_t hostSize,char *code,size_t codeSize);
 // Explicit validated edit target for the next config reload; never a serial-only fallback.
 void xtouch_printer_edit_hint(const char *serial,const char *host);
