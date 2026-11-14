@@ -28,14 +28,15 @@ export function validatePixelCatalog(value){
 }
 export function validatePixelManifest(value,catalog,board){
   const build=value?.builds?.[0];
-  if(value?.name!=='iDotMatrix × Bambu Lab · '+board.name||value.version!==catalog.version||value.builds.length!==1||
+  const title=board.id==='clockwise-esp32-hub75'?'3D Print Pixel Monitor':'iDotMatrix × Bambu Lab';
+  if(value?.name!==title+' · '+board.name||value.version!==catalog.version||value.builds.length!==1||
     build?.chipFamily!==board.chip||build.parts?.length!==2||build.parts.some((p,i)=>p.path!==board.parts[i].path.replace(/^idotmatrix\//,'')||p.offset!==board.parts[i].offset))throw Error('Pixel manifest does not match catalog');
 }
 const boardPreferenceKey='idotmatrix-bambulab.installer.board';
 const words={
   version:['版本','Version'],
   xtouch:['xTouch-CN 刷机','xTouch-CN installer'],eyebrow:['ESP32 · 蓝牙像素屏联动','ESP32 · BLUETOOTH PIXEL DISPLAY'],
-  title:['让拓竹打印状态，亮在身边。','Keep your Bambu Lab print status in sight.'],intro:['为 ESP32 开发板安装固件，通过蓝牙将打印状态显示在 iDotMatrix 32×32 像素屏上。OLED 板和 24 灯环板也可直接显示时钟与打印状态。','Install firmware on an ESP32 board to show printer status on a 32×32 iDotMatrix Bluetooth display. OLED and 24-LED ring boards also show the clock and print status directly.'],
+  title:['让拓竹打印状态，亮在身边。','Keep your Bambu Lab print status in sight.'],intro:['为 ESP32 开发板安装固件，通过蓝牙将打印状态显示在 iDotMatrix 32×32 像素屏上。Clockwise 直驱 64×64 HUB75，OLED 和 24 灯环板也有板载显示。','Install firmware on an ESP32 board to show printer status on a 32×32 iDotMatrix Bluetooth display. Clockwise drives a 64×64 HUB75 panel directly. OLED and 24-LED ring boards also have onboard displays.'],
   independent:['一款运行于 ESP32 的独立像素屏控制器。','An independent pixel-display controller for ESP32 boards.'],usb:['USB 在线安装','USB WEB INSTALL'],install:['连接并刷写','Connect and install'],board:['选择 ESP32 开发板','Select ESP32 board'],
   step1:['电脑使用 Chrome 或 Edge，通过 USB 连接开发板。','Use desktop Chrome or Edge and connect the board by USB.'],step2:['关闭占用串口的软件，确认主板型号后加载刷写工具。','Close software using the serial port. Check the board model, then load the installer.'],step3:['选择开发板串口，按提示完成安装。','Select the board serial port and follow the installation dialog.'],
   preserve:['保留设置时不要勾选 Erase device；擦除会清除 Wi-Fi、打印机、像素屏绑定和管理密码。安装过程请保持 USB 连接。','Leave Erase device unchecked to preserve settings. Erasing removes Wi-Fi, printers, display binding and the admin password. Keep USB connected while installing.'],

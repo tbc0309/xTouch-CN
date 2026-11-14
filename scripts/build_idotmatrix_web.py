@@ -96,7 +96,8 @@ def add_firmware(output,folder,published=False):
         path=f'idotmatrix/firmware/{stem}-install-{i}.bin'
         (output/path).write_bytes(data)
         parts.append({'path':path,'offset':offset,'size':len(data),'sha256':hashlib.sha256(data).hexdigest()})
-    manifest={'name':'iDotMatrix × Bambu Lab · '+name,'version':version,'new_install_prompt_erase':True,'new_install_improv_wait_time':0,
+    title='3D Print Pixel Monitor' if board=='clockwise-esp32-hub75' else 'iDotMatrix × Bambu Lab'
+    manifest={'name':title+' · '+name,'version':version,'new_install_prompt_erase':True,'new_install_improv_wait_time':0,
               'builds':[{'chipFamily':chip,'improv':False,'parts':[{'path':p['path'].removeprefix('idotmatrix/'),'offset':p['offset']} for p in parts]}]}
     manifest_name='manifest.json' if board==BOARD else f'{board}.json'
     write_json(target/manifest_name,manifest)
