@@ -3,6 +3,7 @@ import {websiteLanguage,saveWebsiteLanguage} from './language.js';
 const project='idotmatrix-bambulab';
 const boards={
   'lckfb-esp32s3r8n8':{chip:'ESP32-S3',target:'esp32s3',manifest:'manifest.json',ota:0x89000,limit:0x377000,memory:'8 MB Flash · 8 MB PSRAM'},
+  'clockwise-esp32-hub75':{chip:'ESP32',target:'esp32',manifest:'clockwise-esp32-hub75.json',boot:0x1000,ota:0x19000,limit:0x1e7000,memory:'4 MB Flash · 520 KB SRAM',screen:'64 × 64 HUB75'},
   'esp32c3-oled-042':{chip:'ESP32-C3',target:'esp32c3',manifest:'esp32c3-oled-042.json',ota:0x19000,limit:0x1e7000,memory:'4 MB Flash · 400 KB SRAM',screen:'72 × 40 OLED'},
   'esp32c3-rgb24':{chip:'ESP32-C3',target:'esp32c3',manifest:'esp32c3-rgb24.json',ota:0x19000,limit:0x1e7000,memory:'4 MB Flash · 400 KB SRAM',screen:'24 × RGB LED'},
   'seeed-xiao-esp32c6':{chip:'ESP32-C6',target:'esp32c6',manifest:'seeed-xiao-esp32c6.json',ota:0x19000,limit:0x1e7000,memory:'4 MB Flash · 512 KB SRAM'},
@@ -17,9 +18,10 @@ export function validatePixelCatalog(value){
     const spec=Object.hasOwn(boards,b.id)?boards[b.id]:null;
     if(!spec||b.chip!==spec.chip||b.manifest!=='idotmatrix/'+spec.manifest||!Array.isArray(b.parts)||b.parts.length!==2)throw Error('Invalid pixel board');
     const prefix=`idotmatrix/firmware/${project}-${value.version}-${b.id}-`;
+    const boot=spec.boot??0;
     for(const [i,part] of b.parts.entries()){
-      if(part.offset!==[0,spec.ota][i]||part.path!==`${prefix}install-${i}.bin`||!/^[a-f0-9]{64}$/.test(part.sha256)||
-         !Number.isInteger(part.size)||part.size<=0||(i===0?part.size!==0x9000:part.size>spec.limit))throw Error('Invalid pixel segments');
+      if(part.offset!==[boot,spec.ota][i]||part.path!==`${prefix}install-${i}.bin`||!/^[a-f0-9]{64}$/.test(part.sha256)||
+         !Number.isInteger(part.size)||part.size<=0||(i===0?part.size!==0x9000-boot:part.size>spec.limit))throw Error('Invalid pixel segments');
     }
   }
   return value.boards[0];
@@ -38,8 +40,8 @@ const words={
   step1:['电脑使用 Chrome 或 Edge，通过 USB 连接开发板。','Use desktop Chrome or Edge and connect the board by USB.'],step2:['关闭占用串口的软件，确认主板型号后加载刷写工具。','Close software using the serial port. Check the board model, then load the installer.'],step3:['选择开发板串口，按提示完成安装。','Select the board serial port and follow the installation dialog.'],
   preserve:['保留设置时不要勾选 Erase device；擦除会清除 Wi-Fi、打印机、像素屏绑定和管理密码。安装过程请保持 USB 连接。','Leave Erase device unchecked to preserve settings. Erasing removes Wi-Fi, printers, display binding and the admin password. Keep USB connected while installing.'],
   load:['加载刷写工具','Load installer'],connect:['连接开发板','Connect board'],toolLanguage:['刷写工具的连接、进度和确认窗口由 ESP Web Tools 提供，目前为英文。','Connection, progress and confirmation dialogs are provided by ESP Web Tools in English.'],downloads:['固件下载与发布说明','Firmware downloads and release notes'],
-  setupTag:['Wi-Fi 与像素屏','WI-FI & PIXEL DISPLAY'],setup:['首次使用','First setup'],setup1:['连接开发板的 PrintPixel-xxxxxx 热点，密码 12345678。','Join the board hotspot PrintPixel-xxxxxx using password 12345678.'],setup2:['打开 http://192.168.4.1/，直接扫描并设置 Wi-Fi，无需登录。','Open http://192.168.4.1/ and configure Wi-Fi directly, without signing in.'],setup3:['连接同一网络，在设备地址首次登录（初始密码 12345678），按提示修改密码，再添加打印机。','On the same network, sign in at the device address (initial password 12345678), change the password, then add a printer.'],setup4:['断开手机 App 与像素屏的连接，扫描选择像素屏，按需填写设备密码，启用联动。','Disconnect the phone app from the display. Scan and select the display, enter its password if set, and enable the link.'],
-  power:['开发板和像素屏分别供电，无需连接信号线。','Power the board and display separately; no signal wiring is needed.'],boot:['BOOT 长按 3 秒清除 Wi-Fi，长按 10 秒清除全部配置。','Hold BOOT for three seconds to clear Wi-Fi, or ten seconds to clear all settings.'],project:['项目与功能介绍','Project and features'],
+  setupTag:['Wi-Fi 与像素屏','WI-FI & PIXEL DISPLAY'],setup:['首次使用','First setup'],setup1:['连接 PrintPixel-xxxxxx 热点：Clockwise 无密码，其余板型密码为 12345678。','Join PrintPixel-xxxxxx. Clockwise uses an open hotspot; other boards use password 12345678.'],setup2:['打开 http://192.168.4.1/，直接扫描并设置 Wi-Fi，无需登录。','Open http://192.168.4.1/ and configure Wi-Fi directly, without signing in.'],setup3:['连接同一网络，在设备地址首次登录（初始密码 12345678），按提示修改密码，再添加打印机。','On the same network, sign in at the device address (initial password 12345678), change the password, then add a printer.'],setup4:['使用外接蓝牙像素屏时，先断开手机 App，再扫描并启用联动。','For an external Bluetooth display, disconnect its phone app before scanning and enabling the link.'],
+  power:['外接蓝牙屏独立供电。Clockwise 通过 HUB75 排线连接灯板，灯板使用 5V 电源。','Power external Bluetooth displays separately. Clockwise uses a HUB75 ribbon cable and a 5 V panel supply.'],boot:['BOOT 长按 3 秒清除 Wi-Fi，长按 10 秒清除全部配置。','Hold BOOT for three seconds to clear Wi-Fi, or ten seconds to clear all settings.'],project:['项目与功能介绍','Project and features'],
   checking:['正在检查固件…','Checking firmware…'],unavailable:['固件待发布，在线安装暂未开放。','Firmware has not been published. Online installation is not yet available.'],invalid:['固件目录暂不可用，请稍后重试。','Firmware catalog unavailable. Please retry later.'],unsupported:['在线安装需要电脑上的 Chrome 或 Edge，以及 HTTPS 或 localhost 环境。','Use desktop Chrome or Edge over HTTPS or localhost to install.'],loading:['正在校验固件并加载刷写工具…','Verifying firmware and loading the installer…'],failed:['固件校验或工具加载失败，请重试。','Firmware verification or installer loading failed. Please retry.'],ready:['固件已校验，可连接开发板。','Firmware verified. You can connect the board.']
 };
 async function start(){

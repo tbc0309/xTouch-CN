@@ -9,6 +9,7 @@ PROJECT='idotmatrix-bambulab'
 BOARD='lckfb-esp32s3r8n8'
 BOARDS={
     BOARD: (None,'esp32s3','ESP32-S3',9,'8MB',0x370000,0x90000,0x89000,0x80000,0x400000),
+    'clockwise-esp32-hub75': (None,'esp32','ESP32',0,'4MB',0x1e0000,0x20000,0x19000,0x10000,0x200000),
     'esp32c3-oled-042': (None,'esp32c3','ESP32-C3',5,'4MB',0x1e0000,0x20000,0x19000,0x10000,0x200000),
     'esp32c3-rgb24': (None,'esp32c3','ESP32-C3',5,'4MB',0x1e0000,0x20000,0x19000,0x10000,0x200000),
     'seeed-xiao-esp32c6': (None,'esp32c6','ESP32-C6',13,'4MB',0x1e0000,0x20000,0x19000,0x10000,0x200000),
@@ -56,7 +57,10 @@ def verified_package(folder):
     app=data[stem+'.bin'];full=data[stem+'-full.bin']
     if len(app)<288 or len(app)>slot or app[0]!=0xe9 or int.from_bytes(app[12:14],'little')!=chip_id or app[32:36]!=bytes.fromhex('3254cdab') or app[48:80].split(b'\0',1)[0]!=version.encode() or app[80:112].split(b'\0',1)[0]!=b'idotmatrix_bambulab':
         raise ValueError('Pixel application identity or capacity mismatch')
-    if len(full)!=app_offset+len(app) or full[0]!=0xe9 or full[app_offset:]!=app:
+    boot_offset=0x1000 if target=='esp32' else 0
+    if (len(full)!=app_offset+len(app) or full[:boot_offset]!=b'\xff'*boot_offset
+        or full[boot_offset]!=0xe9 or int.from_bytes(full[boot_offset+12:boot_offset+14],'little')!=chip_id
+        or full[app_offset:]!=app):
         raise ValueError('Pixel merged image does not match application')
     expected_layout={
         'nvs':(1,2,0x9000,nvs_size),
@@ -87,7 +91,8 @@ def add_firmware(output,folder,published=False):
     output=Path(output)
     target=output/'idotmatrix';(target/'firmware').mkdir(parents=True,exist_ok=True)
     parts=[]
-    for i,(offset,data) in enumerate([(0,full[:0x9000]),(ota_offset,full[ota_offset:])]):
+    boot_offset=0x1000 if target_name=='esp32' else 0
+    for i,(offset,data) in enumerate([(boot_offset,full[boot_offset:0x9000]),(ota_offset,full[ota_offset:])]):
         path=f'idotmatrix/firmware/{stem}-install-{i}.bin'
         (output/path).write_bytes(data)
         parts.append({'path':path,'offset':offset,'size':len(data),'sha256':hashlib.sha256(data).hexdigest()})
