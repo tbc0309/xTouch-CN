@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="xTouch-CN HMS 与打印错误码查询 · Error code lookup">
+  <title>xTouch-CN · 故障码查询</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="errors.css">
+  <script type="module" src="errors.js"></script>
+</head>
+<body>
+    <header class="top">
+      <a class="brand" href="index.html">xTouch<span>-CN</span></a>
+      <nav>
+        <a href="index.html" id="back">在线刷写</a>
+        <a
+          href="https://github.com/tbc0309/xTouch-CN"
+          target="_blank"
+          rel="noopener"
+          class="github-link"
+          aria-label="GitHub 项目地址"
+          title="GitHub"
+          ><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M12 0C5.37 0 0 5.373 0 12c0 5.302 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577v-2.234c-3.338.726-4.043-1.416-4.043-1.416-.546-1.386-1.333-1.755-1.333-1.755-1.09-.745.083-.73.083-.73 1.205.085 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.775.418-1.305.762-1.605-2.665-.303-5.467-1.334-5.467-5.932 0-1.31.469-2.381 1.236-3.221-.124-.303-.536-1.524.117-3.176 0 0 1.008-.323 3.301 1.23A11.5 11.5 0 0 1 12 5.804c1.02.005 2.045.138 3.003.404 2.291-1.553 3.297-1.23 3.297-1.23.655 1.652.243 2.873.12 3.176.77.84 1.235 1.911 1.235 3.221 0 4.61-2.807 5.625-5.479 5.922.43.372.823 1.102.823 2.222v3.291c0 .322.216.694.825.576C20.565 21.795 24 17.3 24 12 24 5.373 18.627 0 12 0Z"
+            /></svg
+          ><span id="projectLink">项目地址</span></a
+        ><select id="language" aria-label="语言 / Language">
+          <option value="zh">简体中文</option>
+          <option value="en">English</option>
+        </select>
+      </nav>
+    </header>
+    <main>
+      <section class="hero lookup-hero">
+        <div><p class="eyebrow">HMS · PRINT ERROR</p><h1 id="title">故障码查询</h1><p id="intro">输入完整代码或前几位，自动显示匹配结果。</p></div>
+      </section>
+      <section class="card lookup">
+        <label for="query" id="queryLabel">错误码</label>
+        <input id="query" type="search" autocomplete="off" spellcheck="false" maxlength="80" placeholder="HMS 0300-0100-0001-0001 / 0x05004007 / 84033543" aria-controls="results" aria-describedby="hint">
+        <p id="hint">支持 HMS、十六进制打印错误码和十进制命令错误码。</p>
+        <p id="status" role="status" aria-live="polite">正在载入码表…</p>
+        <div id="results"></div><p id="source"></p>
+      </section>
+      <footer></footer>
+    </main>
+</body>
+</html>

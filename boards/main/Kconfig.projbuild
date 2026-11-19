@@ -1,0 +1,10 @@
+# Hosted 3 host configuration still consumes the legacy ESP_HOSTED_ENABLED
+# alias in eh_host_port_master_config.h. This alias is not an Arduino dependency.
+config ESP_HOSTED_ENABLED
+    bool
+    default y if ESP_HOSTED_HOST
+
+config IDF_SLAVE_TARGET
+    string
+    default ESP_HOSTED_IDF_SLAVE_TARGET
+    depends on ESP_HOSTED_HOST

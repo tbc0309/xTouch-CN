@@ -1,0 +1,123 @@
+name: Configuration and web installer
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['web/**', 'scripts/build_web.py', 'scripts/build_idotmatrix_web.py', 'scripts/fetch_idotmatrix_release.py', 'scripts/build_test_web.py', 'scripts/fetch_test_release.py', 'scripts/build_error_search.py', 'docs/data/error-codes.json', 'boards/board_catalog.py', 'boards/**/ota.json', 'boards/**/manifest.json', 'version.json', '.github/workflows/pages.yml']
+  release:
+    types: [published]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  release-deploy:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Deploy the released version from main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh workflow run pages.yml --ref main
+  release_available:
+    if: github.event_name != 'release'
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.release.outputs.ready }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(python -c "import json;print(json.load(open('version.json'))['version'])")
+          ready=false
+          if hidden=$(gh release view "$version" --repo "$GITHUB_REPOSITORY" --json isDraft,isPrerelease --jq '.isDraft or .isPrerelease' 2>/dev/null) && [ "$hidden" = false ]; then
+            gh release view "$version" --repo "$GITHUB_REPOSITORY" --json assets > /tmp/xtouch-release-assets.json
+            ready=$(python - <<'PYREADY'
+          import json, sys
+          sys.path.insert(0, 'boards')
+          from board_catalog import BOARDS
+          names={a['name'] for a in json.load(open('/tmp/xtouch-release-assets.json'))['assets']}
+          expected={b['stem']+suffix for b in BOARDS.values() if b.get('releaseChannel')=='main' and b.get('releaseSupported',True) for suffix in ('.bin','-full.bin')}
+          print(str(expected.issubset(names)).lower())
+          PYREADY
+          )
+          fi
+          echo "ready=$ready" >> "$GITHUB_OUTPUT"
+          echo "Published release available: $ready"
+  deploy:
+    needs: release_available
+    if: github.event_name != 'release' && needs.release_available.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci && npm run bundle
+        working-directory: web
+      - name: Download released images
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(python -c "import json;print(json.load(open('version.json'))['version'])")
+          gh release download "$version" --repo "$GITHUB_REPOSITORY" --pattern xtouch-2.8.bin --pattern xtouch-2.8-full.bin --dir release-images
+          gh release view "$version" --repo "$GITHUB_REPOSITORY" --json assets > release-assets.json
+      - name: Build installer for available release targets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, shutil, subprocess, sys
+          sys.path.insert(0,'boards')
+          from board_catalog import BOARDS
+          version=json.load(open('version.json'))['version']
+          names={asset['name'] for asset in json.load(open('release-assets.json'))['assets']}
+          command=['python','scripts/build_web.py','--firmware-dir','release-images','--output','_site']
+          for key,target in BOARDS.items():
+              if key=='cyd': continue
+              stem=target['stem']
+              expected={stem+'.bin',stem+'-full.bin'}
+              if not expected.issubset(names): raise SystemExit('Incomplete release target: '+stem)
+              folder=pathlib.Path('release-images')/stem
+              folder.mkdir()
+              for name in sorted(expected):
+                  subprocess.run(['gh','release','download',version,'--repo',os.environ['GITHUB_REPOSITORY'],'--pattern',name,'--dir',str(folder)],check=True)
+              shutil.copy2(pathlib.Path('boards')/target['directory']/'manifest.json', folder/'manifest.json')
+              command+=['--board-firmware-dir',str(folder)]
+          subprocess.run(command,check=True)
+          PY
+      - name: Add verified prerelease installer channel
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/fetch_test_release.py --output _site --download-dir test-release-images
+      - name: Add independent pixel-controller installer when publicly released
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/fetch_idotmatrix_release.py --output _site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,20 @@
+{
+  "esp-idf": "v6.1",
+  "libraries": {
+    "ArduinoJson": {
+      "url": "https://github.com/bblanchon/ArduinoJson.git",
+      "ref": "v6.21.6",
+      "commit": "0b03321ed33fa6965114424fbb023260120c856b"
+    },
+    "lvgl": {
+      "url": "https://github.com/lvgl/lvgl.git",
+      "ref": "v9.6.0",
+      "commit": "80ca777e37a2b176770726a02e07a6fb79ef0b39"
+    },
+    "JPEGDEC": {
+      "url": "https://github.com/bitbank2/JPEGDEC.git",
+      "ref": "86282979224c8a32fd51e091ed5a35b0c699a52b",
+      "commit": "86282979224c8a32fd51e091ed5a35b0c699a52b"
+    }
+  }
+}

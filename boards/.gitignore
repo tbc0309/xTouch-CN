@@ -1,0 +1,11 @@
+build*/
+managed_components/
+sdkconfig
+sdkconfig.old
+.deps/
+__pycache__/
+**/sdkconfig
+**/sdkconfig.old
+*.ppm
+.camera-data/
+**/managed_components/

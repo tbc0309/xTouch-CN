@@ -1,0 +1,42 @@
+.pio
+.vscode
+.DS_Store
+node_modules
+web/vendor/
+web/firmware/
+web/firmware.json
+web/manifest.json
+_site/
+release-images/
+LOCAL-REVIEW.zh-CN.md
+/AGENTS.md
+*.ttf
+*.otf
+python3.cmd
+
+__pycache__/
+*.pyc
+boards/.camera-data/
+**/test-cert.pem
+**/test-key.pem
+
+# Generated previews and local hardware records
+*.ppm
+boards/docs/
+
+# Local-only helpers and generated test records
+local-tools/
+local-tests/
+test-results/
+boards/build*/
+
+# Private development tools and notes
+tools/thumbnail_lab
+boards/tests
+boards/ADAPTATION.md
+boards/SHARED-UI.md
+/docs/DEVELOPMENT-RULES*.md
+/docs/DOCUMENTATION-RULES*.md
+
+# Local regression suites
+/tests/

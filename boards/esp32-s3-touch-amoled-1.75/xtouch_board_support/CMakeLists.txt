@@ -1,0 +1,1 @@
+idf_component_register(INCLUDE_DIRS "." REQUIRES espressif__esp_lcd_co5300 waveshare__esp_lcd_touch_cst9217 espressif__esp_codec_dev)

@@ -1,0 +1,3 @@
+Source: https://github.com/nayarsystems/posix_tz_db
+Commit: 93447c0ddac304ca6672a5fd905261c7e8905159
+Generated POSIX approximations of IANA time zones.

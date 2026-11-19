@@ -1,0 +1,30 @@
+dependencies:
+  idf: ">=6.1,<6.2"
+  espressif/mqtt: "==1.1.0"
+  espressif/esp_h264:
+    require: "no"
+    version: "==1.4.1"
+    rules:
+      - if: "target in [esp32s3, esp32p4]"
+  espressif/esp_codec_dev:
+    version: "==1.5.9"
+    rules:
+      - if: "target == esp32p4"
+  espressif/esp_hosted:
+    version: "==3.0.10"
+    rules:
+      - if: "target == esp32p4"
+  espressif/esp_wifi_remote:
+    version: "==1.6.5"
+    rules:
+      - if: "target == esp32p4"
+  espressif/network_provisioning:
+    require: "no"
+    version: "==1.2.4"
+    rules:
+      - if: "target in [esp32s3, esp32p4]"
+  espressif/esp-dsp:
+    require: "no"
+    version: "==1.8.2"
+    rules:
+      - if: "target in [esp32s3, esp32p4]"

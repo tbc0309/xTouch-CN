@@ -1,0 +1,762 @@
+{
+  "Saved device": [
+    "已保存设备",
+    "已儲存裝置",
+    "Saved device",
+    "Appareil enregistré",
+    "Gespeichertes Gerät",
+    "Сохранённое устройство",
+    "保存済みデバイス",
+    "저장된 기기"
+  ],
+  "Scan and select a pixel screen": [
+    "扫描后选择像素屏",
+    "掃描後選擇像素屏",
+    "Scan and select a pixel screen",
+    "Rechercher puis choisir un écran",
+    "Pixeldisplay suchen und auswählen",
+    "Найдите и выберите экран",
+    "スキャンして画面を選択",
+    "스캔 후 픽셀 화면 선택"
+  ],
+  "Unnamed pixel screen": [
+    "未命名像素屏",
+    "未命名像素屏",
+    "Unnamed pixel screen",
+    "Écran sans nom",
+    "Unbenanntes Pixeldisplay",
+    "Экран без имени",
+    "名前のない画面",
+    "이름 없는 픽셀 화면"
+  ],
+  "Scanning… ": [
+    "正在扫描… ",
+    "正在掃描… ",
+    "Scanning… ",
+    "Recherche… ",
+    "Suche… ",
+    "Поиск… ",
+    "スキャン中… ",
+    "스캔 중… "
+  ],
+  "Scan complete: ": [
+    "扫描完成，找到 ",
+    "掃描完成，找到 ",
+    "Scan complete: ",
+    "Recherche terminée : ",
+    "Suche abgeschlossen: ",
+    "Найдено: ",
+    "検出結果：",
+    "검색 완료: "
+  ],
+  " candidates. Select one and save.": [
+    " 台候选设备；选择后保存。",
+    " 台候選裝置；選擇後儲存。",
+    " candidates. Select one and save.",
+    " appareils. Choisissez et enregistrez.",
+    " Geräte. Auswählen und speichern.",
+    " устройств. Выберите и сохраните.",
+    " 台。選択して保存してください。",
+    "개 기기. 선택 후 저장하세요."
+  ],
+  "Bluetooth is connecting or scanning. Please retry shortly.": [
+    "蓝牙正在连接或扫描，请稍后重试。",
+    "藍牙正在連線或掃描，請稍後重試。",
+    "Bluetooth is connecting or scanning. Please retry shortly.",
+    "Bluetooth occupé. Réessayez dans un instant.",
+    "Bluetooth verbindet oder sucht. Bitte später erneut versuchen.",
+    "Bluetooth подключается или ищет. Повторите позже.",
+    "Bluetooth 接続またはスキャン中です。後でもう一度お試しください。",
+    "블루투스 연결 또는 스캔 중입니다. 잠시 후 다시 시도하세요."
+  ],
+  "Saved; blank keeps it for the same MAC": [
+    "已保存；同一MAC留空保留",
+    "已儲存；同一MAC留空保留",
+    "Saved; blank keeps it for the same MAC",
+    "Enregistré ; laisser vide pour conserver",
+    "Gespeichert; leer lassen zum Beibehalten",
+    "Сохранён; оставьте пустым для сохранения",
+    "保存済み。同じ MAC なら空欄で保持",
+    "저장됨. 같은 MAC이면 빈칸으로 유지"
+  ],
+  "Leave blank if no device password": [
+    "未设置密码可留空",
+    "未設定密碼可留空",
+    "Leave blank if no device password",
+    "Laisser vide si aucun mot de passe",
+    "Ohne Gerätepasswort leer lassen",
+    "Без пароля оставьте пустым",
+    "パスワード未設定なら空欄",
+    "기기 비밀번호가 없으면 빈칸"
+  ],
+  "Preview updates automatically; the built-in clock font depends on the device.": [
+    "预览自动刷新，内置时钟字形以设备为准。",
+    "預覽自動更新，內建時鐘字形以裝置為準。",
+    "Preview updates automatically; the built-in clock font depends on the device.",
+    "Aperçu automatique ; la police de l’horloge dépend de l’appareil.",
+    "Vorschau aktualisiert sich automatisch; die Uhrschrift hängt vom Gerät ab.",
+    "Предпросмотр обновляется автоматически; шрифт часов зависит от устройства.",
+    "プレビューは自動更新。内蔵時計の字体はデバイスによって異なります。",
+    "미리보기는 자동 갱신됩니다. 내장 시계 글꼴은 기기에 따라 다릅니다."
+  ],
+  "Saved; connects to the bound MAC and authenticates protected devices first.": [
+    "已保存；按绑定的MAC连接，受保护设备先验证密码。",
+    "已儲存；連線至綁定MAC，先驗證裝置密碼。",
+    "Saved; connects to the bound MAC and authenticates protected devices first.",
+    "Enregistré ; connexion à l’appareil associé après authentification.",
+    "Gespeichert; verbindet nach Authentifizierung mit dem gebundenen Gerät.",
+    "Сохранено; подключение к привязанному устройству после проверки пароля.",
+    "保存しました。紐付けた機器に認証後接続します。",
+    "저장했습니다. 인증 후 등록된 기기에 연결합니다."
+  ],
+  "Pixel screen (32×32)": [
+    "像素屏（32×32）",
+    "像素屏（32×32）",
+    "Pixel screen (32×32)",
+    "Écran à pixels (32×32)",
+    "Pixeldisplay (32×32)",
+    "Пиксельный экран (32×32)",
+    "ピクセル画面（32×32）",
+    "픽셀 화면 (32×32)"
+  ],
+  "Link settings": [
+    "联动设置",
+    "聯動設定",
+    "Link settings",
+    "Réglages de liaison",
+    "Verknüpfung",
+    "Настройки связи",
+    "連動設定",
+    "연동 설정"
+  ],
+  "Display preview": [
+    "画面预览",
+    "畫面預覽",
+    "Display preview",
+    "Aperçu de l’écran",
+    "Anzeigevorschau",
+    "Предпросмотр экрана",
+    "画面プレビュー",
+    "화면 미리보기"
+  ],
+  "Enable pixel screen linking": [
+    "启用像素屏联动",
+    "啟用像素屏聯動",
+    "Enable pixel screen linking",
+    "Activer la liaison de l’écran",
+    "Display-Verknüpfung aktivieren",
+    "Включить связь с экраном",
+    "ピクセル画面の連動を有効にする",
+    "픽셀 화면 연동 사용"
+  ],
+  "Select pixel screen": [
+    "选择像素屏",
+    "選擇像素屏",
+    "Select pixel screen",
+    "Choisir l’écran",
+    "Pixeldisplay auswählen",
+    "Выбрать экран",
+    "ピクセル画面を選択",
+    "픽셀 화면 선택"
+  ],
+  "Scan nearby pixel screens": [
+    "扫描附近像素屏",
+    "掃描附近像素屏",
+    "Scan nearby pixel screens",
+    "Rechercher les écrans à proximité",
+    "Pixeldisplays in der Nähe suchen",
+    "Найти экраны поблизости",
+    "近くの画面をスキャン",
+    "주변 픽셀 화면 스캔"
+  ],
+  "Pixel screen MAC address": [
+    "像素屏 MAC 地址",
+    "像素屏MAC位址",
+    "Pixel screen MAC address",
+    "Adresse MAC de l’écran",
+    "MAC-Adresse des Displays",
+    "MAC-адрес экрана",
+    "画面の MAC アドレス",
+    "픽셀 화면 MAC 주소"
+  ],
+  "Scan for 10 seconds, select a device, then save and enable.": [
+    "扫描10秒，选择设备后保存并启用。",
+    "掃描10秒，選擇裝置後儲存並啟用。",
+    "Scan for 10 seconds, select a device, then save and enable.",
+    "Recherche de 10 s. Choisissez, enregistrez et activez.",
+    "10 Sekunden suchen, Gerät auswählen, speichern und aktivieren.",
+    "Поиск 10 секунд. Выберите, сохраните и включите.",
+    "10秒スキャン後、機器を選択して保存し有効化します。",
+    "10초 스캔 후 기기를 선택하고 저장하여 활성화하세요."
+  ],
+  "Device password": [
+    "设备密码",
+    "裝置密碼",
+    "Device password",
+    "Mot de passe de l’appareil",
+    "Gerätepasswort",
+    "Пароль устройства",
+    "デバイスのパスワード",
+    "기기 비밀번호"
+  ],
+  "Six digits; blank keeps the saved password. Does not change the display password.": [
+    "6位数字，留空保留；不修改像素屏密码。",
+    "6位數字，留空保留；不修改像素屏密碼。",
+    "Six digits; blank keeps the saved password. Does not change the display password.",
+    "6 chiffres ; vide pour conserver. Ne change pas le mot de passe de l’écran.",
+    "6 Ziffern; leer lässt das Passwort unverändert. Ändert nicht das Displaypasswort.",
+    "6 цифр; пустое поле сохраняет пароль. Пароль экрана не изменяется.",
+    "6桁の数字。空欄で保持します。画面本体のパスワードは変更しません。",
+    "숫자 6자리. 빈칸이면 유지하며 화면 자체의 비밀번호는 변경하지 않습니다."
+  ],
+  "Display switch": [
+    "显示开关",
+    "顯示開關",
+    "Display switch",
+    "Affichage activé",
+    "Anzeige einschalten",
+    "Включить экран",
+    "画面表示",
+    "화면 표시"
+  ],
+  "Rotate 180°": [
+    "旋转180°",
+    "旋轉180°",
+    "Rotate 180°",
+    "Rotation de 180°",
+    "Um 180° drehen",
+    "Поворот на 180°",
+    "180°回転",
+    "180° 회전"
+  ],
+  "Pixel screen brightness": [
+    "像素屏亮度",
+    "像素屏亮度",
+    "Pixel screen brightness",
+    "Luminosité de l’écran",
+    "Displayhelligkeit",
+    "Яркость экрана",
+    "ピクセル画面の明るさ",
+    "픽셀 화면 밝기"
+  ],
+  "Applied after saving and restored after reconnecting.": [
+    "保存后生效，重新连接后自动恢复。",
+    "儲存後生效，重新連線後自動恢復。",
+    "Applied after saving and restored after reconnecting.",
+    "Appliqué après enregistrement, restauré à la reconnexion.",
+    "Nach dem Speichern aktiv, nach Wiederverbindung wiederhergestellt.",
+    "Применяется после сохранения и восстанавливается при подключении.",
+    "保存後に適用し、再接続時に復元します。",
+    "저장 후 적용되며 재연결 시 복원됩니다."
+  ],
+  "Standby display": [
+    "待机显示",
+    "待機顯示",
+    "Standby display",
+    "Affichage en veille",
+    "Standby-Anzeige",
+    "Экран в ожидании",
+    "待機中の表示",
+    "대기 화면"
+  ],
+  "Built-in clock": [
+    "内置时钟",
+    "內建時鐘",
+    "Built-in clock",
+    "Horloge intégrée",
+    "Integrierte Uhr",
+    "Встроенные часы",
+    "内蔵時計",
+    "내장 시계"
+  ],
+  "Temperature & humidity": [
+    "温湿度",
+    "溫濕度",
+    "Temperature & humidity",
+    "Température et humidité",
+    "Temperatur und Feuchtigkeit",
+    "Температура и влажность",
+    "温度・湿度",
+    "온도 및 습도"
+  ],
+  "Clock / sensor alternating": [
+    "时钟／温湿度交替",
+    "時鐘／溫濕度交替",
+    "Clock / sensor alternating",
+    "Horloge / mesures en alternance",
+    "Uhr / Sensor im Wechsel",
+    "Часы / датчик поочерёдно",
+    "時計／センサー交互表示",
+    "시계 / 센서 교대 표시"
+  ],
+  "Alternates every 10 seconds; falls back to clock without valid sensor readings.": [
+    "交替间隔10秒；无有效温湿度时显示时钟。",
+    "交替間隔10秒；無有效溫濕度時顯示時鐘。",
+    "Alternates every 10 seconds; falls back to clock without valid sensor readings.",
+    "Alternance toutes les 10 s ; horloge si aucune mesure valide.",
+    "Wechsel alle 10 Sekunden; ohne gültige Sensorwerte wird die Uhr angezeigt.",
+    "Смена каждые 10 секунд; без данных датчика показываются часы.",
+    "10秒ごとに切り替え。有効なセンサー値がなければ時計を表示。",
+    "10초마다 전환하며 유효한 센서 값이 없으면 시계를 표시합니다."
+  ],
+  "Printing display style": [
+    "打印中显示方式",
+    "列印中顯示方式",
+    "Printing display style",
+    "Style pendant l’impression",
+    "Anzeige beim Drucken",
+    "Вид экрана при печати",
+    "印刷中の表示スタイル",
+    "인쇄 중 표시 방식"
+  ],
+  "The built-in clock runs locally without minute-by-minute uploads; its font depends on the device.": [
+    "内置时钟自动走时，无需每分钟传图；字形以设备为准。",
+    "內建時鐘自動走時，無需每分鐘傳圖；字形以裝置為準。",
+    "The built-in clock runs locally without minute-by-minute uploads; its font depends on the device.",
+    "L’horloge fonctionne seule sans envoi d’image chaque minute ; police selon l’appareil.",
+    "Die integrierte Uhr läuft selbstständig ohne minütliche Bilder; Schrift geräteabhängig.",
+    "Встроенные часы идут сами, без ежеминутной передачи изображений; шрифт зависит от экрана.",
+    "内蔵時計が自動で時を刻むため毎分の画像転送は不要です。字体は機器によります。",
+    "내장 시계가 자체 작동하므로 매분 이미지 전송이 필요 없습니다. 글꼴은 기기에 따라 다릅니다."
+  ],
+  "32×32 pixels · Looping animation": [
+    "32×32 像素 · 动画循环播放",
+    "32×32像素 · 動畫循環播放",
+    "32×32 pixels · Looping animation",
+    "32×32 pixels · Animation en boucle",
+    "32×32 Pixel · Animationsschleife",
+    "32×32 пикселя · Анимация по кругу",
+    "32×32ピクセル · ループ再生",
+    "32×32 픽셀 · 반복 애니메이션"
+  ],
+  "Preview content": [
+    "预览内容",
+    "預覽內容",
+    "Preview content",
+    "Contenu de l’aperçu",
+    "Vorschauinhalt",
+    "Содержимое предпросмотра",
+    "プレビュー内容",
+    "미리보기 내용"
+  ],
+  "Save settings": [
+    "保存设置",
+    "儲存設定",
+    "Save settings",
+    "Enregistrer",
+    "Einstellungen speichern",
+    "Сохранить настройки",
+    "設定を保存",
+    "설정 저장"
+  ],
+  "Current printer (live)": [
+    "当前打印机（跟随状态）",
+    "目前印表機（即時狀態）",
+    "Current printer (live)",
+    "Imprimante actuelle (en direct)",
+    "Aktueller Drucker (live)",
+    "Текущий принтер (онлайн)",
+    "現在のプリンター（リアルタイム）",
+    "현재 프린터 (실시간)"
+  ],
+  "Example: Idle": [
+    "示例：空闲",
+    "範例：空閒",
+    "Example: Idle",
+    "Exemple : Veille",
+    "Beispiel: Leerlauf",
+    "Пример: Ожидание",
+    "例：待機",
+    "예시: 대기"
+  ],
+  "Example: Preparing": [
+    "示例：准备中",
+    "範例：準備中",
+    "Example: Preparing",
+    "Exemple : Préparation",
+    "Beispiel: Vorbereitung",
+    "Пример: Подготовка",
+    "例：準備中",
+    "예시: 준비 중"
+  ],
+  "Example: Printing · 42%": [
+    "示例：打印中 · 42%",
+    "範例：列印中 · 42%",
+    "Example: Printing · 42%",
+    "Exemple : Impression · 42%",
+    "Beispiel: Druck · 42%",
+    "Пример: Печать · 42%",
+    "例：印刷中 · 42%",
+    "예시: 인쇄 중 · 42%"
+  ],
+  "Example: Paused": [
+    "示例：已暂停",
+    "範例：已暫停",
+    "Example: Paused",
+    "Exemple : Pause",
+    "Beispiel: Pausiert",
+    "Пример: Пауза",
+    "例：一時停止",
+    "예시: 일시 중지"
+  ],
+  "Example: Complete": [
+    "示例：已完成",
+    "範例：已完成",
+    "Example: Complete",
+    "Exemple : Terminé",
+    "Beispiel: Abgeschlossen",
+    "Пример: Готово",
+    "例：完了",
+    "예시: 완료"
+  ],
+  "Example: Cancelled": [
+    "示例：已取消",
+    "範例：已取消",
+    "Example: Cancelled",
+    "Exemple : Annulé",
+    "Beispiel: Abgebrochen",
+    "Пример: Отменено",
+    "例：キャンセル済み",
+    "예시: 취소됨"
+  ],
+  "Example: Error": [
+    "示例：故障",
+    "範例：故障",
+    "Example: Error",
+    "Exemple : Erreur",
+    "Beispiel: Fehler",
+    "Пример: Ошибка",
+    "例：エラー",
+    "예시: 오류"
+  ],
+  "Example: Offline": [
+    "示例：离线",
+    "範例：離線",
+    "Example: Offline",
+    "Exemple : Hors ligne",
+    "Beispiel: Offline",
+    "Пример: Не в сети",
+    "例：オフライン",
+    "예시: 오프라인"
+  ],
+  "Example: Temperature & humidity": [
+    "示例：温湿度",
+    "範例：溫濕度",
+    "Example: Temperature & humidity",
+    "Exemple : Température et humidité",
+    "Beispiel: Temperatur und Feuchtigkeit",
+    "Пример: Температура и влажность",
+    "例：温度・湿度",
+    "예시: 온도 및 습도"
+  ],
+  "Disabled": [
+    "未启用",
+    "未啟用",
+    "Disabled",
+    "Désactivé",
+    "Deaktiviert",
+    "Отключено",
+    "無効",
+    "비활성"
+  ],
+  "Starting Bluetooth": [
+    "蓝牙启动中",
+    "藍牙啟動中",
+    "Starting Bluetooth",
+    "Démarrage Bluetooth",
+    "Bluetooth startet",
+    "Запуск Bluetooth",
+    "Bluetooth 起動中",
+    "블루투스 시작 중"
+  ],
+  "Searching": [
+    "搜索像素屏",
+    "搜尋像素屏",
+    "Searching",
+    "Recherche",
+    "Suche",
+    "Поиск",
+    "検索中",
+    "검색 중"
+  ],
+  "Connecting": [
+    "连接中",
+    "連線中",
+    "Connecting",
+    "Connexion",
+    "Verbindet",
+    "Подключение",
+    "接続中",
+    "연결 중"
+  ],
+  "Discovering services": [
+    "识别服务",
+    "識別服務",
+    "Discovering services",
+    "Recherche des services",
+    "Dienste suchen",
+    "Поиск служб",
+    "サービスを検出中",
+    "서비스 검색 중"
+  ],
+  "Subscribing": [
+    "订阅通知",
+    "訂閱通知",
+    "Subscribing",
+    "Abonnement aux notifications",
+    "Benachrichtigungen aktivieren",
+    "Подписка на уведомления",
+    "通知を登録中",
+    "알림 등록 중"
+  ],
+  "Identifying device": [
+    "读取设备信息",
+    "讀取裝置資訊",
+    "Identifying device",
+    "Identification",
+    "Gerät erkennen",
+    "Определение устройства",
+    "機器情報を取得中",
+    "기기 정보 확인 중"
+  ],
+  "Authenticating": [
+    "验证密码",
+    "驗證密碼",
+    "Authenticating",
+    "Authentification",
+    "Authentifizierung",
+    "Проверка пароля",
+    "認証中",
+    "인증 중"
+  ],
+  "Connected": [
+    "已连接",
+    "已連線",
+    "Connected",
+    "Connecté",
+    "Verbunden",
+    "Подключено",
+    "接続済み",
+    "연결됨"
+  ],
+  "Updating display": [
+    "画面更新中",
+    "畫面更新中",
+    "Updating display",
+    "Mise à jour de l’écran",
+    "Anzeige wird aktualisiert",
+    "Обновление экрана",
+    "画面を更新中",
+    "화면 갱신 중"
+  ],
+  "Waiting to reconnect": [
+    "等待重连",
+    "等待重新連線",
+    "Waiting to reconnect",
+    "Reconnexion en attente",
+    "Warten auf Wiederverbindung",
+    "Ожидание подключения",
+    "再接続待ち",
+    "재연결 대기 중"
+  ],
+  "Device password required": [
+    "需要六位设备密码",
+    "需要六位裝置密碼",
+    "Device password required",
+    "Mot de passe requis",
+    "Gerätepasswort erforderlich",
+    "Нужен пароль устройства",
+    "デバイスのパスワードが必要",
+    "기기 비밀번호 필요"
+  ],
+  "Incorrect device password": [
+    "设备密码错误",
+    "裝置密碼錯誤",
+    "Incorrect device password",
+    "Mot de passe incorrect",
+    "Falsches Gerätepasswort",
+    "Неверный пароль",
+    "パスワードが違います",
+    "기기 비밀번호 오류"
+  ],
+  "Re-enter device password": [
+    "密码不可用，请重新填写",
+    "密碼不可用，請重新填寫",
+    "Re-enter device password",
+    "Saisir à nouveau le mot de passe",
+    "Gerätepasswort erneut eingeben",
+    "Введите пароль заново",
+    "パスワードを再入力してください",
+    "비밀번호를 다시 입력하세요"
+  ],
+  "Authentication unconfirmed": [
+    "认证未确认",
+    "認證未確認",
+    "Authentication unconfirmed",
+    "Authentification non confirmée",
+    "Authentifizierung unbestätigt",
+    "Проверка не подтверждена",
+    "認証を確認できません",
+    "인증 미확인"
+  ],
+  "Unsupported display size": [
+    "不支持的像素屏规格",
+    "不支援的像素屏規格",
+    "Unsupported display size",
+    "Format d’écran non pris en charge",
+    "Displaygröße nicht unterstützt",
+    "Размер экрана не поддерживается",
+    "非対応の画面サイズ",
+    "지원하지 않는 화면 크기"
+  ],
+  "Waiting for memory": [
+    "等待可用内存",
+    "等待可用記憶體",
+    "Waiting for memory",
+    "Mémoire en attente",
+    "Warten auf freien Speicher",
+    "Ожидание памяти",
+    "空きメモリー待ち",
+    "메모리 확보 대기 중"
+  ],
+  "Connection module error": [
+    "连接模块异常",
+    "連線模組異常",
+    "Connection module error",
+    "Erreur de connexion",
+    "Verbindungsfehler",
+    "Ошибка модуля связи",
+    "接続モジュールエラー",
+    "연결 모듈 오류"
+  ],
+  "Disconnected": [
+    "未连接",
+    "未連線",
+    "Disconnected",
+    "Déconnecté",
+    "Nicht verbunden",
+    "Не подключено",
+    "未接続",
+    "연결 안 됨"
+  ],
+  "Disabling linking does not turn off the display. Use the display switch to turn it off.": [
+    "停用联动不会熄屏；熄屏请关闭显示开关。",
+    "停用聯動不會熄屏；熄屏請關閉顯示開關。",
+    "Disabling linking does not turn off the display. Use the display switch to turn it off.",
+    "Désactiver la liaison n’éteint pas l’écran. Utilisez le commutateur d’affichage.",
+    "Die Verknüpfung zu deaktivieren schaltet das Display nicht aus. Dafür den Anzeigeschalter verwenden.",
+    "Отключение связи не гасит экран. Используйте переключатель экрана.",
+    "連動を無効にしても画面は消えません。画面表示スイッチをオフにしてください。",
+    "연동을 꺼도 화면은 꺼지지 않습니다. 화면 표시 스위치를 사용하세요."
+  ],
+  "Waiting for stable printer": [
+    "等待设备稳定",
+    "等待裝置穩定",
+    "Waiting for stable printer",
+    "Attente de stabilisation",
+    "Warten auf stabilen Drucker",
+    "Ожидание стабильного принтера",
+    "プリンターの安定待ち",
+    "프린터 안정화 대기"
+  ],
+  "Enable to connect and sync the bound iDotMatrix pixel display. Disable to disconnect and keep its settings.": [
+    "启用后连接绑定iDotMatrix像素屏设备并同步状态；停用会断开连接，保留设置。",
+    "啟用後連接綁定的iDotMatrix像素屏裝置並同步狀態；停用會斷開連線，保留設定。",
+    "Enable to connect and sync the bound iDotMatrix pixel display. Disable to disconnect and keep its settings.",
+    "Activez pour connecter l’écran pixel iDotMatrix associé et synchroniser son état. Désactivez pour déconnecter sans effacer les réglages.",
+    "Aktivieren verbindet das gekoppelte iDotMatrix-Pixeldisplay und synchronisiert den Status. Deaktivieren trennt die Verbindung und behält die Einstellungen.",
+    "Включите для подключения привязанного пиксельного экрана iDotMatrix и синхронизации состояния. Отключение сохраняет настройки.",
+    "有効にすると登録済みのiDotMatrixピクセル画面に接続して状態を同期します。無効にすると設定を保持して切断します。",
+    "활성화하면 등록된 iDotMatrix 픽셀 화면에 연결하고 상태를 동기화합니다. 비활성화해도 설정은 유지됩니다."
+  ],
+  "Enter MAC manually": [
+    "手动输入 MAC",
+    "手動輸入 MAC",
+    "Enter MAC manually",
+    "Saisir la MAC manuellement",
+    "MAC manuell eingeben",
+    "Ввести MAC вручную",
+    "MACを手動入力",
+    "MAC 직접 입력"
+  ],
+  "Connection settings": [
+    "连接设置",
+    "連線設定",
+    "Connection settings",
+    "Paramètres de connexion",
+    "Verbindungseinstellungen",
+    "Настройки подключения",
+    "接続設定",
+    "연결 설정"
+  ],
+  "Scan failed; retry": [
+    "扫描失败，请重试",
+    "掃描失敗，請重試",
+    "Scan failed; retry",
+    "Échec du scan ; réessayer",
+    "Scan fehlgeschlagen; erneut versuchen",
+    "Ошибка поиска; повторить",
+    "スキャン失敗・再試行",
+    "검색 실패; 다시 시도"
+  ],
+  "Clear password": [
+    "清除密码",
+    "清除密碼",
+    "Clear password",
+    "Effacer le mot de passe",
+    "Passwort löschen",
+    "Очистить пароль",
+    "パスワードを消去",
+    "비밀번호 지우기"
+  ],
+  "Temperature & humidity while idle": [
+    "待机显示温湿度",
+    "待機顯示溫濕度",
+    "Temperature & humidity while idle",
+    "Température et humidité en veille",
+    "Temperatur und Feuchte im Leerlauf",
+    "Температура и влажность в ожидании",
+    "待機時に温湿度を表示",
+    "대기 중 온습도 표시"
+  ],
+  "Colour printer": [
+    "彩色打印机",
+    "彩色印表機",
+    "Colour printer",
+    "Imprimante en couleur",
+    "Farbiger Drucker",
+    "Цветной принтер",
+    "カラープリンター",
+    "컬러 프린터"
+  ],
+  "Progress view": [
+    "进度视图",
+    "進度檢視",
+    "Progress view",
+    "Vue de progression",
+    "Fortschrittsansicht",
+    "Вид прогресса",
+    "進捗表示",
+    "진행률 보기"
+  ],
+  "Completed progress flows right in rainbow colours; remaining progress uses the filament colour.": [
+    "已完成进度彩色向右流动，未完成部分显示耗材色。",
+    "已完成進度彩色向右流動，未完成部分顯示耗材色。",
+    "Completed progress flows right in rainbow colours; remaining progress uses the filament colour.",
+    "La progression terminée défile en couleurs vers la droite ; le reste utilise la couleur du filament.",
+    "Der fertige Anteil läuft bunt nach rechts; der Rest zeigt die Filamentfarbe.",
+    "Готовая часть переливается вправо, оставшаяся окрашена в цвет филамента.",
+    "完了部分は虹色で右へ流れ、残りはフィラメント色で表示します。",
+    "완료 부분은 무지개색으로 오른쪽으로 흐르고 나머지는 필라멘트 색으로 표시합니다."
+  ],
+  "Layered model and moving printhead, with progress, layers, time and temperatures.": [
+    "分层模型与移动喷头，显示进度、层数、余时和温度。",
+    "分層模型與移動噴頭，顯示進度、層數、餘時和溫度。",
+    "Layered model and moving printhead, with progress, layers, time and temperatures.",
+    "Modèle en couches et tête animée, avec progression, couches, temps et températures.",
+    "Schichtmodell und bewegter Druckkopf mit Fortschritt, Schichten, Restzeit und Temperaturen.",
+    "Послойная модель и движущаяся головка, прогресс, слои, время и температуры.",
+    "積層モデルと動くヘッドで、進捗・層数・残り時間・温度を表示します。",
+    "적층 모델과 움직이는 헤드에 진행률, 레이어, 남은 시간과 온도를 표시합니다."
+  ]
+}
